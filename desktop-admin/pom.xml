@@ -86,21 +86,40 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jpackage-plugin</artifactId>
-                        <version>3.6.4</version>
+                        <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                        <artifactId>launch4j-maven-plugin</artifactId>
+                        <version>2.5.2</version>
+                        <executions>
+                            <execution>
+                                <id>l4j-clui</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>launch4j</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                         <configuration>
-                            <mainClass>com.resik.admin.ResikDesktopApp</mainClass>
-                            <type>EXE</type>
-                            <name>RESIK-Admin</name>
-                            <appVersion>1.0.0</appVersion>
-                            <vendor>RESIK</vendor>
-                            <description>RESIK Bank Sampah Digital - Admin Desktop</description>
-                            <icon>${project.basedir}/src/main/resources/resik-icon.ico</icon>
-                            <winMenu>true</winMenu>
-                            <winMenuGroup>RESIK</winMenuGroup>
-                            <winShortcut>true</winShortcut>
-                            <winDirChooser>true</winDirChooser>
+                            <headerType>gui</headerType>
+                            <jar>target/resik-desktop-1.0.0.jar</jar>
+                            <outfile>target/RESIK-Admin-Setup.exe</outfile>
+                            <errTitle>RESIK Admin</errTitle>
+                            <downloadUrl>https://java.com/download</downloadUrl>
+                            <jre>
+                                <minVersion>17</minVersion>
+                                <jdkPreference>preferJre</jdkPreference>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>1.0.0</txtFileVersion>
+                                <fileDescription>RESIK Bank Sampah Digital - Admin Desktop</fileDescription>
+                                <copyright>RESIK 2026</copyright>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>1.0.0</txtProductVersion>
+                                <productName>RESIK Admin</productName>
+                                <companyName>RESIK</companyName>
+                                <internalName>resik-admin</internalName>
+                                <originalFilename>RESIK-Admin-Setup.exe</originalFilename>
+                            </versionInfo>
                         </configuration>
                     </plugin>
                 </plugins>
