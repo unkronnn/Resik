@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📷 Scan QR Code" android:textSize="20sp" android:textStyle="bold" android:textColor="#1a5d3a" android:padding="16dp" />
+
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Arahkan kamera ke QR Code pada penjemputan" android:textColor="#999" android:padding="16dp" />
+
+    <Button android:id="@+id/scanBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mulai Scan" android:backgroundTint="#1a5d3a" android:textColor="#fff" />
+</LinearLayout>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f4f6f4">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#1a5d3a"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="♻️ RESIK"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:textSize="20sp" />
+
+            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/logoutBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Logout"
+                android:backgroundTint="#c0392b"
+                android:textColor="#fff"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView android:id="@+id/userName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loading..." android:textSize="18sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dompet Digital" android:textColor="#999" android:layout_marginTop="8dp" />
+            <TextView android:id="@+id/saldoText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rp 0" android:textSize="28sp" android:textStyle="bold" android:textColor="#1a5d3a" />
+            <TextView android:id="@+id/poinText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 poin" android:textColor="#f39c12" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout android:id="@+id/navEdukasi" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📚" android:textSize="24sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Edukasi Sampah" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navPenjemputan" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🚚" android:textSize="24sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jemput Sampah" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navRiwayat" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📋" android:textSize="24sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Riwayat Transaksi" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navChat" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="💬" android:textSize="24sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Chat Admin" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navMap" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📍" android:textSize="24sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lokasi Bank Sampah" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navQr" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📷" android:textSize="24sp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Scan QR Code" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
