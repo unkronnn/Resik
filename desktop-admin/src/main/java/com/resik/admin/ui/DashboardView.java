@@ -859,7 +859,7 @@ public class DashboardView {
             .findFirst().orElse(null);
         if (chatList == null) return;
         try {
-            List<Map<String, Object>> messages = ApiClient.getList("/chat/" + userId, Map.class);
+            List<Map<String, Object>> messages = ApiClient.getList("/chat/" + userId);
             ObservableList<String> items = FXCollections.observableArrayList();
             for (Map<String, Object> m : messages) {
                 String sender = String.valueOf(m.getOrDefault("sender", "?"));

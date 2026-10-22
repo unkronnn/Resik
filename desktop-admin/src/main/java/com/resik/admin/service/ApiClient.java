@@ -1,6 +1,7 @@
 package com.resik.admin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.resik.admin.config.AppConfig;
 import java.net.URI;
@@ -8,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 public class ApiClient {
@@ -31,8 +33,24 @@ public class ApiClient {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getList(String path, Class<T> type) {
-        return request("GET", path, null, type);
+    public static List<Map<String, Object>> getList(String path) {
+        try {
+            HttpRequest.Builder builder = HttpRequest.newBuilder()
+                    .uri(URI.create(AppConfig.API_BASE_URL + path))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Content-Type", "application/json");
+            if (AppConfig.authToken != null) {
+                builder.header("Authorization", "Bearer " + AppConfig.authToken);
+            }
+            builder.GET();
+            HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 400) {
+                throw new RuntimeException("API Error (" + response.statusCode() + "): " + response.body());
+            }
+            return mapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Connection failed: " + e.getMessage(), e);
+        }
     }
 
     private static <T> T request(String method, String path, String body, Class<T> type) {
