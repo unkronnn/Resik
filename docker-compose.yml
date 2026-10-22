@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: resik_db
+    environment:
+      POSTGRES_DB: resik
+      POSTGRES_USER: resik
+      POSTGRES_PASSWORD: resik_secret_2026
+    volumes:
+      - resik_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resik"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resik_api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/resik
+      DATABASE_USER: resik
+      DATABASE_PASSWORD: resik_secret_2026
+      JWT_SECRET: resik-production-jwt-secret-key-256bits-very-long-secure!!
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  resik_pgdata:

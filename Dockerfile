@@ -1,8 +1,8 @@
-FROM eclipse-temurin:17-jdk AS builder
+FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
 COPY backend-api/pom.xml .
 COPY backend-api/src ./src
-RUN apt-get update && apt-get install -y maven && mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app

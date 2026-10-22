@@ -32,6 +32,7 @@ public class DashboardView {
         contentArea.setPadding(new Insets(28, 32, 28, 32));
         contentArea.setStyle("-fx-background-color: #f1f5f9;");
         contentArea.setSpacing(16);
+        view.setCenter(contentArea);
         showDashboard();
     }
 
