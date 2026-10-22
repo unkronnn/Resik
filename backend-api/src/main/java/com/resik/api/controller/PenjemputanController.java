@@ -20,7 +20,7 @@ public class PenjemputanController {
     }
 
     @PostMapping
-    public ResponseEntity<Penjemputan> create(@RequestBody CreateRequest req, Authentication auth) {
+    public ResponseEntity<Penjemputan> create(@RequestBody PenjemputanDtos.CreateRequest req, Authentication auth) {
         Long userId = (Long) auth.getPrincipal();
         return ResponseEntity.ok(penjemputanService.createPenjemputan(userId, req));
     }
@@ -47,7 +47,7 @@ public class PenjemputanController {
     }
 
     @PostMapping("/timbang")
-    public ResponseEntity<Transaksi> timbang(@RequestBody TimbangRequest req) {
+    public ResponseEntity<Transaksi> timbang(@RequestBody PenjemputanDtos.TimbangRequest req) {
         return ResponseEntity.ok(penjemputanService.timbangSampah(req));
     }
 }

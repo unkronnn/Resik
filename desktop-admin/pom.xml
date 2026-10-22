@@ -55,6 +55,56 @@
                     <mainClass>com.resik.admin.ResikDesktopApp</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.resik.admin.ResikDesktopApp</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <minimizeJar>false</minimizeJar>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>exe</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jpackage-plugin</artifactId>
+                        <version>3.6.4</version>
+                        <configuration>
+                            <mainClass>com.resik.admin.ResikDesktopApp</mainClass>
+                            <type>EXE</type>
+                            <name>RESIK-Admin</name>
+                            <appVersion>1.0.0</appVersion>
+                            <vendor>RESIK</vendor>
+                            <description>RESIK Bank Sampah Digital - Admin Desktop</description>
+                            <icon>${project.basedir}/src/main/resources/resik-icon.ico</icon>
+                            <winMenu>true</winMenu>
+                            <winMenuGroup>RESIK</winMenuGroup>
+                            <winShortcut>true</winShortcut>
+                            <winDirChooser>true</winDirChooser>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
