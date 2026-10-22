@@ -1,5 +1,5 @@
 ; Resik Admin Installer - NSIS Script
-; Bundles JRE + JAR so users need NO Java installed
+; Bundles JRE + JavaFX + Launch4j EXE wrapper
 
 !define APPNAME "Resik"
 !define APPVERSION "1.0.0"
@@ -38,12 +38,9 @@ Section "Install"
 
     ; App files
     SetOutPath "$INSTDIR"
+    File "ResikAdmin.exe"
     File "target\resik-desktop-1.0.0.jar"
     File "src\main\resources\resik-icon.ico"
-
-    ; Launcher VBS — bundled file (no CMD window), NOT generated (avoids escaping bugs)
-    File "resik-launcher.vbs"
-    Rename "$INSTDIR\resik-launcher.vbs" "$INSTDIR\resik.vbs"
 
     ; Debug batch — shows console with errors
     FileOpen $1 "$INSTDIR\resik-debug.bat" w
@@ -54,10 +51,10 @@ Section "Install"
     FileWrite $1 'pause$\r$\n'
     FileClose $1
 
-    ; Shortcuts — VBS launcher (no CMD window)
-    CreateShortCut "$DESKTOP\Resik Admin.lnk" "wscript.exe" '"$INSTDIR\resik.vbs"' "$INSTDIR\resik-icon.ico"
+    ; Shortcuts — ResikAdmin.exe is the Launch4j wrapper (shows as "ResikAdmin.exe" in Task Manager)
+    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\ResikAdmin.exe" "" "$INSTDIR\resik-icon.ico"
     CreateDirectory "$SMPROGRAMS\Resik"
-    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "wscript.exe" '"$INSTDIR\resik.vbs"' "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\ResikAdmin.exe" "" "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Resik Admin (Debug).lnk" "$INSTDIR\resik-debug.bat" "" "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Uninstall Resik.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\resik-icon.ico"
 
@@ -72,8 +69,8 @@ Section "Install"
 SectionEnd
 
 Section "Uninstall"
+    Delete "$INSTDIR\ResikAdmin.exe"
     Delete "$INSTDIR\resik-desktop-1.0.0.jar"
-    Delete "$INSTDIR\resik.vbs"
     Delete "$INSTDIR\resik-debug.bat"
     Delete "$INSTDIR\resik-icon.ico"
     RMDir /r "$INSTDIR\jre"
