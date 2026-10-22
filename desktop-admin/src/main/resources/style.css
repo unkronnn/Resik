@@ -1,39 +1,134 @@
-/* RESIK Desktop Admin Stylesheet */
+/* RESIK Desktop Admin — Professional Stylesheet */
+
+* {
+    -fx-font-family: "SF Pro Display", "Helvetica Neue", "System", "Segoe UI", sans-serif;
+}
 
 .root {
-    -fx-font-family: "System";
+    -fx-font-size: 14px;
 }
 
 .button {
-    -fx-background-radius: 8;
+    -fx-background-radius: 6;
     -fx-cursor: hand;
+    -fx-font-weight: 400;
 }
 
-.button:hover {
-    -fx-opacity: 0.85;
+.button-primary {
+    -fx-background-color: #0d6e4e;
+    -fx-text-fill: white;
+    -fx-padding: 10 24;
+    -fx-font-size: 13px;
+}
+
+.button-primary:hover {
+    -fx-background-color: #0a5840;
+}
+
+.button-danger {
+    -fx-background-color: #c0392b;
+    -fx-text-fill: white;
+    -fx-padding: 8 16;
+    -fx-font-size: 12px;
+}
+
+.button-danger:hover {
+    -fx-background-color: #a93226;
 }
 
 .table-view {
     -fx-background-color: white;
     -fx-background-radius: 8;
-    -fx-border-color: #e0e0e0;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
     -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);
 }
 
 .table-column-header {
-    -fx-background-color: #1a5d3a;
+    -fx-background-color: #f8fafc;
+    -fx-text-fill: #1e293b;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 10 12;
+}
+
+.table-row-cell {
+    -fx-padding: 8 12;
+    -fx-border-color: #f1f5f9;
+    -fx-border-width: 0 0 1px 0;
+    -fx-text-fill: #334155;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e6f5ef;
+    -fx-text-fill: #0d6e4e;
+}
+
+.sidebar-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #cbd5e1;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 20;
+    -fx-cursor: hand;
+    -fx-pref-width: 200;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+}
+
+.sidebar-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.08);
     -fx-text-fill: white;
-    -fx-font-weight: bold;
-}
-
-.table-row-cell:odd {
-    -fx-background-color: #f9f9f9;
-}
-
-.scroll-bar:vertical {
-    -fx-background-color: #f0f0f0;
 }
 
 .separator {
     -fx-padding: 10 0;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: #f8fafc;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 4;
+}
+
+.text-field {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14;
+    -fx-font-size: 14px;
+}
+
+.text-field:focused {
+    -fx-border-color: #0d6e4e;
+    -fx-border-width: 1.5px;
+    -fx-background-color: white;
+}
+
+.password-field {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 8;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14;
+    -fx-font-size: 14px;
+}
+
+.password-field:focused {
+    -fx-border-color: #0d6e4e;
+    -fx-border-width: 1.5px;
+    -fx-background-color: white;
 }
