@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@page { size: 13.333in 7.5in; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --gd:#0D3D14; --gdk:#1B5E20; --gm:#2E7D32; --gl:#4CAF50; --gll:#81C784;
+  --gbg:#E8F5E9; --gba:#F1F8F2; --acc:#00C853; --w:#FFF; --ow:#FAFAFA;
+  --d:#1A1A1A; --g:#555; --gl2:#999; --gbd:#F5F5F5; --org:#FF8F00; --bl:#1976D2;
+}
+body { font-family:'Inter',-apple-system,sans-serif; color:var(--d); -webkit-font-smoothing:antialiased; }
+.slide { width:13.333in; height:7.5in; position:relative; overflow:hidden; page-break-after:always; background:var(--w); }
+.slide:last-child { page-break-after:auto; }
+
+/* ── GLASSMORPHISM / LIQUID GLASS ── */
+.glass {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.glass-dark {
+  background: rgba(27,94,32,0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.glass-light {
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.glass-card {
+  background: rgba(232,245,233,0.6);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(76,175,80,0.15);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* ── HEADER (glass style) ── */
+.header {
+  position:absolute; top:0; left:0; right:0; height:1in;
+  background: linear-gradient(135deg, rgba(13,61,20,0.92), rgba(27,94,32,0.88));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  display:flex; align-items:center; padding:0 .5in; z-index:10;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--acc),var(--gl),var(--acc)); }
+
+/* Logo positioning in header */
+.hlogo-wrap { display:flex; align-items:center; gap:.12in; }
+.hlr { width:.45in; height:.45in; object-fit:contain; }
+.ht { color:var(--w); font-size:22pt; font-weight:700; margin-left:.15in; flex:1; letter-spacing:-.5px; }
+.hlres { width:1.2in; height:.4in; object-fit:contain; }
+
+/* ── FOOTER ── */
+.footer { position:absolute; bottom:0; left:0; right:0; height:.32in; background: var(--gd); display:flex; align-items:center; justify-content:space-between; padding:0 .5in; color:rgba(255,255,255,.7); font-size:8pt; font-weight:500; }
+.fn { font-weight:700; color:var(--w); }
+.body { padding:1.2in .5in .5in; height:calc(100% - 1.32in); }
+
+/* ── COVER ── */
+.cover {
+  background: linear-gradient(135deg, #0D3D14 0%, #1B5E20 35%, #2E7D32 70%, #1B5E20 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position: relative;
+}
+.cover::before { content:''; position:absolute; top:-2in; left:-2in; width:6in; height:6in; border-radius:50%; background:radial-gradient(circle, rgba(76,175,80,0.2) 0%, transparent 70%); }
+.cover::after { content:''; position:absolute; bottom:-2in; right:-2in; width:7in; height:7in; border-radius:50%; background:radial-gradient(circle, rgba(0,200,83,0.12) 0%, transparent 70%); }
+
+/* Floating orbs for depth */
+.orb { position:absolute; border-radius:50; pointer-events:none; }
+.orb-1 { top:.5in; right:1in; width:2.5in; height:2.5in; border-radius:50%; background: radial-gradient(circle, rgba(0,200,83,0.1) 0%, transparent 70%); }
+.orb-2 { bottom:1in; left:1.5in; width:2in; height:2in; border-radius:50%; background: radial-gradient(circle, rgba(76,175,80,0.08) 0%, transparent 70%); }
+.orb-3 { top:2in; left:3in; width:1.5in; height:1.5in; border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%); }
+
+.cc { position:relative; z-index:2; text-align:center; }
+.clg { width:2.2in; height:.8in; object-fit:contain; margin-bottom:.1in; }
+.clr { width:1.3in; height:1.3in; object-fit:contain; margin-bottom:.1in; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+.ct { color:var(--w); font-size:48pt; font-weight:800; letter-spacing:-1px; line-height:1.1; }
+.cst { color:var(--gll); font-size:24pt; font-weight:400; margin-top:.1in; }
+.cd { width:2in; height:3px; background: linear-gradient(90deg, transparent, var(--acc), transparent); border-radius:2px; margin:.3in auto; }
+.cm { color:rgba(255,255,255,.85); font-size:15pt; font-weight:500; }
+.cc2 { color:rgba(255,255,255,.5); font-size:13pt; margin-top:.08in; }
+.cm2 { color:rgba(255,255,255,.55); font-size:11pt; margin-top:.18in; }
+.ct2 { color:rgba(255,255,255,.4); font-size:10pt; margin-top:.08in; }
+.cg { position:absolute; border-radius:50%; }
+
+/* Glass cover content */
+.cover-glass {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 32px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+  padding: .35in .5in;
+}
+
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:.22in; }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.22in; }
+.g4 { display:grid; grid-template-columns:1fr 1fr; gap:.22in; }
+
+/* Glass cards */
+.card {
+  background: rgba(232,245,233,0.55);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-radius:16px; padding:.22in;
+  border:1px solid rgba(76,175,80,.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.card-w {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-radius:16px; padding:.22in;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+  border:1px solid rgba(0,0,0,.04);
+}
+.card-a {
+  background: linear-gradient(135deg, rgba(232,245,233,0.7), rgba(241,248,242,0.5));
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-radius:16px; padding:.22in;
+  border-left:4px solid var(--gm);
+  box-shadow:0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.badge { display:inline-flex; align-items:center; justify-content:center; width:.45in; height:.45in; border-radius:50%; background:var(--gm); color:var(--w); font-size:14pt; font-weight:700; flex-shrink:0; box-shadow: 0 2px 8px rgba(46,125,50,0.3); }
+.badge-a { background:var(--acc); }
+.badge-o { background:var(--org); }
+.li { display:flex; align-items:flex-start; gap:.12in; margin-bottom:.1in; }
+.li .badge { width:.35in; height:.35in; font-size:11pt; }
+.lt { font-size:12pt; line-height:1.5; color:var(--d); padding-top:.03in; }
+.fs { display:flex; align-items:center; gap:.1in; margin-bottom:.05in; }
+.fn2 { width:.3in; height:.3in; border-radius:50%; background:var(--gm); color:var(--w); font-size:9pt; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ft { font-size:11pt; color:var(--d); }
+.fl { width:2px; height:.1in; background:var(--gl); margin-left:.14in; }
+table { width:100%; border-collapse:collapse; font-size:10pt; }
+th { background:var(--gdk); color:var(--w); padding:.06in .1in; text-align:left; font-weight:600; }
+td { padding:.06in .1in; border-bottom:1px solid rgba(0,0,0,.06); }
+tr:nth-child(even) td { background:var(--gba); }
+.status { display:inline-block; padding:.04in .16in; border-radius:20px; font-size:9pt; font-weight:700; }
+.status-d { background:rgba(0,200,83,.15); color:var(--gdk); }
+.status-p { background:rgba(255,143,0,.15); color:var(--org); }
+.sl { color:var(--gm); font-size:10pt; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:.04in; }
+.code { background:#1E1E1E; color:#D4D4D4; border-radius:10px; padding:.12in .18in; font-family:'Courier New',monospace; font-size:9pt; line-height:1.6; margin-top:.06in; }
+.cls-b { background:rgba(232,245,233,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius:10px; overflow:hidden; border:1px solid rgba(76,175,80,.15); box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.cls-h { background:var(--gdk); color:var(--w); padding:.05in .1in; font-size:10pt; font-weight:700; text-align:center; }
+.cls-h.s { background:var(--gm); }
+.cls-h.l { background:var(--gl); }
+.cls-h.a { background:var(--acc); }
+.cls-bd { padding:.05in .1in; font-size:8pt; line-height:1.6; color:var(--d); }
+.cls-bd .at { color:var(--g); }
+.cls-bd .mt { color:var(--gdk); font-weight:500; }
+.tl { display:flex; gap:.15in; margin-bottom:.1in; }
+.tlb { width:1in; height:.45in; border-radius:10px; background:var(--gm); color:var(--w); font-size:10pt; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(46,125,50,0.25); }
+.fc { font-size:10pt; font-weight:700; color:var(--gdk); margin-bottom:.02in; }
+.fd { font-size:10pt; color:var(--g); }
+
+/* Logo container for better positioning */
+.logo-pair { display:flex; align-items:center; gap:.1in; }
+.logo-badge-r {
+  width:.42in; height:.42in; object-fit:contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+.logo-badge-resik {
+  width:1in; height:.38in; object-fit:contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SLIDE 1: COVER ═══ -->
+<div class="slide cover">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="cc">
+    <div class="cover-glass" style="display:inline-block;">
+      <img class="clg" src="assets/Resik.png" alt="RESIK" style="display:block;margin:0 auto .1in;">
+      <img class="clr" src="assets/R.png" alt="R" style="display:block;margin:0 auto .1in;">
+      <div class="ct">RESIK</div>
+      <div class="cst">Bank Sampah Digital</div>
+      <div class="cd"></div>
+      <div class="cm">Presentasi Ujian Tengah Semester (UTS)</div>
+      <div class="cc2">Pemrograman Berorientasi Objek (PBO)</div>
+      <div class="cm2">Syukron Maulana (250111032) &bull; Zain Ghathfaan Kiesa (250111035) &bull; Riri Syafala Ghofaro Jamal (250111027)</div>
+      <div class="ct2">Apache NetBeans &bull; Java OOP &bull; 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 2: AGENDA ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Agenda Presentasi</div>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.2in .5in;padding:.1in .3in;">
+      <div class="li"><div class="badge">1</div><div class="lt">Judul & Nama Proyek</div></div>
+      <div class="li"><div class="badge">2</div><div class="lt">Anggota Kelompok</div></div>
+      <div class="li"><div class="badge">3</div><div class="lt">Permasalahan Nyata</div></div>
+      <div class="li"><div class="badge">4</div><div class="lt">Alasan Proyek Dikembangkan</div></div>
+      <div class="li"><div class="badge">5</div><div class="lt">Tujuan Pengembangan</div></div>
+      <div class="li"><div class="badge">6</div><div class="lt">Target Pengguna & Manfaat</div></div>
+      <div class="li"><div class="badge">7</div><div class="lt">Fitur Utama</div></div>
+      <div class="li"><div class="badge">8</div><div class="lt">Alur Penggunaan Aplikasi</div></div>
+      <div class="li"><div class="badge">9</div><div class="lt">Rencana OOP</div></div>
+      <div class="li"><div class="badge">10</div><div class="lt">Tahapan Pengembangan hingga UAS</div></div>
+      <div class="li"><div class="badge">11</div><div class="lt">Pembagian Tugas Anggota</div></div>
+      <div class="li"><div class="badge">12</div><div class="lt">Target & Fitur Tambahan UAS</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">2</span></div>
+</div>
+
+<!-- ═══ SLIDE 3: JUDUL PROYEK ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Judul & Nama Proyek</div>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:5in 1fr;gap:.3in;">
+      <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:5in;">
+        <img src="assets/R.png" style="width:1.8in;height:1.8in;object-fit:contain;margin-bottom:.12in;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.1));">
+        <img src="assets/Resik.png" style="width:2.5in;height:.8in;object-fit:contain;margin-bottom:.12in;">
+        <div style="font-size:16pt;font-weight:700;color:var(--gdk);">RESIK - Bank Sampah Digital</div>
+      </div>
+      <div style="padding-top:.1in;">
+        <div class="sl">Informasi Proyek</div>
+        <div style="margin-top:.15in;">
+          <div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.02in;">Nama Proyek</div>
+          <div style="font-size:12pt;color:var(--d);margin-bottom:.12in;">RESIK (Bank Sampah Digital)</div>
+          <div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.02in;">Platform</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.02in;">&bull; Mobile App &mdash; masyarakat (penyetor sampah)</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.12in;">&bull; Desktop App &mdash; petugas (verifikator)</div>
+          <div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.02in;">Bahasa Pemrograman</div>
+          <div style="font-size:12pt;color:var(--d);margin-bottom:.12in;">Java (Apache NetBeans)</div>
+          <div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.02in;">Paradigma</div>
+          <div style="font-size:12pt;color:var(--d);margin-bottom:.12in;">Object-Oriented Programming (OOP)</div>
+          <div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.02in;">Tahap</div>
+          <div style="font-size:12pt;color:var(--d);">UTS - Prototype & Rencana &nbsp;|&nbsp; UAS - Aplikasi Lengkap</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">3</span></div>
+</div>
+
+<!-- ═══ SLIDE 4: ANGGOTA KELOMPOK ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Anggota Kelompok</div>
+  </div>
+  <div class="body">
+    <div class="g3" style="height:100%;align-items:start;">
+      <div class="card" style="text-align:center;padding:.3in .2in;">
+        <div class="badge" style="width:1in;height:1in;font-size:24pt;margin:0 auto .15in;">1</div>
+        <div style="font-size:15pt;font-weight:700;color:var(--gdk);">Syukron Maulana</div>
+        <div style="font-size:13pt;color:var(--g);margin-top:.05in;">250111032</div>
+        <div style="width:2in;height:2px;background:var(--acc);margin:.15in auto;"></div>
+        <div style="font-size:11pt;font-weight:700;color:var(--gdk);">Tugas:</div>
+        <div style="font-size:12pt;color:var(--d);margin-top:.08in;">Arsitektur & Backend Core</div>
+      </div>
+      <div class="card" style="text-align:center;padding:.3in .2in;">
+        <div class="badge" style="width:1in;height:1in;font-size:24pt;margin:0 auto .15in;">2</div>
+        <div style="font-size:15pt;font-weight:700;color:var(--gdk);">Zain Ghathfaan Kiesa</div>
+        <div style="font-size:13pt;color:var(--g);margin-top:.05in;">250111035</div>
+        <div style="width:2in;height:2px;background:var(--acc);margin:.15in auto;"></div>
+        <div style="font-size:11pt;font-weight:700;color:var(--gdk);">Tugas:</div>
+        <div style="font-size:12pt;color:var(--d);margin-top:.08in;">Fitur Transaksi & Dompet Digital</div>
+      </div>
+      <div class="card" style="text-align:center;padding:.3in .2in;">
+        <div class="badge" style="width:1in;height:1in;font-size:24pt;margin:0 auto .15in;">3</div>
+        <div style="font-size:15pt;font-weight:700;color:var(--gdk);">Riri Syafala Ghofaro Jamal</div>
+        <div style="font-size:13pt;color:var(--g);margin-top:.05in;">250111027</div>
+        <div style="width:2in;height:2px;background:var(--acc);margin:.15in auto;"></div>
+        <div style="font-size:11pt;font-weight:700;color:var(--gdk);">Tugas:</div>
+        <div style="font-size:12pt;color:var(--d);margin-top:.08in;">UI/UX & Edukasi Sampah</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">4</span></div>
+</div>
+
+<!-- ═══ SLIDE 5: PERMASALAHAN ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Permasalahan Nyata</div>
+  </div>
+  <div class="body">
+    <div class="g4">
+      <div class="card-a">
+        <div style="display:flex;align-items:center;gap:.12in;margin-bottom:.08in;">
+          <div class="badge">1</div>
+          <div style="font-size:14pt;font-weight:700;color:var(--gdk);">Minimnya Edukasi Pemilahan Sampah</div>
+        </div>
+        <div style="font-size:11pt;color:var(--g);line-height:1.6;">Masyarakat tidak mengetahui jenis sampah yang dapat didaur ulang, dijual, atau dibuang. Pencampuran sampah organik &amp; anorganik masih terjadi.</div>
+      </div>
+      <div class="card-a">
+        <div style="display:flex;align-items:center;gap:.12in;margin-bottom:.08in;">
+          <div class="badge">2</div>
+          <div style="font-size:14pt;font-weight:700;color:var(--gdk);">Belum Ada Nilai Ekonomis dari Sampah</div>
+        </div>
+        <div style="font-size:11pt;color:var(--g);line-height:1.6;">Banyak masyarakat tidak menyadari bahwa sampah yang dipilah dengan baik memiliki nilai jual dan dapat menjadi penghasilan tambahan.</div>
+      </div>
+      <div class="card-a">
+        <div style="display:flex;align-items:center;gap:.12in;margin-bottom:.08in;">
+          <div class="badge">3</div>
+          <div style="font-size:14pt;font-weight:700;color:var(--gdk);">Proses Penyetoran Tidak Terstruktur</div>
+        </div>
+        <div style="font-size:11pt;color:var(--g);line-height:1.6;">Masyarakat bingung ke mana harus menyetor, bagaimana prosesnya, dan berapa nilai yang akan didapat.</div>
+      </div>
+      <div class="card-a">
+        <div style="display:flex;align-items:center;gap:.12in;margin-bottom:.08in;">
+          <div class="badge">4</div>
+          <div style="font-size:14pt;font-weight:700;color:var(--gdk);">Kurangnya Transparansi &amp; Tracking</div>
+        </div>
+        <div style="font-size:11pt;color:var(--g);line-height:1.6;">Tidak ada sistem yang memungkinkan masyarakat melacak riwayat setoran sampah beserta pendapatan yang diperoleh.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">5</span></div>
+</div>
+
+<!-- ═══ SLIDE 6: ALASAN PROYEK ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Alasan Proyek Perlu Dikembangkan</div>
+  </div>
+  <div class="body">
+    <div style="display:flex;flex-direction:column;gap:.1in;padding:0 .15in;">
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.15in .25in;">
+        <div class="badge" style="width:.5in;height:.5in;font-size:16pt;">1</div>
+        <div style="flex:1;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);">Mendigitalisasi Proses Bank Sampah</div><div style="font-size:11pt;color:var(--g);">Mengubah proses manual menjadi platform digital yang terstruktur dan efisien.</div></div>
+      </div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.15in .25in;">
+        <div class="badge" style="width:.5in;height:.5in;font-size:16pt;">2</div>
+        <div style="flex:1;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);">Memberikan Edukasi Pemilahan Sampah</div><div style="font-size:11pt;color:var(--g);">Memberikan informasi langsung kepada masyarakat tentang jenis-jenis sampah dan nilainya.</div></div>
+      </div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.15in .25in;">
+        <div class="badge" style="width:.5in;height:.5in;font-size:16pt;">3</div>
+        <div style="flex:1;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);">Memberikan Nilai Ekonomis</div><div style="font-size:11pt;color:var(--g);">Sistem penimbangan dan pembayaran yang transparan untuk sampah yang dikelola.</div></div>
+      </div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.15in .25in;">
+        <div class="badge" style="width:.5in;height:.5in;font-size:16pt;">4</div>
+        <div style="flex:1;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);">Meningkatkan Partisipasi Masyarakat</div><div style="font-size:11pt;color:var(--g);">Mendorong masyarakat aktif memilah sampah melalui sistem reward yang jelas.</div></div>
+      </div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.15in .25in;">
+        <div class="badge" style="width:.5in;height:.5in;font-size:16pt;">5</div>
+        <div style="flex:1;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);">Tools bagi Pengelola Bank Sampah</div><div style="font-size:11pt;color:var(--g);">Mengelola operasional secara efisien dan terdokumentasi dengan baik.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">6</span></div>
+</div>
+
+<!-- ═══ SLIDE 7: TUJUAN ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Tujuan Pengembangan Aplikasi</div>
+  </div>
+  <div class="body">
+    <div style="display:flex;flex-direction:column;gap:.1in;padding:0 .2in;">
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">1</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Menyediakan platform digital yang menghubungkan masyarakat dengan pengelola bank sampah</div></div>
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">2</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Memberikan edukasi pemilahan sampah melalui informasi jenis sampah dan nilainya</div></div>
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">3</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Memfasilitasi proses penjadwalan penjemputan sampah dari rumah masyarakat</div></div>
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">4</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Menyediakan sistem penimbangan dan kalkulasi harga sampah yang transparan</div></div>
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">5</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Mengintegrasikan dompet digital untuk pembayaran hasil setoran sampah</div></div>
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">6</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Menyediakan dashboard riwayat transaksi untuk tracking dan transparansi</div></div>
+      <div style="display:flex;align-items:flex-start;gap:.15in;"><div class="badge" style="width:.4in;height:.4in;font-size:13pt;">7</div><div style="font-size:13pt;line-height:1.5;padding-top:.04in;">Mendorong masyarakat aktif memilah dan menyetor sampah melalui sistem reward</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">7</span></div>
+</div>
+
+<!-- ═══ SLIDE 8: TARGET PENGGUNA ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Target Pengguna & Manfaat</div>
+  </div>
+  <div class="body">
+    <div class="g2" style="height:100%;">
+      <div class="card" style="padding:.25in;">
+        <div style="font-size:16pt;font-weight:700;color:var(--gdk);text-align:center;">Masyarakat (Penyetor)</div>
+        <div style="width:2.5in;height:2px;background:var(--acc);margin:.1in auto;"></div>
+        <div style="margin-top:.12in;">
+          <div style="font-size:12pt;font-weight:700;color:var(--gm);margin-bottom:.05in;">Profil:</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.02in;">&bull; Masyarakat umum, usia 17+ tahun</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.02in;">&bull; Melek teknologi (smartphone)</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.12in;">&bull; Ingin penghasilan tambahan</div>
+          <div style="font-size:12pt;font-weight:700;color:var(--gm);margin-bottom:.05in;">Manfaat:</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Edukasi pemilahan sampah</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Pendapatan dari sampah</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Penjemputan dari rumah</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Tracking riwayat setoran</div>
+          <div style="font-size:11pt;color:var(--d);">&bull; Dompet digital transparan</div>
+        </div>
+      </div>
+      <div class="card" style="padding:.25in;">
+        <div style="font-size:16pt;font-weight:700;color:var(--gdk);text-align:center;">Pengelola Bank Sampah (Petugas)</div>
+        <div style="width:2.5in;height:2px;background:var(--acc);margin:.1in auto;"></div>
+        <div style="margin-top:.12in;">
+          <div style="font-size:12pt;font-weight:700;color:var(--gm);margin-bottom:.05in;">Profil:</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.02in;">&bull; Operator &amp; petugas bank sampah</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.02in;">&bull; Bertanggung jawab verifikasi</div>
+          <div style="font-size:11pt;color:var(--g);margin-bottom:.12in;">&bull; Menggunakan aplikasi desktop</div>
+          <div style="font-size:12pt;font-weight:700;color:var(--gm);margin-bottom:.05in;">Manfaat:</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Dashboard operasional</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Manajemen penjemputan</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Sistem penimbangan digital</div>
+          <div style="font-size:11pt;color:var(--d);margin-bottom:.02in;">&bull; Laporan transaksi otomatis</div>
+          <div style="font-size:11pt;color:var(--d);">&bull; Manajemen harga sampah</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">8</span></div>
+</div>
+
+<!-- ═══ SLIDE 9: FITUR UTAMA ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Fitur Utama Aplikasi</div>
+  </div>
+  <div class="body">
+    <div style="display:flex;flex-direction:column;gap:.08in;padding:0 .1in;">
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F1</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Registrasi &amp; Manajemen Pengguna</div><div style="font-size:11pt;color:var(--g);">Pendaftaran akun, login, profil, role-based access</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F2</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Edukasi Pemilahan Sampah</div><div style="font-size:11pt;color:var(--g);">Kategori sampah, harga per kg, panduan pemilahan</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F3</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Penjadwalan Jemput Sampah</div><div style="font-size:11pt;color:var(--g);">Pilih jenis sampah, jadwal, alamat, status</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F4</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Sistem Penimbangan</div><div style="font-size:11pt;color:var(--g);">Input berat aktual, kalkulasi harga otomatis</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F5</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Dompet Digital &amp; Pembayaran</div><div style="font-size:11pt;color:var(--g);">Saldo, pembayaran otomatis, riwayat, penarikan</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F6</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Dashboard Riwayat Transaksi</div><div style="font-size:11pt;color:var(--g);">Riwayat setoran, pembayaran, statistik</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.15in;padding:.1in .2in;"><div style="background:var(--gm);color:var(--w);font-size:12pt;font-weight:700;padding:.06in .12in;border-radius:10px;min-width:.6in;text-align:center;">F7</div><div style="flex:1;font-size:13pt;font-weight:700;color:var(--gdk);">Manajemen Operasional (Desktop)</div><div style="font-size:11pt;color:var(--g);">Dashboard petugas, laporan, manajemen harga</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">9</span></div>
+</div>
+
+<!-- ═══ SLIDE 10: ALUR ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Alur Penggunaan Aplikasi</div>
+  </div>
+  <div class="body">
+    <div class="g2" style="height:100%;">
+      <div class="card" style="padding:.2in .25in;">
+        <div style="font-size:15pt;font-weight:700;color:var(--gdk);text-align:center;">Alur Masyarakat (Mobile App)</div>
+        <div style="width:2.5in;height:2px;background:var(--acc);margin:.08in auto;"></div>
+        <div style="margin-top:.1in;">
+          <div class="fs"><div class="fn2">1</div><div class="ft">Registrasi Akun</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">2</div><div class="ft">Login</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">3</div><div class="ft">Lihat Edukasi Sampah (opsional)</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">4</div><div class="ft">Buat Penjemputan</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">5</div><div class="ft">Pilih Jenis &amp; Estimasi Berat</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">6</div><div class="ft">Pilih Jadwal &amp; Alamat</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">7</div><div class="ft">Tunggu Penjemputan</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">8</div><div class="ft">Petugas Menimbang</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">9</div><div class="ft">Verifikasi Hasil</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">10</div><div class="ft">Pembayaran ke Dompet</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">11</div><div class="ft">Lihat Riwayat Transaksi</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:.2in .25in;">
+        <div style="font-size:15pt;font-weight:700;color:var(--gdk);text-align:center;">Alur Petugas (Desktop App)</div>
+        <div style="width:2.5in;height:2px;background:var(--acc);margin:.08in auto;"></div>
+        <div style="margin-top:.1in;">
+          <div class="fs"><div class="fn2">1</div><div class="ft">Login Petugas</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">2</div><div class="ft">Dashboard Operasional</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">3</div><div class="ft">Lihat Penjemputan Terjadwal</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">4</div><div class="ft">Pilih Penjemputan</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">5</div><div class="ft">Datang ke Lokasi</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">6</div><div class="ft">Timbang Sampah</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">7</div><div class="ft">Input Berat Aktual</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">8</div><div class="ft">Sistem Kalkulasi Harga</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">9</div><div class="ft">Konfirmasi Pembayaran</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">10</div><div class="ft">Transfer ke Dompet</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">11</div><div class="ft">Update Status = Selesai</div></div><div class="fl"></div>
+          <div class="fs"><div class="fn2">12</div><div class="ft">Lihat Laporan</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">10</span></div>
+</div>
+
+<!-- ═══ SLIDE 11: OOP CLASS ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Rencana OOP - Class &amp; Attribute</div>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.12in;">
+      <div class="cls-b"><div class="cls-h">User (abstract)</div><div class="cls-bd"><div class="at">+ id, nama, email, password</div><div class="at">+ alamat, noTelp</div><div class="mt">+ getRole() [abstract]</div><div class="mt">+ login()</div></div></div>
+      <div class="cls-b"><div class="cls-h s">Masyarakat extends User</div><div class="cls-bd"><div class="at">+ saldoDompet, poinReward</div><div class="at">+ riwayatSetoran</div><div class="mt">+ buatPenjemputan()</div><div class="mt">+ verifikasiTimbangan()</div></div></div>
+      <div class="cls-b"><div class="cls-h s">Petugas extends User</div><div class="cls-bd"><div class="at">+ nip, shift, areaTugas</div><div class="mt">+ prosesPenjemputan()</div><div class="mt">+ inputTimbangan()</div><div class="mt">+ konfirmasiPembayaran()</div></div></div>
+      <div class="cls-b"><div class="cls-h l">Sampah</div><div class="cls-bd"><div class="at">+ id, kategori, nama</div><div class="at">+ hargaPerKg, deskripsi</div><div class="mt">+ getHarga()</div><div class="mt">+ getKategori()</div></div></div>
+      <div class="cls-b"><div class="cls-h l">Penjemputan</div><div class="cls-bd"><div class="at">+ id, masyarakat, tanggal</div><div class="at">+ status, alamat</div><div class="mt">+ addDetail()</div><div class="mt">+ calculateTotal()</div></div></div>
+      <div class="cls-b"><div class="cls-h l">DetailPenjemputan</div><div class="cls-bd"><div class="at">+ penjemputan, sampah</div><div class="at">+ estimasiBerat, beratAktual</div><div class="mt">+ calculateSubtotal()</div></div></div>
+      <div class="cls-b"><div class="cls-h a">Transaksi</div><div class="cls-bd"><div class="at">+ id, penjemputan</div><div class="at">+ totalHarga, tanggal, status</div><div class="mt">+ processPayment()</div></div></div>
+      <div class="cls-b"><div class="cls-h a">DompetDigital</div><div class="cls-bd"><div class="at">+ id, masyarakat</div><div class="at">+ saldo, riwayatTransaksi</div><div class="mt">+ topUp(), withdraw()</div></div></div>
+      <div class="cls-b"><div class="cls-h a">Notifikasi</div><div class="cls-bd"><div class="at">+ id, penerima</div><div class="at">+ pesan, tanggal, statusBaca</div><div class="mt">+ send(), markAsRead()</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">11</span></div>
+</div>
+
+<!-- ═══ SLIDE 12: OOP KONSEP ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Rencana OOP - Konsep yang Diterapkan</div>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.12in;">
+      <div class="card-w" style="padding:.12in .18in;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.04in;">Encapsulation</div><div style="font-size:10pt;color:var(--g);margin-bottom:.04in;">Semua attribute private, akses via getter &amp; setter dengan validasi</div><div class="code">private double saldoDompet;<br>public double getSaldoDompet() { return saldoDompet; }<br>public void setSaldoDompet(double s) { this.saldo = s; }</div></div>
+      <div class="card-w" style="padding:.12in .18in;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.04in;">Inheritance</div><div style="font-size:10pt;color:var(--g);margin-bottom:.04in;">Masyarakat &amp; Petugas mewarisi dari User (abstract class)</div><div class="code">User (abstract)<br>&nbsp;|-- Masyarakat<br>&nbsp;|-- Petugas<br><br>// Mewarisi attribute &amp; method dari User</div></div>
+      <div class="card-w" style="padding:.12in .18in;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.04in;">Polymorphism</div><div style="font-size:10pt;color:var(--g);margin-bottom:.04in;">Method overriding (getRole) &amp; overloading (buatPenjemputan)</div><div class="code">@Override<br>public String getRole() { return "MASYARAKAT"; }<br><br>public Penjemputan buatPenjemputan(List&lt;Sampah&gt; s, LocalDate t)<br>public Penjemputan buatPenjemputan(List&lt;Sampah&gt; s, LocalDate t, String c)</div></div>
+      <div class="card-w" style="padding:.12in .18in;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.04in;">Constructor</div><div style="font-size:10pt;color:var(--g);margin-bottom:.04in;">Setiap class utama memiliki constructor untuk inisialisasi</div><div class="code">public Masyarakat(String nama, String email,<br>&nbsp;&nbsp;String password, String alamat, String noTelp) {<br>&nbsp;&nbsp;super(nama, email, password, alamat, noTelp);<br>}</div></div>
+      <div class="card-w" style="padding:.12in .18in;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.04in;">Object &amp; Method</div><div style="font-size:10pt;color:var(--g);margin-bottom:.04in;">Object dibuat dari class, method untuk behavior</div><div class="code">Masyarakat m = new Masyarakat(...);<br>Penjemputan p = m.buatPenjemputan(sampah, tanggal);<br>m.verifikasiTimbangan(p);<br>m.tarikSaldo(50000);</div></div>
+      <div class="card-w" style="padding:.12in .18in;"><div style="font-size:13pt;font-weight:700;color:var(--gdk);margin-bottom:.04in;">Relasi Antar Class</div><div style="font-size:10pt;color:var(--g);margin-bottom:.04in;">Association (one-to-many, one-to-one)</div><div class="code">Masyarakat 1---* Penjemputan<br>Penjemputan 1---* DetailPenjemputan<br>DetailPenj.  *---1 Sampah<br>Masyarakat 1---1 DompetDigital</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">12</span></div>
+</div>
+
+<!-- ═══ SLIDE 13: TAHAPAN ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Rencana Tahapan Pengembangan hingga UAS</div>
+  </div>
+  <div class="body">
+    <div style="display:flex;flex-direction:column;gap:.1in;padding:0 .1in;">
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.12in .2in;"><div class="tlb" style="background:var(--gdk);">Tahap 1</div><div style="flex:1;"><div class="fc">Persiapan &amp; Desain (Pra-UTS)</div><div class="fd">PRD, wireframe Figma, rancangan class, setup NetBeans</div></div><div class="status status-d">SELESAI</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.12in .2in;"><div class="tlb">Tahap 2</div><div style="flex:1;"><div class="fc">Prototype (UTS)</div><div class="fd">Class dasar, UI registrasi &amp; login, demo 1 alur fungsi</div></div><div class="status status-d">SELESAI</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.12in .2in;"><div class="tlb" style="background:var(--gl);">Tahap 3</div><div style="flex:1;"><div class="fc">Pengembangan Inti (Pasca-UTS)</div><div class="fd">Database, penjadwalan, penimbangan, dompet digital, dashboard</div></div><div class="status status-p">AKAN DATANG</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.12in .2in;"><div class="tlb" style="background:var(--gl);">Tahap 4</div><div style="flex:1;"><div class="fc">Aplikasi Desktop Petugas</div><div class="fd">Dashboard operasional, manajemen penjemputan, laporan</div></div><div class="status status-p">AKAN DATANG</div></div>
+      <div class="card-w" style="display:flex;align-items:center;gap:.2in;padding:.12in .2in;"><div class="tlb" style="background:var(--acc);">Tahap 5</div><div style="flex:1;"><div class="fc">Integrasi &amp; Polish (UAS)</div><div class="fd">Integrasi mobile+desktop, fitur tambahan, testing, finalisasi</div></div><div class="status status-p">AKAN DATANG</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">13</span></div>
+</div>
+
+<!-- ═══ SLIDE 14: PEMBAGIAN TUGAS ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Pembagian Tugas Anggota Kelompok</div>
+  </div>
+  <div class="body">
+    <div class="g3" style="height:100%;align-items:start;">
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="background:var(--gm);color:var(--w);padding:.12in;text-align:center;border-radius:16px 16px 0 0;"><div style="font-size:14pt;font-weight:700;">Syukron Maulana</div><div style="font-size:10pt;color:var(--gll);margin-top:.02in;">250111032 &bull; Arsitektur &amp; Backend Core</div></div>
+        <div style="padding:.15in;">
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">1</div><div class="lt" style="font-size:11pt;">Rancangan class diagram</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">2</div><div class="lt" style="font-size:11pt;">Implementasi class dasar (User, Masyarakat, Petugas)</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">3</div><div class="lt" style="font-size:11pt;">Inheritance &amp; polymorphism</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">4</div><div class="lt" style="font-size:11pt;">Koneksi database</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="background:var(--gm);color:var(--w);padding:.12in;text-align:center;border-radius:16px 16px 0 0;"><div style="font-size:14pt;font-weight:700;">Zain Ghathfaan Kiesa</div><div style="font-size:10pt;color:var(--gll);margin-top:.02in;">250111035 &bull; Fitur Transaksi &amp; Dompet</div></div>
+        <div style="padding:.15in;">
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">1</div><div class="lt" style="font-size:11pt;">Implementasi Penjemputan &amp; DetailPenjemputan</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">2</div><div class="lt" style="font-size:11pt;">Class Transaksi &amp; DompetDigital</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">3</div><div class="lt" style="font-size:11pt;">Sistem penimbangan &amp; kalkulasi harga</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">4</div><div class="lt" style="font-size:11pt;">Integrasi pembayaran</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div style="background:var(--gm);color:var(--w);padding:.12in;text-align:center;border-radius:16px 16px 0 0;"><div style="font-size:14pt;font-weight:700;">Riri Syafala G. Jamal</div><div style="font-size:10pt;color:var(--gll);margin-top:.02in;">250111027 &bull; UI/UX &amp; Edukasi</div></div>
+        <div style="padding:.15in;">
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">1</div><div class="lt" style="font-size:11pt;">Desain &amp; implementasi UI (mobile &amp; desktop)</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">2</div><div class="lt" style="font-size:11pt;">Fitur edukasi pemilahan sampah</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">3</div><div class="lt" style="font-size:11pt;">Dashboard riwayat transaksi</div></div>
+          <div class="li"><div class="badge" style="width:.3in;height:.3in;font-size:10pt;">4</div><div class="lt" style="font-size:11pt;">Sistem notifikasi</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">14</span></div>
+</div>
+
+<!-- ═══ SLIDE 15: TARGET UAS ═══ -->
+<div class="slide">
+  <div class="header">
+    <div class="hlogo-wrap"><img class="hlr" src="assets/R.png"><img class="hlres" src="assets/Resik.png"></div>
+    <div class="ht">Target &amp; Fitur Tambahan UAS</div>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.2in;height:100%;">
+      <div>
+        <div class="sl">Fitur Tambahan yang Direncanakan</div>
+        <div style="margin-top:.1in;">
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">1</div><div class="lt" style="font-size:11pt;">Sistem Poin Reward &mdash; poin setiap setoran, tukar voucher</div></div>
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">2</div><div class="lt" style="font-size:11pt;">Leaderboard Kontribusi &mdash; ranking masyarakat</div></div>
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">3</div><div class="lt" style="font-size:11pt;">Edukasi Interaktif &mdash; kuis pemilahan sampah</div></div>
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">4</div><div class="lt" style="font-size:11pt;">Notifikasi Push &mdash; pengingat jadwal &amp; status</div></div>
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">5</div><div class="lt" style="font-size:11pt;">Laporan Lingkungan &mdash; statistik dampak (kg, CO2)</div></div>
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">6</div><div class="lt" style="font-size:11pt;">Multi-Cabang Bank Sampah &mdash; multiple lokasi</div></div>
+          <div class="li"><div class="badge badge-a" style="width:.35in;height:.35in;font-size:10pt;">7</div><div class="lt" style="font-size:11pt;">Export Laporan (PDF/Excel) &mdash; transaksi</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:.2in;">
+        <div style="font-size:15pt;font-weight:700;color:var(--gdk);text-align:center;">Hasil Akhir UAS</div>
+        <div style="width:2in;height:2px;background:var(--acc);margin:.08in auto;"></div>
+        <div style="margin-top:.12in;font-size:11pt;line-height:1.8;">
+          <div style="color:var(--d);">&bull; Aplikasi mobile &amp; desktop fully functional</div>
+          <div style="color:var(--d);">&bull; Database terintegrasi</div>
+          <div style="color:var(--d);">&bull; Minimal 5 alur fungsi end-to-end</div>
+          <div style="color:var(--d);">&bull; Dokumentasi lengkap (class diagram, ERD)</div>
+          <div style="color:var(--d);">&bull; User manual</div>
+          <div style="color:var(--d);">&bull; Presentasi final &amp; demo</div>
+        </div>
+        <div style="margin-top:.15in;font-size:12pt;font-weight:700;color:var(--gm);">Timeline:</div>
+        <div style="margin-top:.05in;font-size:10pt;line-height:1.8;">
+          <div style="font-weight:700;color:var(--gdk);">UTS: Prototype &amp; Rencana</div>
+          <div style="color:var(--g);">Pasca-UTS: Pengembangan inti</div>
+          <div style="color:var(--g);">Menuju UAS: Integrasi &amp; polish</div>
+          <div style="font-weight:700;color:var(--gdk);">UAS: Presentasi final</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>RESIK - Bank Sampah Digital | PBO UTS</span><span class="fn">15</span></div>
+</div>
+
+<!-- ═══ SLIDE 16: CLOSING ═══ -->
+<div class="slide cover">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="cc">
+    <div class="cover-glass" style="display:inline-block;">
+      <img class="clg" src="assets/Resik.png" alt="RESIK" style="display:block;margin:0 auto .1in;width:2in;height:.75in;">
+      <img class="clr" src="assets/R.png" alt="R" style="display:block;margin:0 auto .15in;width:1.2in;height:1.2in;">
+      <div class="ct" style="font-size:36pt;">Terima Kasih</div>
+      <div class="cd"></div>
+      <div class="cm" style="font-size:18pt;">Pertanyaan &amp; Diskusi</div>
+      <div class="cc2" style="margin-top:.1in;">RESIK - Bank Sampah Digital</div>
+      <div class="cm2" style="margin-top:.05in;">Pemrograman Berorientasi Objek (PBO) - UTS 2026</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
