@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/resik}
+    username: ${DATABASE_USER:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET:resik-secret-key-please-change-in-production-at-least-256-bits-long!!}
+  expiration: 86400000
+
+cors:
+  allowed-origins: "*"
