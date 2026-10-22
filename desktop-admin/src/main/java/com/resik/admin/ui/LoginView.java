@@ -10,10 +10,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.Map;
 
@@ -27,23 +25,23 @@ public class LoginView {
         view.setAlignment(Pos.CENTER);
         view.setStyle("-fx-background-color: #F5F7F5;");
 
-        VBox card = new VBox(16);
+        VBox card = new VBox(14);
         card.setAlignment(Pos.CENTER);
-        card.setPadding(new Insets(48, 48, 48, 48));
+        card.setPadding(new Insets(40, 36, 40, 36));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 20, 0, 0, 4);");
-        card.setMaxWidth(380);
+        card.setMaxWidth(400);
+        card.setMinWidth(320);
 
-        // Logo circle
         ImageView logoView = new ImageView(new Image(getClass().getResourceAsStream("/resik-logo-large.png")));
-        logoView.setFitWidth(90);
-        logoView.setFitHeight(90);
+        logoView.setFitWidth(80);
+        logoView.setFitHeight(80);
         logoView.setPreserveRatio(true);
         logoView.setSmooth(true);
         StackPane logoPane = new StackPane(logoView);
-        logoPane.setPadding(new Insets(0, 0, 8, 0));
+        logoPane.setPadding(new Insets(0, 0, 4, 0));
 
         Label titleLabel = new Label("Resik");
-        titleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 28));
+        titleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 26));
         titleLabel.setTextFill(Color.valueOf("#1A5D3A"));
 
         Label subtitleLabel = new Label("Bank Sampah Digital");
@@ -54,15 +52,16 @@ public class LoginView {
         roleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
         roleLabel.setTextFill(Color.valueOf("#94A3B8"));
         roleLabel.setStyle("-fx-letter-spacing: 2px;");
-        roleLabel.setPadding(new Insets(20, 0, 8, 0));
+        roleLabel.setPadding(new Insets(16, 0, 8, 0));
 
         Label emailLabel = new Label("Email");
         emailLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
         emailLabel.setTextFill(Color.valueOf("#64748B"));
 
         TextField emailField = new TextField();
-        emailField.setPromptText("masukkan email anda");
-        emailField.setPrefWidth(280);
+        emailField.setPromptText("masukkan email");
+        emailField.setMaxWidth(Double.MAX_VALUE);
+        VBox.setVgrow(emailField, Priority.SOMETIMES);
         emailField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
         emailField.focusedProperty().addListener((obs, old, isFocus) -> {
             if (isFocus) {
@@ -75,12 +74,13 @@ public class LoginView {
         Label passLabel = new Label("Password");
         passLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
         passLabel.setTextFill(Color.valueOf("#64748B"));
-        passLabel.setPadding(new Insets(10, 0, 0, 0));
+        passLabel.setPadding(new Insets(8, 0, 0, 0));
 
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("masukkan password anda");
+        passwordField.setPromptText("masukkan password");
+        passwordField.setMaxWidth(Double.MAX_VALUE);
+        VBox.setVgrow(passwordField, Priority.SOMETIMES);
         passwordField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-        passwordField.setPrefWidth(280);
         passwordField.focusedProperty().addListener((obs, old, isFocus) -> {
             if (isFocus) {
                 passwordField.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #1A5D3A; -fx-border-width: 1.5px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
@@ -95,18 +95,11 @@ public class LoginView {
         errorLabel.setVisible(false);
 
         Button loginBtn = new Button("Masuk");
+        loginBtn.setMaxWidth(Double.MAX_VALUE);
         loginBtn.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;");
-        loginBtn.setPrefWidth(280);
         loginBtn.setOnMouseEntered(e -> loginBtn.setStyle("-fx-background-color: #0D4E2C; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;"));
         loginBtn.setOnMouseExited(e -> loginBtn.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;"));
         loginBtn.setOnAction(e -> handleLogin(emailField.getText(), passwordField.getText()));
-
-        Separator sep = new Separator();
-        sep.setPadding(new Insets(8, 0, 0, 0));
-
-        Label hint = new Label("Mode Demo — Masukkan email apa pun untuk masuk");
-        hint.setFont(Font.font("SF Pro Display", 11));
-        hint.setTextFill(Color.valueOf("#94A3B8"));
 
         card.getChildren().addAll(
                 logoPane,
@@ -116,21 +109,20 @@ public class LoginView {
                 emailLabel, emailField,
                 passLabel, passwordField,
                 errorLabel,
-                loginBtn,
-                sep,
-                hint
+                loginBtn
         );
 
         view.getChildren().add(card);
     }
 
     private void handleLogin(String email, String password) {
+        if (email == null || email.trim().isEmpty()) {
+            errorLabel.setText("Email tidak boleh kosong");
+            errorLabel.setVisible(true);
+            return;
+        }
+
         if (AppConfig.DEMO_MODE) {
-            if (email == null || email.trim().isEmpty()) {
-                errorLabel.setText("Email tidak boleh kosong");
-                errorLabel.setVisible(true);
-                return;
-            }
             AppConfig.authToken = "demo-token";
             AppConfig.userId = 1L;
             AppConfig.userRole = "ADMIN";

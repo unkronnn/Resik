@@ -11,18 +11,20 @@ public class ResikDesktopApp extends Application {
     @Override
     public void start(Stage stage) {
         LoginView loginView = new LoginView();
-        Scene scene = new Scene(loginView.getView(), 400, 560);
+        Scene scene = new Scene(loginView.getView(), 460, 600);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 
-        // App icon for taskbar / title bar / dock
         var logoStream = getClass().getResourceAsStream("/resik-logo.png");
         if (logoStream != null) {
             stage.getIcons().add(new Image(logoStream));
         }
 
-        stage.setTitle("Resik — Bank Sampah Digital (Admin)");
+        stage.setTitle("Resik — Bank Sampah Digital");
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setMinWidth(400);
+        stage.setMinHeight(560);
+        stage.setResizable(true);
+        stage.centerOnScreen();
         stage.show();
     }
 

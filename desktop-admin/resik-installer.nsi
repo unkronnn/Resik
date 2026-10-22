@@ -41,16 +41,18 @@ Section "Install"
     File "target\resik-desktop-1.0.0.jar"
     File "src\main\resources\resik-icon.ico"
 
-    ; Launcher batch file — simple, no start, use java.exe (console) for debugging
-    ; Then switch to javaw.exe for production
-    FileOpen $0 "$INSTDIR\resik.bat" w
-    FileWrite $0 '@echo off$\r$\n'
-    FileWrite $0 'set APPDIR=%~dp0$\r$\n'
-    FileWrite $0 'cd /d "%APPDIR%"$\r$\n'
-    FileWrite $0 '"%APPDIR%jre\bin\javaw.exe" --module-path "%APPDIR%lib" --add-modules javafx.controls,javafx.fxml -cp "%APPDIR%resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
+    ; Launcher VBS — launches javaw silently (no CMD window)
+    FileOpen $0 "$INSTDIR\resik.vbs" w
+    FileWrite $0 'Set objShell = CreateObject("WScript.Shell")$\r$\n'
+    FileWrite $0 'strDir = objShell.CurrentDirectory$\r$\n'
+    FileWrite $0 'If WScript.ScriptFullName <> "" Then$\r$\n'
+    FileWrite $0 '  strDir = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\\"))$\r$\n'
+    FileWrite $0 'End If$\r$\n'
+    FileWrite $0 'objShell.CurrentDirectory = strDir$\r$\n'
+    FileWrite $0 'objShell.Run """" & strDir & "jre\bin\javaw.exe"" --module-path """" & strDir & "lib"""" --add-modules javafx.controls,javafx.fxml -cp """" & strDir & "resik-desktop-1.0.0.jar"""" com.resik.admin.ResikDesktopApp", 0, False$\r$\n'
     FileClose $0
 
-    ; Debug launcher — shows console with errors
+    ; Debug batch — shows console with errors
     FileOpen $1 "$INSTDIR\resik-debug.bat" w
     FileWrite $1 '@echo off$\r$\n'
     FileWrite $1 'set APPDIR=%~dp0$\r$\n'
@@ -59,10 +61,10 @@ Section "Install"
     FileWrite $1 'pause$\r$\n'
     FileClose $1
 
-    ; Shortcuts — point to bat file (more reliable than direct javaw with args)
-    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\resik.bat" "" "$INSTDIR\resik-icon.ico"
+    ; Shortcuts — VBS launcher (no CMD window)
+    CreateShortCut "$DESKTOP\Resik Admin.lnk" "wscript.exe" '"$INSTDIR\resik.vbs"' "$INSTDIR\resik-icon.ico"
     CreateDirectory "$SMPROGRAMS\Resik"
-    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\resik.bat" "" "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "wscript.exe" '"$INSTDIR\resik.vbs"' "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Resik Admin (Debug).lnk" "$INSTDIR\resik-debug.bat" "" "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Uninstall Resik.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\resik-icon.ico"
 
@@ -78,7 +80,7 @@ SectionEnd
 
 Section "Uninstall"
     Delete "$INSTDIR\resik-desktop-1.0.0.jar"
-    Delete "$INSTDIR\resik.bat"
+    Delete "$INSTDIR\resik.vbs"
     Delete "$INSTDIR\resik-debug.bat"
     Delete "$INSTDIR\resik-icon.ico"
     RMDir /r "$INSTDIR\jre"
