@@ -59,7 +59,7 @@ public class DashboardView {
         logoIv.setSmooth(true);
         logoIv.setClip(new javafx.scene.shape.Circle(15));
         StackPane logo = new StackPane(logoIv);
-        Label title = new Label("RESIK");
+        Label title = new Label("Resik");
         title.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 18));
         title.setTextFill(Color.WHITE);
         Label sub = new Label("Bank Sampah Digital");

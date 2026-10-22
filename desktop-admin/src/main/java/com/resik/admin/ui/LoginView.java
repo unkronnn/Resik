@@ -42,7 +42,7 @@ public class LoginView {
         StackPane logoPane = new StackPane(logoView);
         logoPane.setPadding(new Insets(0, 0, 8, 0));
 
-        Label titleLabel = new Label("RESIK");
+        Label titleLabel = new Label("Resik");
         titleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 28));
         titleLabel.setTextFill(Color.valueOf("#1A5D3A"));
 
@@ -141,7 +141,7 @@ public class LoginView {
             Scene scene = new Scene(dashboard.getView(), 1200, 700);
             scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
             stage.setScene(scene);
-            stage.setTitle("RESIK Admin — " + AppConfig.userName);
+            stage.setTitle("Resik Admin — " + AppConfig.userName);
             stage.setResizable(true);
             stage.setMaximized(true);
         } else {
@@ -158,7 +158,7 @@ public class LoginView {
                 Scene scene = new Scene(dashboard.getView(), 1200, 700);
                 scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
                 stage.setScene(scene);
-                stage.setTitle("RESIK Admin — " + AppConfig.userName);
+                stage.setTitle("Resik Admin — " + AppConfig.userName);
                 stage.setResizable(true);
                 stage.setMaximized(true);
             } catch (Exception e) {

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RESIK</string>
+    <string name="app_name">Resik</string>
     <string name="tagline">Bank Sampah Digital</string>
-    <string name="welcome_title">Selamat Datang di RESIK</string>
+    <string name="welcome_title">Selamat Datang di Resik</string>
     <string name="welcome_subtitle">Kelola sampah, hemat lingkungan, dapatkan poin</string>
     <string name="get_started">Mulai</string>
     <string name="login">Masuk</string>

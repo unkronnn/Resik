@@ -91,7 +91,7 @@ public class DummyData {
         list.add(createUserMap(3L, "Riri Syafala", "riri@mail.com", "MASYARAKAT", "Jl. Asia Afrika 88", "081234567892", "28500", "250"));
         list.add(createUserMap(4L, "Ahmad Fauzi", "ahmad@mail.com", "MASYARAKAT", "Jl. Dipatiukur 7", "081234567893", "15000", "180"));
         list.add(createUserMap(5L, "Siti Nurhaliza", "siti@mail.com", "MASYARAKAT", "Jl. Cihampelas 100", "081234567894", "8000", "120"));
-        list.add(createUserMap(6L, "Admin RESIK", "admin@resik.id", "ADMIN", "Kantor Bank Sampah", "081200000000", "-", "-"));
+        list.add(createUserMap(6L, "Admin Resik", "admin@resik.id", "ADMIN", "Kantor Bank Sampah", "081200000000", "-", "-"));
         list.add(createUserMap(7L, "Budi Santoso", "budi@mail.com", "PETUGAS", "Kantor Bank Sampah", "081234567895", "-", "-"));
         return list;
     }

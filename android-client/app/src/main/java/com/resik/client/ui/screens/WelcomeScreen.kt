@@ -39,7 +39,7 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
             // Logo
             Image(
                 painter = painterResource(R.drawable.ic_logo_large),
-                contentDescription = "RESIK Logo",
+                contentDescription = "Resik Logo",
                 modifier = Modifier
                     .size(140.dp)
                     .clip(CircleShape)
@@ -47,7 +47,7 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
                     .padding(12.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text("RESIK", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BgWhite, letterSpacing = 2.sp)
+            Text("Resik", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BgWhite, letterSpacing = 2.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Text("Bank Sampah Digital", fontSize = 16.sp, color = GreenMint)
 

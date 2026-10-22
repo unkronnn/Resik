@@ -7,7 +7,7 @@
     <groupId>com.resik</groupId>
     <artifactId>resik-desktop</artifactId>
     <version>1.0.0</version>
-    <name>RESIK Desktop Admin</name>
+    <name>Resik Desktop Admin</name>
 
     <properties>
         <java.version>17</java.version>
@@ -101,8 +101,8 @@
                         <configuration>
                             <headerType>gui</headerType>
                             <jar>target/resik-desktop-1.0.0.jar</jar>
-                            <outfile>target/RESIK-Admin-Setup.exe</outfile>
-                            <errTitle>RESIK Admin</errTitle>
+                            <outfile>target/Resik-Admin-Setup.exe</outfile>
+                            <errTitle>Resik Admin</errTitle>
                             <icon>${project.basedir}/src/main/resources/resik-icon.ico</icon>
                             <downloadUrl>https://java.com/download</downloadUrl>
                             <jre>
@@ -112,14 +112,14 @@
                             <versionInfo>
                                 <fileVersion>1.0.0.0</fileVersion>
                                 <txtFileVersion>1.0.0</txtFileVersion>
-                                <fileDescription>RESIK Bank Sampah Digital - Admin Desktop</fileDescription>
-                                <copyright>RESIK 2026</copyright>
+                                <fileDescription>Resik Bank Sampah Digital - Admin Desktop</fileDescription>
+                                <copyright>Resik 2026</copyright>
                                 <productVersion>1.0.0.0</productVersion>
                                 <txtProductVersion>1.0.0</txtProductVersion>
-                                <productName>RESIK Admin</productName>
-                                <companyName>RESIK</companyName>
+                                <productName>Resik Admin</productName>
+                                <companyName>Resik</companyName>
                                 <internalName>resik-admin</internalName>
-                                <originalFilename>RESIK-Admin-Setup.exe</originalFilename>
+                                <originalFilename>Resik-Admin-Setup.exe</originalFilename>
                             </versionInfo>
                         </configuration>
                     </plugin>

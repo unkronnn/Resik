@@ -44,7 +44,7 @@ fun LoginScreen(
         // Logo
         Image(
             painter = painterResource(R.drawable.ic_logo),
-            contentDescription = "RESIK Logo",
+            contentDescription = "Resik Logo",
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
@@ -52,7 +52,7 @@ fun LoginScreen(
                 .padding(8.dp)
         )
         Spacer(Modifier.height(12.dp))
-        Text("RESIK", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = GreenPrimary)
+        Text("Resik", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = GreenPrimary)
         Text("Bank Sampah Digital", fontSize = 13.sp, color = TextSecondary)
         Spacer(Modifier.height(32.dp))
 

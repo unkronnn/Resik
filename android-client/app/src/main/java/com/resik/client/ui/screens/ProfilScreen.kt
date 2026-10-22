@@ -42,7 +42,7 @@ fun ProfilScreen(
             }
             Image(
                 painter = painterResource(R.drawable.ic_logo),
-                contentDescription = "RESIK Logo",
+                contentDescription = "Resik Logo",
                 modifier = Modifier
                     .size(96.dp)
                     .clip(CircleShape)

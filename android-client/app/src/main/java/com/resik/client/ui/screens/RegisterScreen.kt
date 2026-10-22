@@ -44,7 +44,7 @@ fun RegisterScreen(
         // Logo
         Image(
             painter = painterResource(R.drawable.ic_logo),
-            contentDescription = "RESIK Logo",
+            contentDescription = "Resik Logo",
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)

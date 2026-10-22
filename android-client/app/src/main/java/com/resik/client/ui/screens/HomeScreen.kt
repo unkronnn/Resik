@@ -57,7 +57,7 @@ fun HomeScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(R.drawable.ic_logo_small),
-                        contentDescription = "RESIK",
+                        contentDescription = "Resik",
                         modifier = Modifier
                             .size(44.dp)
                             .clip(CircleShape)

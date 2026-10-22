@@ -20,7 +20,7 @@ public class ResikDesktopApp extends Application {
             stage.getIcons().add(new Image(logoStream));
         }
 
-        stage.setTitle("RESIK — Bank Sampah Digital (Admin)");
+        stage.setTitle("Resik — Bank Sampah Digital (Admin)");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
