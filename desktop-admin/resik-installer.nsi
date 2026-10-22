@@ -26,30 +26,44 @@ SetCompressor zlib
 !insertmacro MUI_LANGUAGE "English"
 
 Section "Install"
-    ; JRE goes into $INSTDIR\jre (contents land directly there)
+    ; JRE
     SetOutPath "$INSTDIR\jre"
     File /r "jre-win\jre\*.*"
 
-    ; App files go into $INSTDIR
+    ; JavaFX Windows SDK
+    SetOutPath "$INSTDIR\lib"
+    File /r "javafx-win\lib\*.*"
+    SetOutPath "$INSTDIR\bin"
+    File /r "javafx-win\bin\*.*"
+
+    ; App files
     SetOutPath "$INSTDIR"
     File "target\resik-desktop-1.0.0.jar"
     File "src\main\resources\resik-icon.ico"
 
-    ; Windows JavaFX runtime (native DLLs + platform JARs)
-    SetOutPath "$INSTDIR\lib"
-    File /r "javafx-win\*.*"
-
-    ; Launcher batch file — JavaFX must load from module path
+    ; Launcher batch file — simple, no start, use java.exe (console) for debugging
+    ; Then switch to javaw.exe for production
     FileOpen $0 "$INSTDIR\resik.bat" w
     FileWrite $0 '@echo off$\r$\n'
-    FileWrite $0 'cd /d "$INSTDIR"$\r$\n'
-    FileWrite $0 'start "" "$INSTDIR\jre\bin\javaw.exe" --module-path "$INSTDIR\lib" --add-modules javafx.controls,javafx.fxml --add-modules java.base --class-path "$INSTDIR\resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
+    FileWrite $0 'set APPDIR=%~dp0$\r$\n'
+    FileWrite $0 'cd /d "%APPDIR%"$\r$\n'
+    FileWrite $0 '"%APPDIR%jre\bin\javaw.exe" --module-path "%APPDIR%lib" --add-modules javafx.controls,javafx.fxml -cp "%APPDIR%resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
     FileClose $0
 
-    ; Shortcuts - icon MUST be .ico (PNG is not valid for shortcuts)
-    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\jre\bin\javaw.exe" '--module-path "$INSTDIR\lib" --add-modules javafx.controls,javafx.fxml --class-path "$INSTDIR\resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp' "$INSTDIR\resik-icon.ico"
+    ; Debug launcher — shows console with errors
+    FileOpen $1 "$INSTDIR\resik-debug.bat" w
+    FileWrite $1 '@echo off$\r$\n'
+    FileWrite $1 'set APPDIR=%~dp0$\r$\n'
+    FileWrite $1 'cd /d "%APPDIR%"$\r$\n'
+    FileWrite $1 '"%APPDIR%jre\bin\java.exe" --module-path "%APPDIR%lib" --add-modules javafx.controls,javafx.fxml -cp "%APPDIR%resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
+    FileWrite $1 'pause$\r$\n'
+    FileClose $1
+
+    ; Shortcuts — point to bat file (more reliable than direct javaw with args)
+    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\resik.bat" "" "$INSTDIR\resik-icon.ico"
     CreateDirectory "$SMPROGRAMS\Resik"
-    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\jre\bin\javaw.exe" '--module-path "$INSTDIR\lib" --add-modules javafx.controls,javafx.fxml --class-path "$INSTDIR\resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp' "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\resik.bat" "" "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin (Debug).lnk" "$INSTDIR\resik-debug.bat" "" "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Uninstall Resik.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\resik-icon.ico"
 
     WriteUninstaller "$INSTDIR\uninstall.exe"
@@ -65,9 +79,11 @@ SectionEnd
 Section "Uninstall"
     Delete "$INSTDIR\resik-desktop-1.0.0.jar"
     Delete "$INSTDIR\resik.bat"
+    Delete "$INSTDIR\resik-debug.bat"
     Delete "$INSTDIR\resik-icon.ico"
     RMDir /r "$INSTDIR\jre"
     RMDir /r "$INSTDIR\lib"
+    RMDir /r "$INSTDIR\bin"
     Delete "$INSTDIR\uninstall.exe"
     RMDir "$INSTDIR"
 
