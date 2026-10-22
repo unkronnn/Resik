@@ -10,7 +10,7 @@ public class ResikDesktopApp extends Application {
     @Override
     public void start(Stage stage) {
         LoginView loginView = new LoginView();
-        Scene scene = new Scene(loginView.getView(), 400, 500);
+        Scene scene = new Scene(loginView.getView(), 400, 560);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setTitle("RESIK — Bank Sampah Digital (Admin)");
         stage.setScene(scene);

@@ -34,7 +34,7 @@ public class CrudDialog {
 
         Label header = new Label(title);
         header.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
-        header.setTextFill(Color.valueOf("#1e293b"));
+        header.setTextFill(Color.valueOf("#1E293B"));
         header.setPadding(new Insets(0, 0, 8, 0));
 
         Map<String, TextField> fieldMap = new HashMap<>();
@@ -43,11 +43,11 @@ public class CrudDialog {
             VBox fieldBox = new VBox(4);
             Label label = new Label(field.label);
             label.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 12));
-            label.setTextFill(Color.valueOf("#475569"));
+            label.setTextFill(Color.valueOf("#64748B"));
 
             TextField input = new TextField();
             input.setPromptText(field.placeholder);
-            input.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 6; -fx-border-color: #e2e8f0; -fx-border-width: 1px; -fx-border-radius: 6; -fx-padding: 8 12; -fx-font-size: 13px;");
+            input.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #E2E8F0; -fx-border-width: 1px; -fx-border-radius: 6; -fx-padding: 8 12; -fx-font-size: 13px;");
             if (initialValues != null && initialValues.containsKey(field.key)) {
                 input.setText(initialValues.get(field.key));
             }
@@ -58,15 +58,15 @@ public class CrudDialog {
         }
 
         dialog.getDialogPane().setContent(form);
-        dialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 8;");
+        dialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 20;");
 
         ButtonType submitBtn = new ButtonType(submitText, ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelBtn = new ButtonType("Batal", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialog.getDialogPane().getButtonTypes().addAll(submitBtn, cancelBtn);
 
         // Style buttons
-        dialog.getDialogPane().lookupButton(submitBtn).setStyle("-fx-background-color: #0d6e4e; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 8 20; -fx-font-size: 13px;");
-        dialog.getDialogPane().lookupButton(cancelBtn).setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 6; -fx-padding: 8 20; -fx-font-size: 13px;");
+        dialog.getDialogPane().lookupButton(submitBtn).setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-background-radius: 14; -fx-padding: 8 20; -fx-font-size: 13px;");
+        dialog.getDialogPane().lookupButton(cancelBtn).setStyle("-fx-background-color: #F5F7F5; -fx-text-fill: #64748B; -fx-background-radius: 14; -fx-padding: 8 20; -fx-font-size: 13px;");
 
         dialog.setResultConverter(button -> {
             if (button == submitBtn) {
@@ -91,9 +91,9 @@ public class CrudDialog {
         alert.setHeaderText(null);
         alert.setContentText("Yakin ingin menghapus \"" + itemName + "\"?\nTindakan ini tidak dapat dibatalkan.");
 
-        alert.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 8;");
-        alert.getDialogPane().lookupButton(ButtonType.OK).setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 8 20; -fx-font-size: 13px;");
-        alert.getDialogPane().lookupButton(ButtonType.CANCEL).setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 6; -fx-padding: 8 20; -fx-font-size: 13px;");
+        alert.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 20;");
+        alert.getDialogPane().lookupButton(ButtonType.OK).setStyle("-fx-background-color: #DC2626; -fx-text-fill: white; -fx-background-radius: 14; -fx-padding: 8 20; -fx-font-size: 13px;");
+        alert.getDialogPane().lookupButton(ButtonType.CANCEL).setStyle("-fx-background-color: #F5F7F5; -fx-text-fill: #64748B; -fx-background-radius: 14; -fx-padding: 8 20; -fx-font-size: 13px;");
 
         return alert.showAndWait().filter(r -> r == ButtonType.OK).isPresent();
     }
@@ -106,7 +106,7 @@ public class CrudDialog {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
-        alert.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 8;");
+        alert.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 20;");
         alert.showAndWait();
     }
 
@@ -120,7 +120,7 @@ public class CrudDialog {
         bar.setPadding(new Insets(0, 0, 8, 0));
 
         if (onAdd != null) {
-            Label addBtn = createActionLabel("Tambah", "#0d6e4e", "white", e -> onAdd.handle(e));
+            Label addBtn = createActionLabel("Tambah", "#1A5D3A", "white", e -> onAdd.handle(e));
             bar.getChildren().add(addBtn);
         }
         if (onEdit != null) {
@@ -138,9 +138,9 @@ public class CrudDialog {
     private static Label createActionLabel(String text, String bg, String fg,
                                            javafx.event.EventHandler<javafx.scene.input.MouseEvent> handler) {
         Label btn = new Label(text);
-        btn.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 6; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: 500;");
-        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 6; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: 500; -fx-opacity: 0.85;"));
-        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 6; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: 500;"));
+        btn.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 14; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: 500;");
+        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 14; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: 500; -fx-opacity: 0.85;"));
+        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 14; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-font-weight: 500;"));
         btn.setOnMouseClicked(handler);
         return btn;
     }

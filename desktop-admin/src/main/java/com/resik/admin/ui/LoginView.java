@@ -23,95 +23,99 @@ public class LoginView {
     public LoginView() {
         view = new VBox();
         view.setAlignment(Pos.CENTER);
-        view.setStyle("-fx-background-color: #0d6e4e;");
+        view.setStyle("-fx-background-color: #F5F7F5;");
 
-        VBox card = new VBox(18);
+        VBox card = new VBox(16);
         card.setAlignment(Pos.CENTER);
-        card.setPadding(new Insets(48, 44, 48, 44));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 8);");
-        card.setMaxWidth(360);
+        card.setPadding(new Insets(48, 48, 48, 48));
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 20, 0, 0, 4);");
+        card.setMaxWidth(380);
 
-        Circle logoCircle = new Circle(32);
-        logoCircle.setFill(Color.valueOf("#0d6e4e"));
-        Text logoText = new Text("R");
+        // Logo circle
+        Circle logoCircle = new Circle(36);
+        logoCircle.setFill(Color.valueOf("#1A5D3A"));
+        Text logoText = new Text("♻");
         logoText.setFill(Color.WHITE);
-        logoText.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 28));
+        logoText.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 32));
         StackPane logoPane = new StackPane(logoCircle, logoText);
-        logoPane.setPadding(new Insets(0, 0, 8, 0));
+        logoPane.setPadding(new Insets(0, 0, 4, 0));
 
         Label titleLabel = new Label("RESIK");
         titleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 28));
-        titleLabel.setTextFill(Color.valueOf("#0d6e4e"));
+        titleLabel.setTextFill(Color.valueOf("#1A5D3A"));
 
         Label subtitleLabel = new Label("Bank Sampah Digital");
         subtitleLabel.setFont(Font.font("SF Pro Display", 14));
-        subtitleLabel.setTextFill(Color.valueOf("#94a3b8"));
+        subtitleLabel.setTextFill(Color.valueOf("#64748B"));
 
         Label roleLabel = new Label("ADMINISTRATOR");
         roleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
-        roleLabel.setTextFill(Color.valueOf("#64748b"));
+        roleLabel.setTextFill(Color.valueOf("#94A3B8"));
         roleLabel.setStyle("-fx-letter-spacing: 2px;");
-        roleLabel.setPadding(new Insets(16, 0, 4, 0));
+        roleLabel.setPadding(new Insets(20, 0, 8, 0));
 
         Label emailLabel = new Label("Email");
-        emailLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 12));
-        emailLabel.setTextFill(Color.valueOf("#475569"));
+        emailLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
+        emailLabel.setTextFill(Color.valueOf("#64748B"));
 
         TextField emailField = new TextField();
-        emailField.setPromptText("Masukkan email");
-        emailField.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1px; -fx-border-radius: 8; -fx-padding: 10 14; -fx-font-size: 14px;");
+        emailField.setPromptText("masukkan email anda");
         emailField.setPrefWidth(280);
+        emailField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
         emailField.focusedProperty().addListener((obs, old, isFocus) -> {
             if (isFocus) {
-                emailField.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #0d6e4e; -fx-border-width: 1.5px; -fx-border-radius: 8; -fx-padding: 10 14; -fx-font-size: 14px;");
+                emailField.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #1A5D3A; -fx-border-width: 1.5px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
             } else {
-                emailField.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1px; -fx-border-radius: 8; -fx-padding: 10 14; -fx-font-size: 14px;");
+                emailField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
             }
         });
 
         Label passLabel = new Label("Password");
-        passLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 12));
-        passLabel.setTextFill(Color.valueOf("#475569"));
-        passLabel.setPadding(new Insets(8, 0, 0, 0));
+        passLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
+        passLabel.setTextFill(Color.valueOf("#64748B"));
+        passLabel.setPadding(new Insets(10, 0, 0, 0));
 
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Masukkan password");
-        passwordField.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1px; -fx-border-radius: 8; -fx-padding: 10 14; -fx-font-size: 14px;");
+        passwordField.setPromptText("masukkan password anda");
+        passwordField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
         passwordField.setPrefWidth(280);
         passwordField.focusedProperty().addListener((obs, old, isFocus) -> {
             if (isFocus) {
-                passwordField.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #0d6e4e; -fx-border-width: 1.5px; -fx-border-radius: 8; -fx-padding: 10 14; -fx-font-size: 14px;");
+                passwordField.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #1A5D3A; -fx-border-width: 1.5px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
             } else {
-                passwordField.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1px; -fx-border-radius: 8; -fx-padding: 10 14; -fx-font-size: 14px;");
+                passwordField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
             }
         });
 
         errorLabel = new Label();
-        errorLabel.setTextFill(Color.valueOf("#dc2626"));
+        errorLabel.setTextFill(Color.valueOf("#DC2626"));
         errorLabel.setFont(Font.font("SF Pro Display", 12));
         errorLabel.setVisible(false);
 
-        Button loginBtn = new Button("MASUK");
-        loginBtn.setStyle("-fx-background-color: #0d6e4e; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 12 0; -fx-background-radius: 8; -fx-font-size: 14px; -fx-letter-spacing: 1px;");
+        Button loginBtn = new Button("Masuk");
+        loginBtn.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;");
         loginBtn.setPrefWidth(280);
-        loginBtn.setOnMouseEntered(e -> loginBtn.setStyle("-fx-background-color: #0a5840; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 12 0; -fx-background-radius: 8; -fx-font-size: 14px; -fx-letter-spacing: 1px;"));
-        loginBtn.setOnMouseExited(e -> loginBtn.setStyle("-fx-background-color: #0d6e4e; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 12 0; -fx-background-radius: 8; -fx-font-size: 14px; -fx-letter-spacing: 1px;"));
+        loginBtn.setOnMouseEntered(e -> loginBtn.setStyle("-fx-background-color: #0D4E2C; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;"));
+        loginBtn.setOnMouseExited(e -> loginBtn.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;"));
         loginBtn.setOnAction(e -> handleLogin(emailField.getText(), passwordField.getText()));
+
+        Separator sep = new Separator();
+        sep.setPadding(new Insets(8, 0, 0, 0));
 
         Label hint = new Label("Mode Demo — Masukkan email apa pun untuk masuk");
         hint.setFont(Font.font("SF Pro Display", 11));
-        hint.setTextFill(Color.valueOf("#94a3b8"));
+        hint.setTextFill(Color.valueOf("#94A3B8"));
 
         card.getChildren().addAll(
                 logoPane,
                 titleLabel,
                 subtitleLabel,
-                new Separator(),
                 roleLabel,
                 emailLabel, emailField,
                 passLabel, passwordField,
                 errorLabel,
                 loginBtn,
+                sep,
                 hint
         );
 

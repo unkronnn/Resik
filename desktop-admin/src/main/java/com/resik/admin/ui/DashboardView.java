@@ -37,7 +37,7 @@ public class DashboardView {
         view.setLeft(createSidebar());
         contentArea = new VBox();
         contentArea.setPadding(new Insets(28, 32, 28, 32));
-        contentArea.setStyle("-fx-background-color: #f1f5f9;");
+        contentArea.setStyle("-fx-background-color: #F5F7F5;");
         contentArea.setSpacing(16);
         view.setCenter(contentArea);
         showDashboard();
@@ -46,14 +46,14 @@ public class DashboardView {
     private HBox createTopBar() {
         HBox bar = new HBox();
         bar.setPadding(new Insets(14, 28, 14, 28));
-        bar.setStyle("-fx-background-color: #0d6e4e;");
+        bar.setStyle("-fx-background-color: #1A5D3A;");
         bar.setAlignment(Pos.CENTER_LEFT);
         HBox brand = new HBox(10);
         brand.setAlignment(Pos.CENTER_LEFT);
         Circle dot = new Circle(14);
         dot.setFill(Color.WHITE);
         Text r = new Text("R");
-        r.setFill(Color.valueOf("#0d6e4e"));
+        r.setFill(Color.valueOf("#1A5D3A"));
         r.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 14));
         StackPane logo = new StackPane(dot, r);
         Label title = new Label("RESIK");
@@ -61,7 +61,7 @@ public class DashboardView {
         title.setTextFill(Color.WHITE);
         Label sub = new Label("Bank Sampah Digital");
         sub.setFont(Font.font("SF Pro Display", 12));
-        sub.setTextFill(Color.valueOf("#a7d4c4"));
+        sub.setTextFill(Color.valueOf("#C8E6D0"));
         brand.getChildren().addAll(logo, title, sub);
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -73,11 +73,11 @@ public class DashboardView {
         un.setTextFill(Color.WHITE);
         un.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
         Label rl = new Label(AppConfig.userRole);
-        rl.setTextFill(Color.valueOf("#a7d4c4"));
+        rl.setTextFill(Color.valueOf("#C8E6D0"));
         rl.setFont(Font.font("SF Pro Display", 11));
         userBox.getChildren().addAll(un, rl);
         Circle av = new Circle(18);
-        av.setFill(Color.valueOf("#1a8a68"));
+        av.setFill(Color.valueOf("#2D7A4F"));
         Text ini = new Text(AppConfig.userName.substring(0, 1).toUpperCase());
         ini.setFill(Color.WHITE);
         ini.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 14));
@@ -86,9 +86,9 @@ public class DashboardView {
         sep.setOrientation(javafx.geometry.Orientation.VERTICAL);
         sep.setPrefHeight(30);
         Button out = new Button("Keluar");
-        out.setStyle("-fx-background-color: transparent; -fx-text-fill: #e57373; -fx-border-color: #e57373; -fx-border-width: 1px; -fx-border-radius: 6; -fx-padding: 6 16; -fx-font-size: 12px; -fx-cursor: hand;");
-        out.setOnMouseEntered(e -> out.setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; -fx-border-color: #c0392b; -fx-border-width: 1px; -fx-border-radius: 6; -fx-padding: 6 16; -fx-font-size: 12px;"));
-        out.setOnMouseExited(e -> out.setStyle("-fx-background-color: transparent; -fx-text-fill: #e57373; -fx-border-color: #e57373; -fx-border-width: 1px; -fx-border-radius: 6; -fx-padding: 6 16; -fx-font-size: 12px;"));
+        out.setStyle("-fx-background-color: transparent; -fx-text-fill: #EF4444; -fx-border-color: #EF4444; -fx-border-width: 1px; -fx-border-radius: 16; -fx-padding: 6 16; -fx-font-size: 12px; -fx-cursor: hand;");
+        out.setOnMouseEntered(e -> out.setStyle("-fx-background-color: #DC2626; -fx-text-fill: white; -fx-border-color: #DC2626; -fx-border-width: 1px; -fx-border-radius: 16; -fx-padding: 6 16; -fx-font-size: 12px;"));
+        out.setOnMouseExited(e -> out.setStyle("-fx-background-color: transparent; -fx-text-fill: #EF4444; -fx-border-color: #EF4444; -fx-border-width: 1px; -fx-border-radius: 16; -fx-padding: 6 16; -fx-font-size: 12px;"));
         out.setOnAction(e -> { AppConfig.authToken = null; AppConfig.userId = null;
             Stage st = (Stage) view.getScene().getWindow();
             LoginView lv = new LoginView();
@@ -104,12 +104,12 @@ public class DashboardView {
     private VBox createSidebar() {
         VBox sb = new VBox();
         sb.setPrefWidth(220);
-        sb.setStyle("-fx-background-color: #0f4d3a;");
+        sb.setStyle("-fx-background-color: #0D4E2C;");
         sb.setPadding(new Insets(16, 10, 16, 10));
         sb.setSpacing(4);
         Label mh = new Label("MENU");
         mh.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 10));
-        mh.setTextFill(Color.valueOf("#5e9484"));
+        mh.setTextFill(Color.valueOf("#7BA89A"));
         mh.setStyle("-fx-letter-spacing: 2px;");
         mh.setPadding(new Insets(12, 12, 8, 12));
         VBox nav = new VBox(2);
@@ -130,9 +130,9 @@ public class DashboardView {
 
     private VBox createNavButton(String label, javafx.event.EventHandler<javafx.scene.input.MouseEvent> handler) {
         VBox btn = new VBox();
-        String n = "-fx-background-color: transparent; -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand;";
-        String h = "-fx-background-color: rgba(255,255,255,0.08); -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand;";
-        String a = "-fx-background-color: rgba(255,255,255,0.12); -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand;";
+        String n = "-fx-background-color: transparent; -fx-padding: 10 16; -fx-background-radius: 20; -fx-cursor: hand;";
+        String h = "-fx-background-color: rgba(255,255,255,0.08); -fx-padding: 10 16; -fx-background-radius: 20; -fx-cursor: hand;";
+        String a = "-fx-background-color: rgba(255,255,255,0.12); -fx-padding: 10 16; -fx-background-radius: 20; -fx-cursor: hand;";
         btn.setStyle(n);
         btn.setOnMouseEntered(e -> { if (btn != activeNav) btn.setStyle(h); });
         btn.setOnMouseExited(e -> { if (btn != activeNav) btn.setStyle(n); });
@@ -141,7 +141,7 @@ public class DashboardView {
             btn.setStyle(a); activeNav = btn; handler.handle(e);
         });
         Label t = new Label(label);
-        t.setTextFill(Color.valueOf("#cbd5e1"));
+        t.setTextFill(Color.valueOf("#C8E6D0"));
         t.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
         btn.getChildren().add(t);
         return btn;
@@ -151,10 +151,10 @@ public class DashboardView {
         VBox h = new VBox(4);
         Label tl = new Label(t);
         tl.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 24));
-        tl.setTextFill(Color.valueOf("#1e293b"));
+        tl.setTextFill(Color.valueOf("#1E293B"));
         Label dl = new Label(d);
         dl.setFont(Font.font("SF Pro Display", 13));
-        dl.setTextFill(Color.valueOf("#94a3b8"));
+        dl.setTextFill(Color.valueOf("#94A3B8"));
         h.getChildren().addAll(tl, dl);
         return h;
     }
@@ -171,36 +171,36 @@ public class DashboardView {
         Map<String, Integer> s = DummyData.getStats();
         HBox sr = new HBox(16);
         sr.getChildren().addAll(
-            createStatCard("Menunggu", s.get("MENUNGGU"), "#f59e0b"),
+            createStatCard("Menunggu", s.get("MENUNGGU"), "#F39C12"),
             createStatCard("Dijadwalkan", s.get("DIJADWALKAN"), "#3b82f6"),
             createStatCard("Selesai", s.get("SELESAI"), "#10b981"),
             createStatCard("Total Pengguna", s.get("TOTAL_USER"), "#8b5cf6"));
         VBox rb = new VBox(12);
         Label rt = new Label("Penjemputan Terbaru");
         rt.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 15));
-        rt.setTextFill(Color.valueOf("#1e293b"));
+        rt.setTextFill(Color.valueOf("#1E293B"));
         VBox list = new VBox(6);
         for (Penjemputan p : DummyData.getPenjemputanList()) {
             HBox row = new HBox(20);
-            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
             row.setAlignment(Pos.CENTER_LEFT);
             Label idL = new Label("#" + String.format("%03d", p.getId()));
             idL.setPrefWidth(50);
             idL.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 12));
-            idL.setTextFill(Color.valueOf("#94a3b8"));
+            idL.setTextFill(Color.valueOf("#94A3B8"));
             VBox ab = new VBox(2);
             Label al = new Label(p.getAlamat());
             al.setFont(Font.font("SF Pro Display", 13));
             al.setTextFill(Color.valueOf("#334155"));
             Label cl = new Label(p.getCatatan());
             cl.setFont(Font.font("SF Pro Display", 11));
-            cl.setTextFill(Color.valueOf("#94a3b8"));
+            cl.setTextFill(Color.valueOf("#94A3B8"));
             ab.getChildren().addAll(al, cl);
             ab.setPrefWidth(300);
             Label tl = new Label(p.getTanggalJemput() != null ? p.getTanggalJemput().toString() : "-");
             tl.setPrefWidth(100);
             tl.setFont(Font.font("SF Pro Display", 12));
-            tl.setTextFill(Color.valueOf("#64748b"));
+            tl.setTextFill(Color.valueOf("#64748B"));
             Region sp = new Region();
             HBox.setHgrow(sp, Priority.ALWAYS);
             Label sb = new Label(p.getStatus());
@@ -209,11 +209,11 @@ public class DashboardView {
             String bg = switch (p.getStatus()) {
                 case "MENUNGGU" -> "#fef3c7"; case "DIJADWALKAN" -> "#dbeafe";
                 case "DIPROSES" -> "#f3e8ff"; case "SELESAI" -> "#d1fae5";
-                case "DIBATALKAN" -> "#fee2e2"; default -> "#f1f5f9";};
+                case "DIBATALKAN" -> "#fee2e2"; default -> "#F5F7F5";};
             String fg = switch (p.getStatus()) {
                 case "MENUNGGU" -> "#92400e"; case "DIJADWALKAN" -> "#1e40af";
                 case "DIPROSES" -> "#6b21a8"; case "SELESAI" -> "#065f46";
-                case "DIBATALKAN" -> "#991b1b"; default -> "#475569";};
+                case "DIBATALKAN" -> "#991b1b"; default -> "#64748B";};
             sb.setStyle("-fx-background-color: " + bg + "; -fx-text-fill: " + fg + "; -fx-background-radius: 4;");
             row.getChildren().addAll(idL, ab, tl, sp, sb);
             list.getChildren().add(row);
@@ -280,10 +280,10 @@ public class DashboardView {
         contentArea.getChildren().clear();
         VBox h = createPageHeader("Penimbangan Sampah", "Input berat aktual dan kalkulasi harga otomatis");
         VBox ic = new VBox(10);
-        ic.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
+        ic.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
         Label i = new Label("Pilih penjemputan dengan status DIPROSES untuk melakukan penimbangan.\nSistem akan menghitung subtotal otomatis berdasarkan berat aktual dikali harga per kg.");
         i.setFont(Font.font("SF Pro Display", 14));
-        i.setTextFill(Color.valueOf("#475569"));
+        i.setTextFill(Color.valueOf("#64748B"));
         i.setWrapText(true);
         ic.getChildren().add(i);
         contentArea.getChildren().addAll(h, ic);
@@ -362,13 +362,13 @@ public class DashboardView {
         VBox header = createPageHeader("Laporan Transaksi", "Laporan harian, bulanan, dan tahunan");
         HBox exportButtons = new HBox(12);
         Button pdf = new Button("Export PDF");
-        pdf.setStyle("-fx-background-color: #0d6e4e; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 10 20; -fx-font-size: 13px; -fx-cursor: hand;");
+        pdf.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 10 20; -fx-font-size: 13px; -fx-cursor: hand;");
         Button xls = new Button("Export Excel");
-        xls.setStyle("-fx-background-color: white; -fx-text-fill: #0d6e4e; -fx-border-color: #0d6e4e; -fx-border-width: 1px; -fx-background-radius: 6; -fx-padding: 10 20; -fx-font-size: 13px; -fx-cursor: hand;");
+        xls.setStyle("-fx-background-color: white; -fx-text-fill: #1A5D3A; -fx-border-color: #1A5D3A; -fx-border-width: 1px; -fx-background-radius: 16; -fx-padding: 10 20; -fx-font-size: 13px; -fx-cursor: hand;");
         exportButtons.getChildren().addAll(pdf, xls);
 
         VBox lingCard = new VBox(12);
-        lingCard.setStyle("-fx-background-color: #0d6e4e; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 3);");
+        lingCard.setStyle("-fx-background-color: #1A5D3A; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 3);");
         Label lingTitle = new Label("Laporan Lingkungan");
         lingTitle.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
         lingTitle.setTextFill(Color.WHITE);
@@ -383,17 +383,17 @@ public class DashboardView {
             val.setTextFill(Color.WHITE);
             Label lbl = new Label(entry.getKey());
             lbl.setFont(Font.font("SF Pro Display", 11));
-            lbl.setTextFill(Color.valueOf("#a7d4c4"));
+            lbl.setTextFill(Color.valueOf("#C8E6D0"));
             s.getChildren().addAll(val, lbl);
             statsRow.getChildren().add(s);
         }
         lingCard.getChildren().addAll(lingTitle, statsRow);
 
         VBox ic = new VBox(10);
-        ic.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
+        ic.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
         Label info = new Label("Laporan transaksi harian, bulanan, dan tahunan akan ditampilkan di sini.\nGunakan tombol di atas untuk mengekspor laporan.");
         info.setFont(Font.font("SF Pro Display", 14));
-        info.setTextFill(Color.valueOf("#475569"));
+        info.setTextFill(Color.valueOf("#64748B"));
         info.setWrapText(true);
         ic.getChildren().add(info);
         contentArea.getChildren().addAll(header, exportButtons, lingCard, ic);
@@ -403,10 +403,10 @@ public class DashboardView {
         contentArea.getChildren().clear();
         VBox h = createPageHeader("Chat", "Percakapan dengan masyarakat");
         VBox ic = new VBox(10);
-        ic.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
+        ic.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
         Label i = new Label("Daftar percakapan dengan masyarakat akan ditampilkan di sini.");
         i.setFont(Font.font("SF Pro Display", 14));
-        i.setTextFill(Color.valueOf("#475569"));
+        i.setTextFill(Color.valueOf("#64748B"));
         i.setWrapText(true);
         ic.getChildren().add(i);
         contentArea.getChildren().addAll(h, ic);
@@ -419,7 +419,7 @@ public class DashboardView {
         VBox list = new VBox(6);
         for (Map<String, Object> d : DummyData.getDompetList()) {
             HBox row = new HBox(20);
-            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
             row.setAlignment(Pos.CENTER_LEFT);
             Label nm = new Label((String) d.get("nama"));
             nm.setFont(Font.font("SF Pro Display", 14));
@@ -429,11 +429,11 @@ public class DashboardView {
             HBox.setHgrow(sp, Priority.ALWAYS);
             Label sd = new Label((String) d.get("saldo"));
             sd.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 14));
-            sd.setTextFill(Color.valueOf("#0d6e4e"));
+            sd.setTextFill(Color.valueOf("#1A5D3A"));
             sd.setPrefWidth(120);
             Label pi = new Label((String) d.get("poin"));
             pi.setFont(Font.font("SF Pro Display", 13));
-            pi.setTextFill(Color.valueOf("#f59e0b"));
+            pi.setTextFill(Color.valueOf("#F39C12"));
             row.getChildren().addAll(nm, sp, sd, pi);
             list.getChildren().add(row);
         }
@@ -448,12 +448,12 @@ public class DashboardView {
         int[] poins = {320, 280, 250, 180, 120};
         for (int idx = 0; idx < names.length; idx++) {
             HBox row = new HBox(16);
-            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
             row.setAlignment(Pos.CENTER_LEFT);
             Label rank = new Label(String.valueOf(idx + 1));
             rank.setPrefWidth(30);
             rank.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
-            rank.setTextFill(idx == 0 ? Color.valueOf("#f59e0b") : idx == 1 ? Color.valueOf("#94a3b8") : idx == 2 ? Color.valueOf("#cd7f32") : Color.valueOf("#94a3b8"));
+            rank.setTextFill(idx == 0 ? Color.valueOf("#F39C12") : idx == 1 ? Color.valueOf("#94A3B8") : idx == 2 ? Color.valueOf("#cd7f32") : Color.valueOf("#94A3B8"));
             Label nm = new Label(names[idx]);
             nm.setFont(Font.font("SF Pro Display", 14));
             nm.setTextFill(Color.valueOf("#334155"));
@@ -462,7 +462,7 @@ public class DashboardView {
             HBox.setHgrow(sp, Priority.ALWAYS);
             Label pi = new Label(poins[idx] + " poin");
             pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
-            pi.setTextFill(Color.valueOf("#0d6e4e"));
+            pi.setTextFill(Color.valueOf("#1A5D3A"));
             row.getChildren().addAll(rank, nm, sp, pi);
             list.getChildren().add(row);
         }
@@ -473,19 +473,19 @@ public class DashboardView {
         contentArea.getChildren().clear();
         VBox header = createPageHeader("Profil", "Informasi akun administrator");
         VBox card = new VBox(16);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
         Label nm = new Label(AppConfig.userName);
         nm.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 20));
-        nm.setTextFill(Color.valueOf("#1e293b"));
+        nm.setTextFill(Color.valueOf("#1E293B"));
         Label rl = new Label("Role: " + AppConfig.userRole);
         rl.setFont(Font.font("SF Pro Display", 13));
-        rl.setTextFill(Color.valueOf("#64748b"));
+        rl.setTextFill(Color.valueOf("#64748B"));
         Label em = new Label("Email: admin@resik.id");
         em.setFont(Font.font("SF Pro Display", 13));
-        em.setTextFill(Color.valueOf("#64748b"));
+        em.setTextFill(Color.valueOf("#64748B"));
         Label id = new Label("User ID: " + AppConfig.userId);
         id.setFont(Font.font("SF Pro Display", 13));
-        id.setTextFill(Color.valueOf("#64748b"));
+        id.setTextFill(Color.valueOf("#64748B"));
         card.getChildren().addAll(nm, rl, em, id);
         contentArea.getChildren().addAll(header, card);
     }
