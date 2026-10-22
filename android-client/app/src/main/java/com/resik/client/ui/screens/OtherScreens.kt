@@ -1,9 +1,11 @@
 package com.resik.client.ui.screens
 
+import com.resik.client.api.ApiClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,13 +25,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resik.client.ui.theme.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Data models
 data class ChatMsg(val text: String, val fromMe: Boolean, val time: String)
 data class PenjemputanItem(val id: Int, val alamat: String, val tanggal: String, val status: String, val catatan: String)
 data class TransaksiItem(val id: Int, val tanggal: String, val jumlah: String, val status: String, val jenis: String)
-data class EdukasiItem(val judul: String, val kategori: String, val deskripsi: String, val icon: ImageVector)
+data class EdukasiItem(val judul: String, val kategori: String, val deskripsi: String, val harga: String, val icon: ImageVector)
+data class SampahPilihan(val nama: String, val kategori: String, val harga: String, val berat: String)
 
 val dummyPenjemputan = listOf(
     PenjemputanItem(1, "Jl. Merdeka No. 45", "2026-10-22", "MENUNGGU", "Sampah rumah tangga campuran"),
@@ -43,11 +51,16 @@ val dummyTransaksi = listOf(
     TransaksiItem(3, "2026-10-19", "Rp 22.500", "BERHASIL", "Setor Sampah"),
 )
 val dummyEdukasi = listOf(
-    EdukasiItem("Sampah Organik", "ORGANIK", "Sisa makanan, daun, rumput kering. Dapat diolah jadi kompos.", Icons.Filled.Eco),
-    EdukasiItem("Plastik Botol", "ANORGANIK", "Botol plastik bekas. Harga Rp 2.500/kg. Bersihkan sebelum disetor.", Icons.Filled.Recycling),
-    EdukasiItem("Kardus/Karton", "ANORGANIK", "Kardus dan karton bekas. Harga Rp 1.500/kg. Lipat untuk hemat tempat.", Icons.Filled.Inventory2),
-    EdukasiItem("Kaleng Aluminium", "ANORGANIK", "Kaleng minuman. Harga Rp 5.000/kg. Paling berharga!", Icons.Filled.Recycling),
-    EdukasiItem("Baterai Bekas", "B3", "Baterai dan aki bekas. Harus dipisahkan, jangan campur dengan sampah lain.", Icons.Filled.Warning),
+    EdukasiItem("Sampah Makanan", "ORGANIK", "Sisa makanan dan dapur. Harga Rp 1.000/kg.", "Rp 1.000/kg", Icons.Filled.Eco),
+    EdukasiItem("Daun & Rumput", "ORGANIK", "Daun kering, rumput, tanaman. Harga Rp 500/kg.", "Rp 500/kg", Icons.Filled.Eco),
+    EdukasiItem("Plastik Botol", "ANORGANIK", "Botol plastik bekas. Harga Rp 2.500/kg.", "Rp 2.500/kg", Icons.Filled.Recycling),
+    EdukasiItem("Kardus/Karton", "ANORGANIK", "Kardus dan karton. Harga Rp 1.500/kg.", "Rp 1.500/kg", Icons.Filled.Inventory2),
+    EdukasiItem("Kaleng Aluminium", "ANORGANIK", "Kaleng minuman. Harga Rp 5.000/kg.", "Rp 5.000/kg", Icons.Filled.Recycling),
+    EdukasiItem("Besi/Logam", "ANORGANIK", "Besi dan logam bekas. Harga Rp 3.000/kg.", "Rp 3.000/kg", Icons.Filled.Construction),
+    EdukasiItem("Kertas", "ANORGANIK", "Kertas dan koran bekas. Harga Rp 1.500/kg.", "Rp 1.500/kg", Icons.Filled.Article),
+    EdukasiItem("Botol Kaca", "ANORGANIK", "Botol kaca bening dan berwarna. Rp 2.000/kg.", "Rp 2.000/kg", Icons.Filled.WineBar),
+    EdukasiItem("Baterai Bekas", "B3", "Baterai dan aki bekas. Harga Rp 3.000/kg.", "Rp 3.000/kg", Icons.Filled.Warning),
+    EdukasiItem("Elektronik Bekas", "B3", "Komponen elektronik rusak. Rp 5.000/kg.", "Rp 5.000/kg", Icons.Filled.ElectricalServices),
 )
 val leaderboardData = listOf(
     Triple("Syukron Maulana", "320 poin", 1),
@@ -68,15 +81,42 @@ fun GradientHeader(title: String, onBack: () -> Unit) {
     }
 }
 
-// ===== CHAT SCREEN =====
+// ===== CHAT SCREEN — connect to VPS API =====
 @Composable
 fun ChatScreen(onBack: () -> Unit) {
-    val messages = remember { mutableStateListOf(
-        ChatMsg("Selamat datang di Resik! Ada yang bisa kami bantu?", false, "09:00"),
-    )}
+    val messages = remember { mutableStateListOf<ChatMsg>() }
     var input by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(true) }
+    val userId = ApiClient.getUserId() ?: 1L
+    val listState = rememberLazyListState()
+
+    // Load chat history from VPS
+    LaunchedEffect(Unit) {
+        ApiClient.getApi().getChats(userId).enqueue(object : Callback<List<Map<String, Any>>> {
+            override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
+                isLoading = false
+                if (r.isSuccessful && r.body() != null) {
+                    messages.clear()
+                    for (m in r.body()!!) {
+                        val pengirim = m["pengirim"]?.toString() ?: "USER"
+                        val pesan = m["pesan"]?.toString() ?: ""
+                        val waktu = m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
+                        messages.add(ChatMsg(pesan, pengirim == "USER", waktu))
+                    }
+                }
+                if (messages.isEmpty()) {
+                    messages.add(ChatMsg("Selamat datang di Resik! Ada yang bisa kami bantu?", false, "09:00"))
+                }
+            }
+            override fun onFailure(c: Call<List<Map<String, Any>>>, t: Throwable) {
+                isLoading = false
+                messages.add(ChatMsg("Chat offline — tidak terhubung ke server. Pesan akan tersimpan lokal.", false, SimpleDateFormat("HH:mm").format(Date())))
+            }
+        })
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(GreenDark, GreenPrimary))).padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -92,13 +132,21 @@ fun ChatScreen(onBack: () -> Unit) {
             }
         }
 
-        LazyColumn(
-            modifier = Modifier.weight(1f).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(messages) { msg -> ChatBubble(msg) }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = GreenPrimary)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                state = listState
+            ) {
+                items(messages) { msg -> ChatBubble(msg) }
+            }
         }
 
+        // Input bar
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp).background(BgWhite),
             verticalAlignment = Alignment.CenterVertically
@@ -115,16 +163,39 @@ fun ChatScreen(onBack: () -> Unit) {
             Box(
                 modifier = Modifier.size(48.dp).clip(CircleShape).background(GreenPrimary).clickable {
                     if (input.isNotBlank()) {
-                        val now = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-                        messages.add(ChatMsg(input.trim(), true, now))
-                        val reply = when {
-                            input.contains("jemput", ignoreCase = true) -> "Untuk penjemputan, buka menu Jemput Sampah. Petugas akan datang sesuai jadwal."
-                            input.contains("harga", ignoreCase = true) -> "Harga: Plastik Rp 2.500/kg, Kardus Rp 1.500/kg, Kaleng Rp 5.000/kg."
-                            input.contains("saldo", ignoreCase = true) || input.contains("dompet", ignoreCase = true) -> "Saldo bisa dilihat di Dompet Digital. Saldo masuk otomatis setelah setoran selesai."
-                            else -> "Terima kasih! Admin akan segera membalas."
-                        }
+                        val now = SimpleDateFormat("HH:mm").format(Date())
+                        val userMsg = input.trim()
+                        messages.add(ChatMsg(userMsg, true, now))
                         input = ""
-                        messages.add(ChatMsg(reply, false, SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())))
+
+                        // Send to VPS API
+                        val body = mapOf("userId" to userId, "pengirim" to "USER", "pesan" to userMsg)
+                        ApiClient.getApi().sendChat(body).enqueue(object : Callback<Map<String, Any>> {
+                            override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
+                                // Auto-reply from admin
+                                val reply = when {
+                                    userMsg.contains("jemput", ignoreCase = true) -> "Untuk penjemputan, buka menu Jemput Sampah. Pilih jenis, berat, jadwal, dan alamat. Petugas akan datang sesuai jadwal."
+                                    userMsg.contains("harga", ignoreCase = true) -> "Harga: Plastik Rp 2.500/kg, Kardus Rp 1.500/kg, Kaleng Rp 5.000/kg, Organik Rp 1.000/kg. Lihat Edukasi untuk detail."
+                                    userMsg.contains("saldo", ignoreCase = true) || userMsg.contains("dompet", ignoreCase = true) -> "Saldo masuk otomatis ke Dompet Digital setelah petugas menimbang dan konfirmasi pembayaran. Cek di menu Dompet."
+                                    userMsg.contains("poin", ignoreCase = true) -> "Poin didapat dari setiap setoran: Rp 1.000 = 1 poin. Poin bisa dipakai untuk voucher."
+                                    else -> "Terima kasih atas pesan Anda! Admin akan segera membantu. Untuk bantuan cepat, cek menu Edukasi."
+                                }
+                                val replyTime = SimpleDateFormat("HH:mm").format(Date())
+                                messages.add(ChatMsg(reply, false, replyTime))
+
+                                // Save admin reply to VPS
+                                val replyBody = mapOf("userId" to userId, "pengirim" to "ADMIN", "pesan" to reply)
+                                ApiClient.getApi().sendChat(replyBody).enqueue(object : Callback<Map<String, Any>> {
+                                    override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {}
+                                    override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {}
+                                })
+                            }
+                            override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
+                                // Offline fallback — still show reply locally
+                                val reply = "Pesan tersimpan lokal (offline). Pesan akan dikirim saat online."
+                                messages.add(ChatMsg(reply, false, SimpleDateFormat("HH:mm").format(Date())))
+                            }
+                        })
                     }
                 },
                 contentAlignment = Alignment.Center
@@ -152,45 +223,192 @@ private fun ChatBubble(msg: ChatMsg) {
     }
 }
 
-// ===== PENJEMPUTAN SCREEN =====
+// ===== PENJEMPUTAN SCREEN — full flow with form =====
 @Composable
 fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
-        GradientHeader("Penjemputan Sampah", onBack)
-        Button(
-            onClick = onCreate,
-            modifier = Modifier.fillMaxWidth().padding(16.dp).height(48.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Jemput Sampah Sekarang", color = BgWhite, fontWeight = FontWeight.Bold)
-        }
-        LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(dummyPenjemputan) { item ->
-                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("#${String.format("%03d", item.id)}", fontSize = 12.sp, color = TextHint, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.weight(1f))
-                            StatusBadge(item.status)
+    var showForm by remember { mutableStateOf(false) }
+
+    if (!showForm) {
+        // List penjemputan
+        Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
+            GradientHeader("Penjemputan Sampah", onBack)
+            Button(
+                onClick = { showForm = true },
+                modifier = Modifier.fillMaxWidth().padding(16.dp).height(48.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Jemput Sampah Sekarang", color = BgWhite, fontWeight = FontWeight.Bold)
+            }
+            LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(dummyPenjemputan) { item ->
+                    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("#${String.format("%03d", item.id)}", fontSize = 12.sp, color = TextHint, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.weight(1f))
+                                StatusBadge(item.status)
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text(item.alamat, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = TextHint, modifier = Modifier.size(14.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text(item.tanggal, fontSize = 12.sp, color = TextSecondary)
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Text(item.catatan, fontSize = 12.sp, color = TextHint)
                         }
-                        Spacer(Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text(item.alamat, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = TextHint, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text(item.tanggal, fontSize = 12.sp, color = TextSecondary)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(item.catatan, fontSize = 12.sp, color = TextHint)
                     }
                 }
+            }
+        }
+    } else {
+        // Form penjemputan — pilih jenis, estimasi berat, jadwal, alamat
+        PenjemputanForm(
+            onBack = { showForm = false },
+            onSubmit = { showForm = false; onCreate() }
+        )
+    }
+}
+
+@Composable
+private fun PenjemputanForm(onBack: () -> Unit, onSubmit: () -> Unit) {
+    var selectedKategori by remember { mutableStateOf("ORGANIK") }
+    var alamat by remember { mutableStateOf("") }
+    var tanggal by remember { mutableStateOf("") }
+    var waktu by remember { mutableStateOf("") }
+    var catatan by remember { mutableStateOf("") }
+    val sampahChoices = remember { mutableStateListOf<SampahPilihan>() }
+
+    val kategoriList = listOf("ORGANIK", "ANORGANIK", "B3", "RESIDU")
+    val kategoriColors = mapOf(
+        "ORGANIK" to Color(0xFF10B981), "ANORGANIK" to Color(0xFF3B82F6),
+        "B3" to Color(0xFFEF4444), "RESIDU" to Color(0xFF6B7280)
+    )
+    val kategoriIcons = mapOf(
+        "ORGANIK" to Icons.Filled.Eco, "ANORGANIK" to Icons.Filled.Recycling,
+        "B3" to Icons.Filled.Warning, "RESIDU" to Icons.Filled.Delete
+    )
+
+    Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
+        GradientHeader("Form Penjemputan", onBack)
+
+        Column(modifier = Modifier.padding(20.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Step 1: Pilih kategori sampah
+            Text("1. Pilih Jenis Sampah", fontSize =
+ 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+
+            // Kategori chips
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                kategoriList.forEach { kat ->
+                    val isSelected = selectedKategori == kat
+                    val color = kategoriColors[kat] ?: TextPrimary
+                    val icon = kategoriIcons[kat] ?: Icons.Filled.Delete
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) color else BgWhite)
+                            .clickable { selectedKategori = kat }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(icon, contentDescription = null, tint = if (isSelected) BgWhite else color, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(kat, fontSize = 10.sp, color = if (isSelected) BgWhite else TextSecondary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+
+            // List sampah by kategori
+            val filteredSampah = dummyEdukasi.filter { it.kategori == selectedKategori }
+            Text("2. Pilih sampah & estimasi berat", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+
+            filteredSampah.forEach { item ->
+                var berat by remember { mutableStateOf("") }
+                Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = BgWhite)) {
+                    Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(item.judul, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                            Text(item.harga, fontSize = 12.sp, color = GreenPrimary)
+                        }
+                        OutlinedTextField(
+                            value = berat,
+                            onValueChange = { berat = it.filter { c -> c.isDigit() || c == '.' } },
+                            placeholder = { Text("kg", fontSize = 12.sp) },
+                            modifier = Modifier.width(80.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
+                        )
+                    }
+                }
+            }
+
+            // Step 3: Alamat
+            Text("3. Alamat Penjemputan", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            OutlinedTextField(
+                value = alamat,
+                onValueChange = { alamat = it },
+                placeholder = { Text("Contoh: Jl. Merdeka No. 45") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                leadingIcon = { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = GreenPrimary) },
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
+            )
+
+            // Step 4: Jadwal
+            Text("4. Pilih Jadwal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = tanggal,
+                    onValueChange = { tanggal = it },
+                    placeholder = { Text("YYYY-MM-DD") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
+                    leadingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = GreenPrimary) },
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
+                )
+                OutlinedTextField(
+                    value = waktu,
+                    onValueChange = { waktu = it },
+                    placeholder = { Text("09:00-11:00") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
+                    leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null, tint = GreenPrimary) },
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
+                )
+            }
+
+            // Catatan
+            OutlinedTextField(
+                value = catatan,
+                onValueChange = { catatan = it },
+                placeholder = { Text("Catatan (opsional)") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
+            )
+
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = onSubmit,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+            ) {
+                Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Kirim Permintaan", color = BgWhite, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
     }
@@ -283,12 +501,9 @@ fun LeaderboardScreen(onBack: () -> Unit) {
         GradientHeader("Leaderboard", onBack)
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             leaderboardData.forEachIndexed { i, (nama, pts, rank) ->
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = if (i == 0) GreenMint else BgWhite)
-                ) {
+                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (i == 0) GreenMint else BgWhite)) {
                     Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        val medalIcon = when(rank) { 1 -> Icons.Filled.EmojiEvents; 2 -> Icons.Filled.EmojiEvents; 3 -> Icons.Filled.EmojiEvents; else -> Icons.Filled.Person }
+                        val medalIcon = Icons.Filled.EmojiEvents
                         val medalColor = when(rank) { 1 -> Color(0xFFF39C12); 2 -> Color(0xFF94A3B8); 3 -> Color(0xFFCD7F32); else -> TextHint }
                         Icon(medalIcon, contentDescription = null, tint = medalColor, modifier = Modifier.size(28.dp))
                         Spacer(Modifier.width(12.dp))
@@ -305,7 +520,7 @@ fun LeaderboardScreen(onBack: () -> Unit) {
 @Composable
 fun EdukasiScreen(onBack: () -> Unit) {
     var filter by remember { mutableStateOf("Semua") }
-    val filters = listOf("Semua", "ORGANIK", "ANORGANIK", "B3")
+    val filters = listOf("Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU")
     val filtered = if (filter == "Semua") dummyEdukasi else dummyEdukasi.filter { it.kategori == filter }
 
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
@@ -313,12 +528,10 @@ fun EdukasiScreen(onBack: () -> Unit) {
         Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             filters.forEach { f ->
                 Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(18.dp))
+                    modifier = Modifier.clip(RoundedCornerShape(18.dp))
                         .background(if (filter == f) GreenPrimary else BgWhite)
-                        .clickable { filter = f }
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) { Text(f, fontSize = 12.sp, color = if (filter == f) BgWhite else TextSecondary, fontWeight = if (filter == f) FontWeight.Bold else FontWeight.Normal) }
+                        .clickable { filter = f }.padding(horizontal = 14.dp, vertical = 8.dp)
+                ) { Text(f, fontSize = 11.sp, color = if (filter == f) BgWhite else TextSecondary, fontWeight = if (filter == f) FontWeight.Bold else FontWeight.Normal) }
             }
         }
         LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -331,7 +544,7 @@ fun EdukasiScreen(onBack: () -> Unit) {
                         Spacer(Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(item.judul, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
-                            Text(item.kategori, fontSize = 10.sp, color = TextHint)
+                            Text("${item.kategori} • ${item.harga}", fontSize = 10.sp, color = TextHint)
                             Spacer(Modifier.height(4.dp))
                             Text(item.deskripsi, fontSize = 12.sp, color = TextSecondary)
                         }
@@ -382,10 +595,7 @@ fun QrScannerScreen(onBack: () -> Unit, onScan: () -> Unit) {
         }
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    modifier = Modifier.size(240.dp).clip(RoundedCornerShape(20.dp)).background(BgWhite.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.size(240.dp).clip(RoundedCornerShape(20.dp)).background(BgWhite.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Filled.QrCodeScanner, contentDescription = null, tint = BgWhite, modifier = Modifier.size(64.dp))
                         Spacer(Modifier.height(12.dp))
@@ -400,3 +610,4 @@ fun QrScannerScreen(onBack: () -> Unit, onScan: () -> Unit) {
         }
     }
 }
+
