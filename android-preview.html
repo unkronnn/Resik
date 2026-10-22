@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESIK — Android Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',-apple-system,sans-serif; }
+body { background:#0f0f1a; display:flex; justify-content:center; gap:40px; flex-wrap:wrap; padding:40px; }
+
+.phone {
+  width:360px; height:740px; background:#1a1a1a; border-radius:44px; padding:10px;
+  box-shadow:0 25px 70px rgba(0,0,0,0.6), inset 0 0 0 2px #333; position:relative;
+}
+.phone::before {
+  content:''; position:absolute; top:16px; left:50%; transform:translateX(-50%);
+  width:110px; height:28px; background:#000; border-radius:14px; z-index:10;
+}
+.screen {
+  width:100%; height:100%; border-radius:36px; overflow:hidden; background:#f8fafc; position:relative;
+}
+.statusbar {
+  height:40px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; color:white; font-size:12px; font-weight:600; position:relative; z-index:5;
+}
+.screen-body { height:calc(100% - 40px); overflow-y:auto; }
+.screen-body::-webkit-scrollbar { display:none; }
+
+/* Login */
+.login { background:linear-gradient(160deg,#0d6e4e 0%,#0a4a36 100%); height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; }
+.login-card { background:white; border-radius:20px; padding:36px 28px; width:100%; max-width:290px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.25); }
+.login-logo { width:64px; height:64px; background:linear-gradient(135deg,#10b981,#0d6e4e); border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 8px 20px rgba(13,110,78,0.3); }
+.login-logo svg { width:32px; height:32px; stroke:white; stroke-width:2.5; fill:none; }
+.login-card h1 { color:#0d6e4e; font-size:26px; font-weight:800; letter-spacing:-0.5px; }
+.login-card .sub { color:#94a3b8; font-size:13px; margin-bottom:24px; }
+.login-card .divider { height:1px; background:#e2e8f0; margin:16px 0; }
+.login-card .role-tag { font-size:10px; font-weight:700; color:#64748b; letter-spacing:2px; }
+.login-card .field-group { text-align:left; margin-bottom:14px; }
+.login-card .field-label { font-size:12px; color:#475569; font-weight:600; margin-bottom:6px; }
+.login-card .field-input { width:100%; padding:12px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; background:#f8fafc; transition:border 0.2s; }
+.login-card .field-input:focus { outline:none; border-color:#0d6e4e; background:white; }
+.login-card .btn { width:100%; padding:14px; background:linear-gradient(135deg,#10b981,#0d6e4e); color:white; border:none; border-radius:10px; font-size:14px; font-weight:700; margin-top:8px; cursor:pointer; letter-spacing:0.5px; box-shadow:0 4px 12px rgba(13,110,78,0.3); }
+.login-card .btn:hover { transform:translateY(-1px); }
+.login-card .link { font-size:12px; color:#0d6e4e; margin-top:16px; font-weight:500; }
+
+/* Main Dashboard */
+.main-header { background:linear-gradient(135deg,#0d6e4e,#0a4a36); padding:20px 24px; }
+.main-header .top { display:flex; justify-content:space-between; align-items:center; }
+.main-header .greeting { color:white; font-size:20px; font-weight:800; margin-top:8px; }
+.main-header .greeting-sub { color:#a7d4c4; font-size:13px; margin-top:2px; }
+.main-header .avatar { width:36px; height:36px; background:rgba(255,255,255,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.main-header .avatar svg { width:20px; height:20px; stroke:white; stroke-width:2; fill:none; }
+
+.wallet-card { background:linear-gradient(135deg,#10b981,#0d6e4e); margin:16px; border-radius:16px; padding:20px; color:white; position:relative; overflow:hidden; box-shadow:0 8px 20px rgba(13,110,78,0.2); }
+.wallet-card::after { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:rgba(255,255,255,0.08); border-radius:50%; }
+.wallet-card .w-label { font-size:12px; color:#a7d4c4; display:flex; align-items:center; gap:6px; }
+.wallet-card .w-label svg { width:16px; height:16px; stroke:#a7d4c4; stroke-width:2; fill:none; }
+.wallet-card .w-amount { font-size:28px; font-weight:800; margin:6px 0 4px; }
+.wallet-card .w-poin { font-size:13px; color:#fbbf24; font-weight:600; display:flex; align-items:center; gap:6px; }
+.wallet-card .w-poin svg { width:16px; height:16px; stroke:#fbbf24; stroke-width:2; fill:none; }
+
+.menu-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:0 16px 20px; }
+.menu-item { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; }
+.menu-icon-bg { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 8px rgba(0,0,0,0.08); transition:transform 0.15s; }
+.menu-item:active .menu-icon-bg { transform:scale(0.92); }
+.menu-icon-bg svg { width:22px; height:22px; stroke:white; stroke-width:2; fill:none; }
+.menu-item .m-title { font-size:11px; color:#475569; font-weight:600; text-align:center; }
+
+/* Edukasi */
+.page-header { background:linear-gradient(135deg,#0d6e4e,#0a4a36); padding:20px 24px; display:flex; align-items:center; gap:12px; }
+.page-header .back { color:white; }
+.page-header .back svg { width:22px; height:22px; stroke:white; stroke-width:2.5; fill:none; }
+.page-header .title { color:white; font-size:18px; font-weight:700; }
+
+.edu-list { padding:12px; }
+.edu-card { background:white; border-radius:12px; padding:16px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.06); display:flex; gap:14px; align-items:flex-start; }
+.edu-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.edu-icon svg { width:22px; height:22px; stroke:white; stroke-width:2; fill:none; }
+.edu-body { flex:1; }
+.edu-cat { display:inline-block; padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700; margin-bottom:4px; letter-spacing:0.5px; }
+.edu-name { font-size:15px; font-weight:700; color:#1e293b; }
+.edu-price { font-size:13px; color:#0d6e4e; font-weight:700; margin-top:2px; }
+.edu-desc { font-size:12px; color:#64748b; margin-top:2px; }
+
+/* Leaderboard */
+.lb-list { padding:12px; }
+.lb-item { background:white; border-radius:12px; padding:14px 16px; margin-bottom:8px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.lb-rank { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
+.lb-info { flex:1; }
+.lb-name { font-size:14px; font-weight:700; color:#334155; }
+.lb-detail { font-size:12px; color:#94a3b8; }
+.lb-poin-badge { background:#f0fdf4; color:#0d6e4e; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700; }
+
+/* Profil */
+.profile-header { background:linear-gradient(135deg,#0d6e4e,#0a4a36); padding:32px 24px 28px; text-align:center; }
+.profile-avatar { width:80px; height:80px; background:rgba(255,255,255,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; border:3px solid rgba(255,255,255,0.2); }
+.profile-avatar svg { width:36px; height:36px; stroke:white; stroke-width:2; fill:none; }
+.profile-name { color:white; font-size:20px; font-weight:800; }
+.profile-role { color:#a7d4c4; font-size:13px; margin-top:2px; }
+
+.profile-body { padding:20px; }
+.profile-section-title { font-size:12px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+.profile-card { background:white; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.profile-row { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid #f1f5f9; }
+.profile-row:last-child { border-bottom:none; }
+.profile-row .p-label { color:#64748b; font-size:13px; display:flex; align-items:center; gap:8px; }
+.profile-row .p-label svg { width:18px; height:18px; stroke:#94a3b8; stroke-width:2; fill:none; }
+.profile-row .p-value { color:#334155; font-size:13px; font-weight:600; }
+
+.profile-btn { width:100%; padding:14px; background:linear-gradient(135deg,#10b981,#0d6e4e); color:white; border:none; border-radius:12px; font-size:14px; font-weight:700; margin-top:16px; cursor:pointer; box-shadow:0 4px 12px rgba(13,110,78,0.25); }
+
+/* Chat */
+.chat-list { padding:12px; }
+.chat-bubble-in { background:white; border-radius:14px 14px 14px 4px; padding:12px 16px; margin-bottom:8px; max-width:75%; font-size:13px; color:#334155; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.chat-bubble-out { background:#0d6e4e; color:white; border-radius:14px 14px 4px 14px; padding:12px 16px; margin-bottom:8px; max-width:75%; margin-left:auto; font-size:13px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+.chat-input-bar { position:absolute; bottom:0; left:0; right:0; display:flex; gap:8px; padding:12px; background:white; border-top:1px solid #e2e8f0; }
+.chat-input { flex:1; padding:12px 16px; border:1.5px solid #e2e8f0; border-radius:24px; font-size:14px; background:#f8fafc; }
+.chat-send { width:44px; height:44px; background:#0d6e4e; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.chat-send svg { width:20px; height:20px; stroke:white; stroke-width:2; fill:none; }
+
+.label-phone { color:#94a3b8; font-size:13px; text-align:center; margin-top:8px; font-weight:500; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div>
+<div class="phone"><div class="screen">
+<div class="login">
+<div class="login-card">
+<div class="login-logo">
+<svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7l-8-5z"/><path d="M12 22V12"/><path d="M4 7l8 5 8-5"/></svg>
+</div>
+<h1>RESIK</h1>
+<div class="sub">Bank Sampah Digital</div>
+<div class="divider"></div>
+<div class="role-tag">MASYARAKAT</div>
+<div style="margin-top:16px;">
+<div class="field-group">
+<div class="field-label">Email</div>
+<input class="field-input" type="text" placeholder="Masukkan email" value="syukron@mail.com">
+</div>
+<div class="field-group">
+<div class="field-label">Password</div>
+<input class="field-input" type="password" placeholder="Masukkan password" value="password">
+</div>
+<button class="btn">MASUK</button>
+<div class="link">Belum punya akun? Daftar di sini</div>
+</div>
+</div>
+</div>
+</div></div>
+<div class="label-phone">Login</div>
+</div>
+
+<!-- DASHBOARD -->
+<div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>09:41</span><span></span><span></span></div>
+<div class="screen-body">
+<div class="main-header">
+<div class="top">
+<div style="color:white; font-size:12px; font-weight:500; color:#a7d4c4;">Selamat pagi</div>
+<div class="avatar"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+</div>
+<div class="greeting">Halo, Syukron</div>
+<div class="greeting-sub">Yuk pilah sampah hari ini!</div>
+</div>
+<div class="wallet-card">
+<div class="w-label"><svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h3v-4z"/></svg> Saldo Dompet</div>
+<div class="w-amount">Rp 45.500</div>
+<div class="w-poin"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 320 poin reward</div>
+</div>
+<div class="menu-grid">
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div><div class="m-title">Edukasi</div></div>
+<div class="menu-item"><div class
+="menu-icon-bg" style="background:linear-gradient(135deg,#3b82f6,#2563eb);"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="4 8 4 12 7 10"/><polygon points="10 8 10 12 13 10"/><line x1="18" y1="8" x2="23" y2="8"/><line x1="18" y1="12" x2="23" y2="12"/><circle cx="6" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg></div><div class="m-title">Jemput</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#10b981,#059669);"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="m-title">Riwayat</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);"><svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h3v-4z"/></svg></div><div class="m-title">Dompet</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#ef4444,#dc2626);"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="m-title">Chat</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#06b6d4,#0891b2);"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div class="m-title">Lokasi</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#f97316,#ea580c);"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="m-title">Scan QR</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#ec4899,#db2777);"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="m-title">Leaderboard</div></div>
+<div class="menu-item"><div class="menu-icon-bg" style="background:linear-gradient(135deg,#64748b,#475569);"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="m-title">Profil</div></div>
+</div>
+</div>
+</div></div>
+<div class="label-phone">Dashboard</div>
+</div>
+
+<!-- EDUKASI -->
+<div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>09:41</span><span></span><span></span></div>
+<div class="screen-body">
+<div class="page-header">
+<div class="back"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div>
+<div class="title">Edukasi Sampah</div>
+</div>
+<div class="edu-list">
+<div class="edu-card">
+<div class="edu-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><svg viewBox="0 0 24 24"><path d="M4 3h16v4H4z"/><path d="M5 7v14a2 2 0 002 2h10a2 2 0 002-2V7"/><path d="M10 11h4"/></svg></div>
+<div class="edu-body">
+<span class="edu-cat" style="background:#fef3c7;color:#92400e;">ORGANIK</span>
+<div class="edu-name">Sampah Makanan</div>
+<div class="edu-price">Rp 1.000 / kg</div>
+<div class="edu-desc">Sisa makanan dan sisa dapur</div>
+</div>
+</div>
+<div class="edu-card">
+<div class="edu-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);"><svg viewBox="0 0 24 24"><path d="M9 2a3 3 0 00-3 3v14a3 3 0 003 3h6a3 3 0 003-3V5a3 3 0 00-3-3z"/><line x1="9" y1="7" x2="15" y2="7"/></svg></div>
+<div class="edu-body">
+<span class="edu-cat" style="background:#dbeafe;color:#1e40af;">ANORGANIK</span>
+<div class="edu-name">Plastik Botol</div>
+<div class="edu-price">Rp 2.500 / kg</div>
+<div class="edu-desc">Botol plastik bekas minuman</div>
+</div>
+</div>
+<div class="edu-card">
+<div class="edu-icon" style="background:linear-gradient(135deg,#64748b,#475569);"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+<div class="edu-body">
+<span class="edu-cat" style="background:#dbeafe;color:#1e40af;">ANORGANIK</span>
+<div class="edu-name">Kaleng Aluminium</div>
+<div class="edu-price">Rp 5.000 / kg</div>
+<div class="edu-desc">Kaleng minuman ringan</div>
+</div>
+</div>
+<div class="edu-card">
+<div class="edu-icon" style="background:linear-gradient(135deg,#a855f7,#9333ea);"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg></div>
+<div class="edu-body">
+<span class="edu-cat" style="background:#f3e8ff;color:#6b21a8;">B3</span>
+<div class="edu-name">Baterai Bekas</div>
+<div class="edu-price">Rp 3.000 / kg</div>
+<div class="edu-desc">Baterai bekas dan aki</div>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<div class="label-phone">Edukasi Sampah</div>
+</div>
+
+<!-- LEADERBOARD -->
+<div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>09:41</span><span></span><span></span></div>
+<div class="screen-body">
+<div class="page-header">
+<div class="back"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div>
+<div class="title">Leaderboard</div>
+</div>
+<div class="lb-list">
+<div class="lb-item">
+<div class="lb-rank" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:white;">1</div>
+<div class="lb-info"><div class="lb-name">Syukron Maulana</div><div class="lb-detail">Rp 45.500 saldo</div></div>
+<div class="lb-poin-badge">320 poin</div>
+</div>
+<div class="lb-item">
+<div class="lb-rank" style="background:linear-gradient(135deg,#e2e8f0,#cbd5e1);color:#475569;">2</div>
+<div class="lb-info"><div class="lb-name">Zain Ghathfaan</div><div class="lb-detail">Rp 32.000 saldo</div></div>
+<div class="lb-poin-badge">280 poin</div>
+</div>
+<div class="lb-item">
+<div class="lb-rank" style="background:linear-gradient(135deg,#fde8d0,#cd7f32);color:#92400e;">3</div>
+<div class="lb-info"><div class="lb-name">Riri Syafala</div><div class="lb-detail">Rp 28.500 saldo</div></div>
+<div class="lb-poin-badge">250 poin</div>
+</div>
+<div class="lb-item">
+<div class="lb-rank" style="background:#f1f5f9;color:#64748b;">4</div>
+<div class="lb-info"><div class="lb-name">Ahmad Fauzi</div><div class="lb-detail">Rp 15.000 saldo</div></div>
+<div class="lb-poin-badge">180 poin</div>
+</div>
+<div class="lb-item">
+<div class="lb-rank" style="background:#f1f5f9;color:#64748b;">5</div>
+<div class="lb-info"><div class="lb-name">Siti Nurhaliza</div><div class="lb-detail">Rp 8.000 saldo</div></div>
+<div class="lb-poin-badge">120 poin</div>
+</div>
+</div>
+</div>
+</div></div>
+<div class="label-phone">Leaderboard</div>
+</div>
+
+<!-- PROFIL -->
+<div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>09:41</span><span></span><span></span></div>
+<div class="screen-body">
+<div class="profile-header">
+<div class="profile-avatar"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+<div class="profile-name">Syukron Maulana</div>
+<div class="profile-role">MASYARAKAT</div>
+</div>
+<div class="profile-body">
+<div class="profile-section-title">Informasi Akun</div>
+<div class="profile-card">
+<div class="profile-row">
+<div class="p-label"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> Email</div>
+<div class="p-value">syukron@mail.com</div>
+</div>
+<div class="profile-row">
+<div class="p-label"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> Alamat</div>
+<div class="p-value">Jl. Merdeka 45</div>
+</div>
+<div class="profile-row">
+<div class="p-label"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg> Telepon</div>
+<div class="p-value">081234567890</div>
+</div>
+</div>
+<div class="profile-section-title" style="margin-top:20px;">Dompet</div>
+<div class="profile-card">
+<div class="profile-row">
+<div class="p-label"><svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/></svg> Saldo</div>
+<div class="p-value" style="color:#0d6e4e;">Rp 45.500</div>
+</div>
+<div class="profile-row">
+<div class="p-label"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Poin Reward</div>
+<div class="p-value" style="color:#f59e0b;">320 poin</div>
+</div>
+</div>
+<button class="profile-btn">Edit Profil</button>
+</div>
+</div>
+</div></div>
+<div class="label-phone">Profil</div>
+</div>
+
+<!-- CHAT -->
+<div>
+<div class="phone"><div class="screen">
+<div class="statusbar"><span>09:41</span><span></span><span></span></div>
+<div class="screen-body" style="position:relative;">
+<div class="page-header">
+<div class="back"><svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></div>
+<div class="title">Chat dengan Admin</div>
+</div>
+<div style="padding:12px 16px;">
+<div class="chat-bubble-in">Halo admin, saya mau tanya jadwal penjemputan untuk besok.</div>
+<div class="chat-bubble-out">Halo Syukron! Penjemputan besok jam 09:00-11:00 ya. Mohon siapkan sampahnya.</div>
+<div class="chat-bubble-in">Baik, sudah saya siapkan. Botol plastik dan kardus.</div>
+<div class="chat-bubble-out">Sip! Nanti petugas kami akan datang ke alamat Anda. Terima kasih sudah memilah sampah!</div>
+<div class="chat-bubble-in">Sama-sama, terima kasih!</div>
+</div>
+<div class="chat-input-bar">
+<input class="chat-input" type="text" placeholder="Ketik pesan...">
+<button class="chat-send"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+</div>
+</div>
+</div></div>
+<div class="label-phone">Chat
+</div>
+
+</body>
+</html>
