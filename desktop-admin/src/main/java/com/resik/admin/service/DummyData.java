@@ -187,4 +187,31 @@ public class DummyData {
             }
         }
     }
+
+    public static void addTransactionToUser(Penjemputan p, BigDecimal total) {
+        for (Map<String, Object> u : getUserList()) {
+            String nama = String.valueOf(u.get("nama"));
+            if (p.getAlamat() != null && p.getAlamat().contains(nama.split(" ")[0])) {
+                String oldSaldo = String.valueOf(u.get("saldo")).replace("Rp ", "").replace(".", "");
+                try {
+                    BigDecimal cur = new BigDecimal(oldSaldo);
+                    u.put("saldo", "Rp " + cur.add(total));
+                    int poin = Integer.parseInt(String.valueOf(u.get("poin")).replace(" poin", ""));
+                    u.put("poin", (poin + total.intValue() / 1000) + " poin");
+                } catch (Exception e) {}
+                break;
+            }
+        }
+        for (Map<String, Object> d : getDompetList()) {
+            String nama = String.valueOf(d.get("nama"));
+            if (p.getAlamat() != null && p.getAlamat().contains(nama.split(" ")[0])) {
+                String oldSaldo = String.valueOf(d.get("saldo")).replace("Rp ", "").replace(".", "");
+                try {
+                    BigDecimal cur = new BigDecimal(oldSaldo);
+                    d.put("saldo", "Rp " + cur.add(total));
+                } catch (Exception e) {}
+                break;
+            }
+        }
+    }
 }
