@@ -35,17 +35,21 @@ Section "Install"
     File "target\resik-desktop-1.0.0.jar"
     File "src\main\resources\resik-icon.ico"
 
-    ; Launcher batch file
+    ; Windows JavaFX runtime (native DLLs + platform JARs)
+    SetOutPath "$INSTDIR\lib"
+    File /r "javafx-win\*.*"
+
+    ; Launcher batch file — JavaFX must load from module path
     FileOpen $0 "$INSTDIR\resik.bat" w
     FileWrite $0 '@echo off$\r$\n'
     FileWrite $0 'cd /d "$INSTDIR"$\r$\n'
-    FileWrite $0 'start "" "$INSTDIR\jre\bin\javaw.exe" -jar "$INSTDIR\resik-desktop-1.0.0.jar"$\r$\n'
+    FileWrite $0 'start "" "$INSTDIR\jre\bin\javaw.exe" --module-path "$INSTDIR\lib" --add-modules javafx.controls,javafx.fxml --add-modules java.base --class-path "$INSTDIR\resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
     FileClose $0
 
     ; Shortcuts - icon MUST be .ico (PNG is not valid for shortcuts)
-    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\jre\bin\javaw.exe" '-jar "$INSTDIR\resik-desktop-1.0.0.jar"' "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\jre\bin\javaw.exe" '--module-path "$INSTDIR\lib" --add-modules javafx.controls,javafx.fxml --class-path "$INSTDIR\resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp' "$INSTDIR\resik-icon.ico"
     CreateDirectory "$SMPROGRAMS\Resik"
-    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\jre\bin\javaw.exe" '-jar "$INSTDIR\resik-desktop-1.0.0.jar"' "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\jre\bin\javaw.exe" '--module-path "$INSTDIR\lib" --add-modules javafx.controls,javafx.fxml --class-path "$INSTDIR\resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp' "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Uninstall Resik.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\resik-icon.ico"
 
     WriteUninstaller "$INSTDIR\uninstall.exe"
@@ -63,6 +67,7 @@ Section "Uninstall"
     Delete "$INSTDIR\resik.bat"
     Delete "$INSTDIR\resik-icon.ico"
     RMDir /r "$INSTDIR\jre"
+    RMDir /r "$INSTDIR\lib"
     Delete "$INSTDIR\uninstall.exe"
     RMDir "$INSTDIR"
 
