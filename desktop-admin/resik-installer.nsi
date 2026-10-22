@@ -41,16 +41,9 @@ Section "Install"
     File "target\resik-desktop-1.0.0.jar"
     File "src\main\resources\resik-icon.ico"
 
-    ; Launcher VBS — launches javaw silently (no CMD window)
-    FileOpen $0 "$INSTDIR\resik.vbs" w
-    FileWrite $0 'Set objShell = CreateObject("WScript.Shell")$\r$\n'
-    FileWrite $0 'strDir = objShell.CurrentDirectory$\r$\n'
-    FileWrite $0 'If WScript.ScriptFullName <> "" Then$\r$\n'
-    FileWrite $0 '  strDir = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\\"))$\r$\n'
-    FileWrite $0 'End If$\r$\n'
-    FileWrite $0 'objShell.CurrentDirectory = strDir$\r$\n'
-    FileWrite $0 'objShell.Run """" & strDir & "jre\bin\javaw.exe"" --module-path """" & strDir & "lib"""" --add-modules javafx.controls,javafx.fxml -cp """" & strDir & "resik-desktop-1.0.0.jar"""" com.resik.admin.ResikDesktopApp", 0, False$\r$\n'
-    FileClose $0
+    ; Launcher VBS — bundled file (no CMD window), NOT generated (avoids escaping bugs)
+    File "resik-launcher.vbs"
+    Rename "$INSTDIR\resik-launcher.vbs" "$INSTDIR\resik.vbs"
 
     ; Debug batch — shows console with errors
     FileOpen $1 "$INSTDIR\resik-debug.bat" w
