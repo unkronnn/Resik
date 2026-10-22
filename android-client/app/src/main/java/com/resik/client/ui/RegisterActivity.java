@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.resik.client.R;
@@ -27,6 +28,9 @@ public class RegisterActivity extends AppCompatActivity {
         EditText alamatField = findViewById(R.id.alamatField);
         EditText telpField = findViewById(R.id.telpField);
         Button registerBtn = findViewById(R.id.registerBtn);
+        TextView loginLink = findViewById(R.id.loginLink);
+
+        loginLink.setOnClickListener(v -> finish());
 
         registerBtn.setOnClickListener(v -> {
             String nama = namaField.getText().toString().trim();

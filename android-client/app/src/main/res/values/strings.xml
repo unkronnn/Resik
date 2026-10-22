@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">RESIK</string>
+    <string name="tagline">Bank Sampah Digital</string>
+    <string name="welcome_title">Selamat Datang di RESIK</string>
+    <string name="welcome_subtitle">Kelola sampah, hemat lingkungan, dapatkan poin</string>
+    <string name="get_started">Mulai</string>
+    <string name="login">Masuk</string>
+    <string name="register">Daftar</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="full_name">Nama Lengkap</string>
+    <string name="address">Alamat</string>
+    <string name="phone">No. Telepon</string>
+    <string name="confirm_password">Konfirmasi Password</string>
+    <string name="forgot_password">Lupa Password?</string>
+    <string name="no_account">Belum punya akun?</string>
+    <string name="have_account">Sudah punya akun?</string>
+    <string name="sign_up">Daftar di sini</string>
+    <string name="sign_in">Masuk di sini</string>
+    <string name="or_continue">atau lanjutkan dengan</string>
+    <string name="home">Home</string>
+    <string name="dompet">Dompet</string>
+    <string name="edukasi">Edukasi</string>
+    <string name="profil">Profil</string>
+    <string name="saldo">Saldo</string>
+    <string name="poin">Poin</string>
+    <string name="jemput_sampah">Jemput Sampah</string>
+    <string name="riwayat">Riwayat</string>
+    <string name="chat_admin">Chat Admin</string>
+    <string name="lokasi_bank_sampah">Lokasi Bank Sampah</string>
+    <string name="scan_qr">Scan QR Code</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="logout">Logout</string>
 </resources>

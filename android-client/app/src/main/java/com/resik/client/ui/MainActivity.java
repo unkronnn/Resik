@@ -44,11 +44,15 @@ public class MainActivity extends AppCompatActivity {
 
         LinearLayout navDompet = findViewById(R.id.navDompet);
         LinearLayout navLeaderboard = findViewById(R.id.navLeaderboard);
-        LinearLayout navProfil = findViewById(R.id.navProfil);
+        LinearLayout navProfil = findViewById(R.id.navBottomProfil);
 
         navDompet.setOnClickListener(v -> startActivity(new Intent(this, DompetActivity.class)));
         navLeaderboard.setOnClickListener(v -> startActivity(new Intent(this, LeaderboardActivity.class)));
         navProfil.setOnClickListener(v -> startActivity(new Intent(this, ProfilActivity.class)));
+
+        // Bottom navigation
+        findViewById(R.id.navBottomDompet).setOnClickListener(v -> startActivity(new Intent(this, DompetActivity.class)));
+        findViewById(R.id.navBottomEdukasi).setOnClickListener(v -> startActivity(new Intent(this, EdukasiActivity.class)));
 
         findViewById(R.id.logoutBtn).setOnClickListener(v -> {
             ApiClient.logout();

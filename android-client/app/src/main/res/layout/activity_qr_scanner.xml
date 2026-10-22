@@ -3,11 +3,86 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    android:background="@color/green_dark">
 
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📷 Scan QR Code" android:textSize="20sp" android:textStyle="bold" android:textColor="#1a5d3a" android:padding="16dp" />
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="24dp"
+        android:gravity="center_vertical">
 
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Arahkan kamera ke QR Code pada penjemputan" android:textColor="#999" android:padding="16dp" />
+        <LinearLayout
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center">
 
-    <Button android:id="@+id/scanBtn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mulai Scan" android:backgroundTint="#1a5d3a" android:textColor="#fff" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="←"
+                android:textSize="24sp"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scan QR Code"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- QR Frame -->
+    <LinearLayout
+        android:layout_width="240dp"
+        android:layout_height="240dp"
+        android:layout_gravity="center"
+        android:background="@drawable/qr_frame_bg"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📷"
+            android:textSize="56sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Arahkan kamera ke QR Code"
+            android:textSize="13sp"
+            android:textColor="#C8E6D0"
+            android:layout_marginTop="12dp"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/scanBtn"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="Mulai Scan"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/green_primary"
+        android:background="@drawable/btn_white_rounded"
+        android:layout_margin="24dp"
+        android:elevation="4dp" />
 </LinearLayout>

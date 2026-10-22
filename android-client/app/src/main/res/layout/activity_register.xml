@@ -2,30 +2,204 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1a5d3a"
-    android:padding="24dp">
+    android:background="@color/bg_light"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/card_bg"
         android:padding="24dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="20dp" />
+
+        <!-- Logo -->
+        <LinearLayout
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/logo_circle_green"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="♻"
+                android:textSize="36sp"
+                android:textColor="@color/white" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="♻️ Daftar Akun"
-            android:textSize="24sp"
+            android:text="Buat Akun Baru"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="#1a5d3a" />
+            android:textColor="@color/text_primary"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp" />
 
-        <EditText android:id="@+id/namaField" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Nama Lengkap" android:padding="12dp" android:layout_marginTop="16dp" />
-        <EditText android:id="@+id/emailField" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Email" android:inputType="textEmailAddress" android:padding="12dp" android:layout_marginTop="8dp" />
-        <EditText android:id="@+id/passwordField" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Password" android:inputType="textPassword" android:padding="12dp" android:layout_marginTop="8dp" />
-        <EditText android:id="@+id/alamatField" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Alamat" android:padding="12dp" android:layout_marginTop="8dp" />
-        <EditText android:id="@+id/telpField" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="No. Telepon" android:inputType="phone" android:padding="12dp" android:layout_marginTop="8dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Daftar untuk mulai berkontribusi"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:layout_gravity="center"
+            android:layout_marginBottom="32dp" />
 
-        <Button android:id="@+id/registerBtn" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DAFTAR" android:layout_marginTop="16dp" android:backgroundTint="#1a5d3a" />
+        <!-- Nama Lengkap -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/full_name"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/namaField"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="masukkan nama lengkap"
+            android:inputType="textPersonName"
+            android:padding="14dp"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
+
+        <!-- Email -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/email"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/emailField"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="masukkan email anda"
+            android:inputType="textEmailAddress"
+            android:padding="14dp"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
+
+        <!-- Password -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/password"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/passwordField"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="masukkan password"
+            android:inputType="textPassword"
+            android:padding="14dp"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
+
+        <!-- Alamat -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/address"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/alamatField"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="masukkan alamat"
+            android:inputType="textPostalAddress"
+            android:padding="14dp"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
+
+        <!-- No Telepon -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/phone"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp" />
+
+        <EditText
+            android:id="@+id/telpField"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="masukkan no. telepon"
+            android:inputType="phone"
+            android:padding="14dp"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint" />
+
+        <!-- Register Button -->
+        <Button
+            android:id="@+id/registerBtn"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="@string/register"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/btn_primary"
+            android:layout_marginTop="28dp"
+            android:elevation="4dp" />
+
+        <!-- Login Link -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/have_account"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/loginLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_in"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/green_primary"
+                android:layout_marginStart="6dp"
+                android:padding="4dp" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

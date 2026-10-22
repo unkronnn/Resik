@@ -1,10 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="green_primary">#1a5d3a</color>
-    <color name="green_light">#2d7a4f</color>
-    <color name="orange_accent">#f39c12</color>
-    <color name="bg_light">#f4f6f4</color>
+    <!-- Primary greens from Figma -->
+    <color name="green_primary">#1A5D3A</color>
+    <color name="green_dark">#0D4E2C</color>
+    <color name="green_light">#2D7A4F</color>
+    <color name="green_lighter">#4A9D6F</color>
+    <color name="green_mint">#E8F5EE</color>
+    <color name="green_pale">#F0F9F4</color>
+
+    <!-- Accent -->
+    <color name="orange_accent">#F39C12</color>
+    <color name="orange_light">#FFF3E0</color>
+    <color name="yellow_accent">#FFC107</color>
+
+    <!-- Backgrounds -->
+    <color name="bg_light">#F5F7F5</color>
+    <color name="bg_white">#FFFFFF</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_input">#F8FAF8</color>
+
+    <!-- Text -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="red_logout">#c0392b</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="text_light">#CBD5E1</color>
+
+    <!-- Actions -->
+    <color name="red_logout">#DC2626</color>
+    <color name="red_light">#FEE2E2</color>
+    <color name="blue_google">#4285F4</color>
+    <color name="blue_facebook">#1877F2</color>
+
+    <!-- Borders -->
+    <color name="border_light">#E2E8F0</color>
+    <color name="border_input">#D1D5DB</color>
+    <color name="overlay_dark">#80000000</color>
 </resources>

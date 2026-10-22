@@ -36,10 +36,14 @@ public class LoginActivity extends AppCompatActivity {
         passwordField = findViewById(R.id.passwordField);
         Button loginBtn = findViewById(R.id.loginBtn);
         TextView registerLink = findViewById(R.id.registerLink);
+        TextView forgotPasswordLink = findViewById(R.id.forgotPasswordLink);
 
         loginBtn.setOnClickListener(v -> doLogin());
         registerLink.setOnClickListener(v -> {
             startActivity(new Intent(this, RegisterActivity.class));
+        });
+        forgotPasswordLink.setOnClickListener(v -> {
+            Toast.makeText(this, "Fitur lupa password akan datang", Toast.LENGTH_SHORT).show();
         });
     }
 
