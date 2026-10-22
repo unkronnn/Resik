@@ -84,6 +84,31 @@ public class DummyData {
         return stats;
     }
 
+    public static List<Map<String, Object>> getUserList() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        list.add(createUserMap(1L, "Syukron Maulana", "syukron@mail.com", "MASYARAKAT", "Jl. Merdeka 45", "081234567890", "45500", "320"));
+        list.add(createUserMap(2L, "Zain Ghathfaan", "zain@mail.com", "MASYARAKAT", "Jl. Sudirman 12", "081234567891", "32000", "280"));
+        list.add(createUserMap(3L, "Riri Syafala", "riri@mail.com", "MASYARAKAT", "Jl. Asia Afrika 88", "081234567892", "28500", "250"));
+        list.add(createUserMap(4L, "Ahmad Fauzi", "ahmad@mail.com", "MASYARAKAT", "Jl. Dipatiukur 7", "081234567893", "15000", "180"));
+        list.add(createUserMap(5L, "Siti Nurhaliza", "siti@mail.com", "MASYARAKAT", "Jl. Cihampelas 100", "081234567894", "8000", "120"));
+        list.add(createUserMap(6L, "Admin RESIK", "admin@resik.id", "ADMIN", "Kantor Bank Sampah", "081200000000", "-", "-"));
+        list.add(createUserMap(7L, "Budi Santoso", "budi@mail.com", "PETUGAS", "Kantor Bank Sampah", "081234567895", "-", "-"));
+        return list;
+    }
+
+    private static Map<String, Object> createUserMap(Long id, String nama, String email, String role, String alamat, String telp, String saldo, String poin) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", id);
+        m.put("nama", nama);
+        m.put("email", email);
+        m.put("role", role);
+        m.put("alamat", alamat);
+        m.put("telp", telp);
+        m.put("saldo", saldo);
+        m.put("poin", poin);
+        return m;
+    }
+
     public static List<Map<String, Object>> getDompetList() {
         List<Map<String, Object>> list = new ArrayList<>();
         String[] names = {"Syukron Maulana", "Zain Ghathfaan", "Riri Syafala", "Ahmad Fauzi", "Siti Nurhaliza"};
@@ -108,5 +133,58 @@ public class DummyData {
         l.put("totalUser", 47);
         l.put("estimasiPohon", "12 pohon");
         return l;
+    }
+
+    // Dynamic CRUD operations
+    private static long nextSampahId = 100;
+    private static long nextUserId = 100;
+
+    public static void addSampah(String nama, String kategori, String harga, String deskripsi) {
+        Sampah s = new Sampah();
+        s.setId(nextSampahId++);
+        s.setNama(nama != null ? nama : "Tanpa Nama");
+        s.setKategori(kategori != null ? kategori.toUpperCase() : "ANORGANIK");
+        try { s.setHargaPerKg(new BigDecimal(harga != null ? harga : "0")); } catch (Exception e) { s.setHargaPerKg(BigDecimal.ZERO); }
+        s.setDeskripsi(deskripsi != null ? deskripsi : "");
+        s.setIsActive(true);
+        getSampahList().add(s);
+    }
+
+    public static void updateSampah(Long id, String nama, String kategori, String harga, String deskripsi) {
+        for (Sampah s : getSampahList()) {
+            if (s.getId().equals(id)) {
+                if (nama != null) s.setNama(nama);
+                if (kategori != null) s.setKategori(kategori.toUpperCase());
+                try { if (harga != null) s.setHargaPerKg(new BigDecimal(harga)); } catch (Exception e) {}
+                if (deskripsi != null) s.setDeskripsi(deskripsi);
+                break;
+            }
+        }
+    }
+
+    public static void addUser(String nama, String email, String role, String alamat, String telp) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", nextUserId++);
+        m.put("nama", nama);
+        m.put("email", email);
+        m.put("role", role != null ? role.toUpperCase() : "MASYARAKAT");
+        m.put("alamat", alamat);
+        m.put("telp", telp);
+        m.put("saldo", "0");
+        m.put("poin", "0");
+        getUserList().add(m);
+    }
+
+    public static void updateUser(Long id, String nama, String email, String role, String alamat, String telp) {
+        for (Map<String, Object> u : getUserList()) {
+            if (((Number) u.get("id")).longValue() == id) {
+                if (nama != null) u.put("nama", nama);
+                if (email != null) u.put("email", email);
+                if (role != null) u.put("role", role.toUpperCase());
+                if (alamat != null) u.put("alamat", alamat);
+                if (telp != null) u.put("telp", telp);
+                break;
+            }
+        }
     }
 }

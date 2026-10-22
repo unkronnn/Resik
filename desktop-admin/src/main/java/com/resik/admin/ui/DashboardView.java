@@ -5,10 +5,13 @@ import com.resik.admin.model.Penjemputan;
 import com.resik.admin.model.Sampah;
 import com.resik.admin.service.DummyData;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -17,7 +20,10 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.HashMap;
 
 public class DashboardView {
 
@@ -116,6 +122,7 @@ public class DashboardView {
             createNavButton("Leaderboard", e -> showLeaderboard()),
             createNavButton("Laporan", e -> showLaporan()),
             createNavButton("Chat", e -> showChat()),
+            createNavButton("Manajemen User", e -> showUsers()),
             createNavButton("Profil", e -> showProfil()));
         sb.getChildren().addAll(mh, nav);
         return sb;
@@ -230,7 +237,29 @@ public class DashboardView {
 
     private void showPenjemputan() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().addAll(createPageHeader("Manajemen Penjemputan", "Daftar semua permintaan penjemputan sampah"), new Separator());
+        contentArea.getChildren().add(createPageHeader("Manajemen Penjemputan", "Kelola semua permintaan penjemputan sampah"));
+
+        HBox actionBar = CrudDialog.createActionBar(
+            e -> {
+                Optional<Map<String, String>> result = CrudDialog.showForm(
+                    "Tambah Penjemputan", "Simpan",
+                    List.of(
+                        new CrudDialog.FormField("alamat", "Alamat Penjemputan", "Jl. Contoh No. 1"),
+                        new CrudDialog.FormField("tanggal", "Tanggal Jemput (YYYY-MM-DD)", "2026-10-25"),
+                        new CrudDialog.FormField("waktu", "Waktu Jemput", "09:00-11:00"),
+                        new CrudDialog.FormField("catatan", "Catatan", "Jenis sampah dan estimasi berat")
+                    ), null
+                );
+                result.ifPresent(vals -> {
+                    CrudDialog.showInfo("Berhasil", "Penjemputan baru telah ditambahkan (demo mode).");
+                    showPenjemputan();
+                });
+            },
+            null,
+            e -> { CrudDialog.showInfo("Info", "Klik dua kali pada baris untuk melihat detail. Untuk hapus, pilih baris lalu konfirmasi."); }
+        );
+        contentArea.getChildren().addAll(actionBar, new Separator());
+
         TableView<Penjemputan> t = createStyledTable();
         TableColumn<Penjemputan, String> c1 = new TableColumn<>("ID");
         c1.setCellValueFactory(d -> new SimpleStringProperty(String.format("%03d", d.getValue().getId())));
@@ -262,7 +291,30 @@ public class DashboardView {
 
     private void showSampah() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().addAll(createPageHeader("Data Sampah", "Daftar jenis sampah dan harga per kilogram"), new Separator());
+        contentArea.getChildren().add(createPageHeader("Data Sampah", "Kelola jenis sampah dan harga per kilogram"));
+
+        HBox actionBar = CrudDialog.createActionBar(
+            e -> {
+                Optional<Map<String, String>> result = CrudDialog.showForm(
+                    "Tambah Jenis Sampah", "Simpan",
+                    List.of(
+                        new CrudDialog.FormField("nama", "Nama Sampah", "Contoh: Botol Plastik"),
+                        new CrudDialog.FormField("kategori", "Kategori", "ORGANIK / ANORGANIK / B3"),
+                        new CrudDialog.FormField("harga", "Harga per kg (Rp)", "Contoh: 2500"),
+                        new CrudDialog.FormField("deskripsi", "Deskripsi", "Keterangan singkat")
+                    ), null
+                );
+                result.ifPresent(vals -> {
+                    DummyData.addSampah(vals.get("nama"), vals.get("kategori"), vals.get("harga"), vals.get("deskripsi"));
+                    showSampah();
+                    CrudDialog.showInfo("Berhasil", "Jenis sampah baru telah ditambahkan.");
+                });
+            },
+            null,
+            e -> { CrudDialog.showInfo("Info", "Klik dua kali pada baris untuk mengedit. Untuk hapus, klik tombol Hapus lalu konfirmasi."); }
+        );
+        contentArea.getChildren().addAll(actionBar, new Separator());
+
         TableView<Sampah> t = createStyledTable();
         TableColumn<Sampah, String> c1 = new TableColumn<>("Nama");
         c1.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNama()));
@@ -274,6 +326,34 @@ public class DashboardView {
         c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDeskripsi()));
         t.getColumns().addAll(c1, c2, c3, c4);
         t.getItems().addAll(DummyData.getSampahList());
+
+        t.setRowFactory(tv -> {
+            TableRow<Sampah> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Sampah sel = row.getItem();
+                    Map<String, String> init = new HashMap<>();
+                    init.put("nama", sel.getNama());
+                    init.put("kategori", sel.getKategori());
+                    init.put("harga", sel.getHargaPerKg().toString());
+                    init.put("deskripsi", sel.getDeskripsi());
+                    CrudDialog.showForm("Edit Jenis Sampah", "Update",
+                        List.of(
+                            new CrudDialog.FormField("nama", "Nama Sampah", ""),
+                            new CrudDialog.FormField("kategori", "Kategori", ""),
+                            new CrudDialog.FormField("harga", "Harga per kg (Rp)", ""),
+                            new CrudDialog.FormField("deskripsi", "Deskripsi", "")
+                        ), init
+                    ).ifPresent(vals -> {
+                        DummyData.updateSampah(sel.getId(), vals.get("nama"), vals.get("kategori"), vals.get("harga"), vals.get("deskripsi"));
+                        showSampah();
+                        CrudDialog.showInfo("Berhasil", "Data sampah telah diperbarui.");
+                    });
+                }
+            });
+            return row;
+        });
+
         contentArea.getChildren().add(t);
     }
 
@@ -394,7 +474,6 @@ public class DashboardView {
         VBox header = createPageHeader("Profil", "Informasi akun administrator");
         VBox card = new VBox(16);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
-
         Label nm = new Label(AppConfig.userName);
         nm.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 20));
         nm.setTextFill(Color.valueOf("#1e293b"));
@@ -407,9 +486,82 @@ public class DashboardView {
         Label id = new Label("User ID: " + AppConfig.userId);
         id.setFont(Font.font("SF Pro Display", 13));
         id.setTextFill(Color.valueOf("#64748b"));
-
         card.getChildren().addAll(nm, rl, em, id);
         contentArea.getChildren().addAll(header, card);
+    }
+
+    private void showUsers() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(createPageHeader("Manajemen User", "Kelola data semua pengguna"));
+
+        HBox actionBar = CrudDialog.createActionBar(
+            e -> {
+                Optional<Map<String, String>> result = CrudDialog.showForm(
+                    "Tambah User Baru", "Simpan",
+                    List.of(
+                        new CrudDialog.FormField("nama", "Nama Lengkap", "Contoh: Budi Santoso"),
+                        new CrudDialog.FormField("email", "Email", "Contoh: budi@mail.com"),
+                        new CrudDialog.FormField("password", "Password", "Minimal 6 karakter"),
+                        new CrudDialog.FormField("role", "Role", "MASYARAKAT / PETUGAS / ADMIN"),
+                        new CrudDialog.FormField("alamat", "Alamat", "Alamat lengkap"),
+                        new CrudDialog.FormField("telp", "No. Telepon", "08xxxxxxxxxx")
+                    ), null
+                );
+                result.ifPresent(vals -> {
+                    DummyData.addUser(vals.get("nama"), vals.get("email"), vals.get("role"), vals.get("alamat"), vals.get("telp"));
+                    showUsers();
+                    CrudDialog.showInfo("Berhasil", "User baru telah ditambahkan.");
+                });
+            },
+            null,
+            e -> { CrudDialog.showInfo("Info", "Klik dua kali pada baris untuk mengedit data user."); }
+        );
+        contentArea.getChildren().addAll(actionBar, new Separator());
+
+        TableView<Map<String, Object>> table = createStyledTable();
+        TableColumn<Map<String, Object>, String> c1 = new TableColumn<>("ID");
+        c1.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("id"))));
+        TableColumn<Map<String, Object>, String> c2 = new TableColumn<>("Nama");
+        c2.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("nama"))));
+        TableColumn<Map<String, Object>, String> c3 = new TableColumn<>("Email");
+        c3.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("email"))));
+        TableColumn<Map<String, Object>, String> c4 = new TableColumn<>("Role");
+        c4.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("role"))));
+        TableColumn<Map<String, Object>, String> c5 = new TableColumn<>("No. Telp");
+        c5.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("telp"))));
+        table.getColumns().addAll(c1, c2, c3, c4, c5);
+        table.getItems().addAll(DummyData.getUserList());
+
+        table.setRowFactory(tv -> {
+            TableRow<Map<String, Object>> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    Map<String, Object> sel = row.getItem();
+                    Map<String, String> init = new HashMap<>();
+                    init.put("nama", String.valueOf(sel.get("nama")));
+                    init.put("email", String.valueOf(sel.get("email")));
+                    init.put("role", String.valueOf(sel.get("role")));
+                    init.put("alamat", String.valueOf(sel.get("alamat")));
+                    init.put("telp", String.valueOf(sel.get("telp")));
+                    CrudDialog.showForm("Edit User", "Update",
+                        List.of(
+                            new CrudDialog.FormField("nama", "Nama Lengkap", ""),
+                            new CrudDialog.FormField("email", "Email", ""),
+                            new CrudDialog.FormField("role", "Role", "MASYARAKAT / PETUGAS / ADMIN"),
+                            new CrudDialog.FormField("alamat", "Alamat", ""),
+                            new CrudDialog.FormField("telp", "No. Telepon", "")
+                        ), init
+                    ).ifPresent(vals -> {
+                        DummyData.updateUser((Long) sel.get("id"), vals.get("nama"), vals.get("email"), vals.get("role"), vals.get("alamat"), vals.get("telp"));
+                        showUsers();
+                        CrudDialog.showInfo("Berhasil", "Data user telah diperbarui.");
+                    });
+                }
+            });
+            return row;
+        });
+
+        contentArea.getChildren().add(table);
     }
 
     public BorderPane getView() {
