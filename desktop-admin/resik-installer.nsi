@@ -1,9 +1,6 @@
-; Resik Admin Installer - NSIS Script
-; Bundles JRE + JavaFX + Launch4j EXE wrapper
-
+; Resik Admin Installer
 !define APPNAME "Resik"
 !define APPVERSION "1.0.0"
-!define COMPANYNAME "Resik"
 
 Name "${APPNAME} Admin"
 OutFile "Resik-Setup.exe"
@@ -27,18 +24,11 @@ SetCompressor zlib
 !insertmacro MUI_LANGUAGE "English"
 
 Function .onInit
-    ; Kill any running instance so DLLs are not locked during install
     nsExec::Exec 'taskkill /F /IM ResikAdmin.exe /T'
     nsExec::Exec 'taskkill /F /IM javaw.exe /T'
     Sleep 500
-    ; Retry once more in case of slow exit
-    nsExec::Exec 'taskkill /F /IM ResikAdmin.exe /T'
-    Sleep 250
-
-    ; Silently uninstall previous version if present
     ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString"
     ${If} $R0 != ""
-        DetailPrint "Removing previous version..."
         ExecWait '"$R0" /S _?=$INSTDIR'
     ${EndIf}
 FunctionEnd
@@ -48,46 +38,43 @@ Section "Install"
     SetOutPath "$INSTDIR\jre"
     File /r "jre-win\jre\*.*"
 
-    ; JavaFX Windows SDK
+    ; JavaFX
     SetOutPath "$INSTDIR\lib"
     File /r "javafx-win\lib\*.*"
     SetOutPath "$INSTDIR\bin"
     File /r "javafx-win\bin\*.*"
 
-    ; App files
+    ; App
     SetOutPath "$INSTDIR"
-    File "ResikAdmin.exe"
     File "target\resik-desktop-1.0.0.jar"
     File "src\main\resources\resik-icon.ico"
+    File "resik-launcher.vbs"
 
-    ; Debug batch — shows console with errors
+    ; Debug
     FileOpen $1 "$INSTDIR\resik-debug.bat" w
     FileWrite $1 '@echo off$\r$\n'
-    FileWrite $1 'set APPDIR=%~dp0$\r$\n'
-    FileWrite $1 'cd /d "%APPDIR%"$\r$\n'
-    FileWrite $1 '"%APPDIR%jre\bin\java.exe" --module-path "%APPDIR%lib" --add-modules javafx.controls,javafx.fxml -cp "%APPDIR%resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
+    FileWrite $1 'cd /d "%~dp0"$\r$\n'
+    FileWrite $1 '"%~dp0jre\bin\java.exe" --module-path "%~dp0lib" --add-modules javafx.controls,javafx.fxml -cp "%~dp0resik-desktop-1.0.0.jar" com.resik.admin.ResikDesktopApp$\r$\n'
     FileWrite $1 'pause$\r$\n'
     FileClose $1
 
-    ; Shortcuts — ResikAdmin.exe is the Launch4j wrapper (shows as "ResikAdmin.exe" in Task Manager)
-    CreateShortCut "$DESKTOP\Resik Admin.lnk" "$INSTDIR\ResikAdmin.exe" "" "$INSTDIR\resik-icon.ico"
+    ; Shortcut: wscript.exe runs VBS silently, WorkingDir set to INSTDIR
+    CreateShortCut "$DESKTOP\Resik Admin.lnk" "wscript.exe" '"$INSTDIR\resik-launcher.vbs"' "$INSTDIR\resik-icon.ico"
     CreateDirectory "$SMPROGRAMS\Resik"
-    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "$INSTDIR\ResikAdmin.exe" "" "$INSTDIR\resik-icon.ico"
+    CreateShortCut "$SMPROGRAMS\Resik\Resik Admin.lnk" "wscript.exe" '"$INSTDIR\resik-launcher.vbs"' "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Resik Admin (Debug).lnk" "$INSTDIR\resik-debug.bat" "" "$INSTDIR\resik-icon.ico"
     CreateShortCut "$SMPROGRAMS\Resik\Uninstall Resik.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\resik-icon.ico"
 
     WriteUninstaller "$INSTDIR\uninstall.exe"
-
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME} Admin"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayVersion" "${APPVERSION}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "${COMPANYNAME}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "Publisher" "Resik"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$INSTDIR\uninstall.exe"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayIcon" "$INSTDIR\resik-icon.ico"
 SectionEnd
 
 Section "Uninstall"
-    Delete "$INSTDIR\ResikAdmin.exe"
+    Delete "$INSTDIR\resik-launcher.vbs"
     Delete "$INSTDIR\resik-desktop-1.0.0.jar"
     Delete "$INSTDIR\resik-debug.bat"
     Delete "$INSTDIR\resik-icon.ico"
@@ -96,9 +83,7 @@ Section "Uninstall"
     RMDir /r "$INSTDIR\bin"
     Delete "$INSTDIR\uninstall.exe"
     RMDir "$INSTDIR"
-
     Delete "$DESKTOP\Resik Admin.lnk"
     RMDir /r "$SMPROGRAMS\Resik"
-
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
 SectionEnd
