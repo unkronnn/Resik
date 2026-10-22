@@ -13,6 +13,7 @@ ShowInstDetails show
 SetCompressor zlib
 
 !include "MUI2.nsh"
+!include "LogicLib.nsh"
 !define MUI_ICON "src\main\resources\resik-icon.ico"
 !define MUI_UNICON "src\main\resources\resik-icon.ico"
 
@@ -24,6 +25,23 @@ SetCompressor zlib
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
+
+Function .onInit
+    ; Kill any running instance so DLLs are not locked during install
+    nsExec::Exec 'taskkill /F /IM ResikAdmin.exe /T'
+    nsExec::Exec 'taskkill /F /IM javaw.exe /T'
+    Sleep 500
+    ; Retry once more in case of slow exit
+    nsExec::Exec 'taskkill /F /IM ResikAdmin.exe /T'
+    Sleep 250
+
+    ; Silently uninstall previous version if present
+    ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString"
+    ${If} $R0 != ""
+        DetailPrint "Removing previous version..."
+        ExecWait '"$R0" /S _?=$INSTDIR'
+    ${EndIf}
+FunctionEnd
 
 Section "Install"
     ; JRE
