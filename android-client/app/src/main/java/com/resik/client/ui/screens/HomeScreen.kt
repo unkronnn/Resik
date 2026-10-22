@@ -1,5 +1,6 @@
 package com.resik.client.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import com.resik.client.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,9 +54,21 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text("Selamat Datang 👋", fontSize = 14.sp, color = GreenMint)
-                    Text(userName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = BgWhite)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_logo_small),
+                        contentDescription = "RESIK",
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(BgWhite)
+                            .padding(4.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text("Selamat Datang 👋", fontSize = 14.sp, color = GreenMint)
+                        Text(userName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = BgWhite)
+                    }
                 }
                 Box(
                     modifier = Modifier.size(44.dp).clip(CircleShape).background(RedLogout.copy(alpha = 0.15f)).clickable { onLogout() },

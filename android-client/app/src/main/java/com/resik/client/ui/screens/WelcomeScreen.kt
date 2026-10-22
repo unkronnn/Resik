@@ -1,5 +1,6 @@
 package com.resik.client.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,10 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.resik.client.R
 import com.resik.client.ui.theme.*
 
 @Composable
@@ -34,15 +37,15 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.weight(1f))
             // Logo
-            Box(
+            Image(
+                painter = painterResource(R.drawable.ic_logo_large),
+                contentDescription = "RESIK Logo",
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(140.dp)
                     .clip(CircleShape)
-                    .background(Brush.linearGradient(listOf(GreenPrimary, GreenLight))),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("♻", fontSize = 56.sp, color = BgWhite)
-            }
+                    .background(BgWhite)
+                    .padding(12.dp)
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text("RESIK", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BgWhite, letterSpacing = 2.sp)
             Spacer(modifier = Modifier.height(8.dp))

@@ -6,6 +6,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -32,13 +34,13 @@ public class LoginView {
         card.setMaxWidth(380);
 
         // Logo circle
-        Circle logoCircle = new Circle(36);
-        logoCircle.setFill(Color.valueOf("#1A5D3A"));
-        Text logoText = new Text("♻");
-        logoText.setFill(Color.WHITE);
-        logoText.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 32));
-        StackPane logoPane = new StackPane(logoCircle, logoText);
-        logoPane.setPadding(new Insets(0, 0, 4, 0));
+        ImageView logoView = new ImageView(new Image(getClass().getResourceAsStream("/resik-logo-large.png")));
+        logoView.setFitWidth(90);
+        logoView.setFitHeight(90);
+        logoView.setPreserveRatio(true);
+        logoView.setSmooth(true);
+        StackPane logoPane = new StackPane(logoView);
+        logoPane.setPadding(new Insets(0, 0, 8, 0));
 
         Label titleLabel = new Label("RESIK");
         titleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 28));

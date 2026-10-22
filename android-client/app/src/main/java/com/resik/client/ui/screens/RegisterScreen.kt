@@ -1,5 +1,6 @@
 package com.resik.client.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import com.resik.client.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,13 +42,15 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Logo
-        Box(
+        Image(
+            painter = painterResource(R.drawable.ic_logo),
+            contentDescription = "RESIK Logo",
             modifier = Modifier
-                .size(64.dp)
+                .size(72.dp)
                 .clip(CircleShape)
-                .background(GreenPrimary),
-            contentAlignment = Alignment.Center
-        ) { Text("♻", fontSize = 32.sp, color = BgWhite) }
+                .background(BgWhite)
+                .padding(6.dp)
+        )
         Spacer(Modifier.height(12.dp))
         Text("Buat Akun Baru", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
         Text("Daftar untuk mulai berkontribusi", fontSize = 14.sp, color = TextSecondary)

@@ -1,5 +1,6 @@
 package com.resik.client.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import com.resik.client.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -39,15 +42,15 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Logo
-        Box(
+        Image(
+            painter = painterResource(R.drawable.ic_logo),
+            contentDescription = "RESIK Logo",
             modifier = Modifier
-                .size(72.dp)
+                .size(80.dp)
                 .clip(CircleShape)
-                .background(GreenPrimary),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("♻", fontSize = 36.sp, color = BgWhite)
-        }
+                .background(BgWhite)
+                .padding(8.dp)
+        )
         Spacer(Modifier.height(12.dp))
         Text("RESIK", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = GreenPrimary)
         Text("Bank Sampah Digital", fontSize = 13.sp, color = TextSecondary)

@@ -103,6 +103,7 @@
                             <jar>target/resik-desktop-1.0.0.jar</jar>
                             <outfile>target/RESIK-Admin-Setup.exe</outfile>
                             <errTitle>RESIK Admin</errTitle>
+                            <icon>${project.basedir}/src/main/resources/resik-icon.ico</icon>
                             <downloadUrl>https://java.com/download</downloadUrl>
                             <jre>
                                 <minVersion>17</minVersion>
