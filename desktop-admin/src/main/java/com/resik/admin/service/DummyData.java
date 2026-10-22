@@ -83,4 +83,30 @@ public class DummyData {
         stats.put("TOTAL_USER", 47);
         return stats;
     }
+
+    public static List<Map<String, Object>> getDompetList() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String[] names = {"Syukron Maulana", "Zain Ghathfaan", "Riri Syafala", "Ahmad Fauzi", "Siti Nurhaliza"};
+        String[] saldos = {"45.500", "32.000", "28.500", "15.000", "8.000"};
+        String[] poins = {"320", "280", "250", "180", "120"};
+        for (int i = 0; i < names.length; i++) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("nama", names[i]);
+            m.put("saldo", "Rp " + saldos[i]);
+            m.put("poin", poins[i] + " poin");
+            list.add(m);
+        }
+        return list;
+    }
+
+    public static Map<String, Object> getLaporanLingkungan() {
+        Map<String, Object> l = new LinkedHashMap<>();
+        l.put("totalSampahKg", "127.5 kg");
+        l.put("totalPembayaran", "Rp 345.500");
+        l.put("estimasiCO2Reduction", "255 kg CO2");
+        l.put("totalTransaksi", 18);
+        l.put("totalUser", 47);
+        l.put("estimasiPohon", "12 pohon");
+        return l;
+    }
 }

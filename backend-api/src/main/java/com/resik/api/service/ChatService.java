@@ -1,6 +1,5 @@
 package com.resik.api.service;
 
-import com.resik.api.dto.PenjemputanDtos;
 import com.resik.api.entity.*;
 import com.resik.api.repository.*;
 import org.springframework.stereotype.Service;

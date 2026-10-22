@@ -1,7 +1,8 @@
 package com.resik.api.controller;
 
-import com.resik.api.dto.PenjemputanDtos.*;
-import com.resik.api.entity.*;
+import com.resik.api.dto.PenjemputanDtos;
+import com.resik.api.entity.Penjemputan;
+import com.resik.api.entity.Transaksi;
 import com.resik.api.service.PenjemputanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

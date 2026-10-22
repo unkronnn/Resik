@@ -42,6 +42,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/sampah").permitAll()
                 .requestMatchers("/api/sampah/**").permitAll()
+                .requestMatchers("/api/leaderboard").permitAll()
+                .requestMatchers("/api/laporan/lingkungan").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -16,6 +16,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DashboardView {
@@ -111,8 +112,11 @@ public class DashboardView {
             createNavButton("Penjemputan", e -> showPenjemputan()),
             createNavButton("Penimbangan", e -> showTimbang()),
             createNavButton("Data Sampah", e -> showSampah()),
+            createNavButton("Dompet Digital", e -> showDompet()),
+            createNavButton("Leaderboard", e -> showLeaderboard()),
             createNavButton("Laporan", e -> showLaporan()),
-            createNavButton("Chat", e -> showChat()));
+            createNavButton("Chat", e -> showChat()),
+            createNavButton("Profil", e -> showProfil()));
         sb.getChildren().addAll(mh, nav);
         return sb;
     }
@@ -275,21 +279,44 @@ public class DashboardView {
 
     private void showLaporan() {
         contentArea.getChildren().clear();
-        VBox h = createPageHeader("Laporan Transaksi", "Laporan harian, bulanan, dan tahunan");
-        HBox eb = new HBox(12);
+        VBox header = createPageHeader("Laporan Transaksi", "Laporan harian, bulanan, dan tahunan");
+        HBox exportButtons = new HBox(12);
         Button pdf = new Button("Export PDF");
         pdf.setStyle("-fx-background-color: #0d6e4e; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 10 20; -fx-font-size: 13px; -fx-cursor: hand;");
         Button xls = new Button("Export Excel");
         xls.setStyle("-fx-background-color: white; -fx-text-fill: #0d6e4e; -fx-border-color: #0d6e4e; -fx-border-width: 1px; -fx-background-radius: 6; -fx-padding: 10 20; -fx-font-size: 13px; -fx-cursor: hand;");
-        eb.getChildren().addAll(pdf, xls);
+        exportButtons.getChildren().addAll(pdf, xls);
+
+        VBox lingCard = new VBox(12);
+        lingCard.setStyle("-fx-background-color: #0d6e4e; -fx-background-radius: 12; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 3);");
+        Label lingTitle = new Label("Laporan Lingkungan");
+        lingTitle.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
+        lingTitle.setTextFill(Color.WHITE);
+
+        Map<String, Object> l = DummyData.getLaporanLingkungan();
+        HBox statsRow = new HBox(24);
+        statsRow.setAlignment(Pos.CENTER_LEFT);
+        for (var entry : l.entrySet()) {
+            VBox s = new VBox(4);
+            Label val = new Label(String.valueOf(entry.getValue()));
+            val.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 18));
+            val.setTextFill(Color.WHITE);
+            Label lbl = new Label(entry.getKey());
+            lbl.setFont(Font.font("SF Pro Display", 11));
+            lbl.setTextFill(Color.valueOf("#a7d4c4"));
+            s.getChildren().addAll(val, lbl);
+            statsRow.getChildren().add(s);
+        }
+        lingCard.getChildren().addAll(lingTitle, statsRow);
+
         VBox ic = new VBox(10);
         ic.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 24; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
-        Label i = new Label("Laporan transaksi harian, bulanan, dan tahunan akan ditampilkan di sini.\nGunakan tombol di atas untuk mengekspor laporan.");
-        i.setFont(Font.font("SF Pro Display", 14));
-        i.setTextFill(Color.valueOf("#475569"));
-        i.setWrapText(true);
-        ic.getChildren().add(i);
-        contentArea.getChildren().addAll(h, eb, ic);
+        Label info = new Label("Laporan transaksi harian, bulanan, dan tahunan akan ditampilkan di sini.\nGunakan tombol di atas untuk mengekspor laporan.");
+        info.setFont(Font.font("SF Pro Display", 14));
+        info.setTextFill(Color.valueOf("#475569"));
+        info.setWrapText(true);
+        ic.getChildren().add(info);
+        contentArea.getChildren().addAll(header, exportButtons, lingCard, ic);
     }
 
     private void showChat() {
@@ -303,6 +330,86 @@ public class DashboardView {
         i.setWrapText(true);
         ic.getChildren().add(i);
         contentArea.getChildren().addAll(h, ic);
+    }
+
+    private void showDompet() {
+        contentArea.getChildren().clear();
+        VBox header = createPageHeader("Dompet Digital", "Saldo dan riwayat transaksi semua pengguna");
+
+        VBox list = new VBox(6);
+        for (Map<String, Object> d : DummyData.getDompetList()) {
+            HBox row = new HBox(20);
+            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+            row.setAlignment(Pos.CENTER_LEFT);
+            Label nm = new Label((String) d.get("nama"));
+            nm.setFont(Font.font("SF Pro Display", 14));
+            nm.setTextFill(Color.valueOf("#334155"));
+            nm.setPrefWidth(250);
+            Region sp = new Region();
+            HBox.setHgrow(sp, Priority.ALWAYS);
+            Label sd = new Label((String) d.get("saldo"));
+            sd.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 14));
+            sd.setTextFill(Color.valueOf("#0d6e4e"));
+            sd.setPrefWidth(120);
+            Label pi = new Label((String) d.get("poin"));
+            pi.setFont(Font.font("SF Pro Display", 13));
+            pi.setTextFill(Color.valueOf("#f59e0b"));
+            row.getChildren().addAll(nm, sp, sd, pi);
+            list.getChildren().add(row);
+        }
+        contentArea.getChildren().addAll(header, list);
+    }
+
+    private void showLeaderboard() {
+        contentArea.getChildren().clear();
+        VBox header = createPageHeader("Leaderboard", "Ranking kontribusi masyarakat");
+        VBox list = new VBox(6);
+        String[] names = {"Syukron Maulana", "Zain Ghathfaan", "Riri Syafala", "Ahmad Fauzi", "Siti Nurhaliza"};
+        int[] poins = {320, 280, 250, 180, 120};
+        for (int idx = 0; idx < names.length; idx++) {
+            HBox row = new HBox(16);
+            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+            row.setAlignment(Pos.CENTER_LEFT);
+            Label rank = new Label(String.valueOf(idx + 1));
+            rank.setPrefWidth(30);
+            rank.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
+            rank.setTextFill(idx == 0 ? Color.valueOf("#f59e0b") : idx == 1 ? Color.valueOf("#94a3b8") : idx == 2 ? Color.valueOf("#cd7f32") : Color.valueOf("#94a3b8"));
+            Label nm = new Label(names[idx]);
+            nm.setFont(Font.font("SF Pro Display", 14));
+            nm.setTextFill(Color.valueOf("#334155"));
+            nm.setPrefWidth(250);
+            Region sp = new Region();
+            HBox.setHgrow(sp, Priority.ALWAYS);
+            Label pi = new Label(poins[idx] + " poin");
+            pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
+            pi.setTextFill(Color.valueOf("#0d6e4e"));
+            row.getChildren().addAll(rank, nm, sp, pi);
+            list.getChildren().add(row);
+        }
+        contentArea.getChildren().addAll(header, list);
+    }
+
+    private void showProfil() {
+        contentArea.getChildren().clear();
+        VBox header = createPageHeader("Profil", "Informasi akun administrator");
+        VBox card = new VBox(16);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 8, 0, 0, 2);");
+
+        Label nm = new Label(AppConfig.userName);
+        nm.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 20));
+        nm.setTextFill(Color.valueOf("#1e293b"));
+        Label rl = new Label("Role: " + AppConfig.userRole);
+        rl.setFont(Font.font("SF Pro Display", 13));
+        rl.setTextFill(Color.valueOf("#64748b"));
+        Label em = new Label("Email: admin@resik.id");
+        em.setFont(Font.font("SF Pro Display", 13));
+        em.setTextFill(Color.valueOf("#64748b"));
+        Label id = new Label("User ID: " + AppConfig.userId);
+        id.setFont(Font.font("SF Pro Display", 13));
+        id.setTextFill(Color.valueOf("#64748b"));
+
+        card.getChildren().addAll(nm, rl, em, id);
+        contentArea.getChildren().addAll(header, card);
     }
 
     public BorderPane getView() {

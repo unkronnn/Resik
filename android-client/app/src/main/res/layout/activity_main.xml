@@ -81,8 +81,19 @@
             </LinearLayout>
 
             <LinearLayout android:id="@+id/navQr" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📷" android:textSize="24sp" />
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Scan QR Code" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navDompet" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dompet Digital" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navLeaderboard" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Leaderboard" android:layout_marginStart="16dp" android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/navProfil" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:background="@drawable/card_bg" android:padding="16dp" android:layout_marginBottom="8dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Profil" android:layout_marginStart="16dp" android:textSize="16sp" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
