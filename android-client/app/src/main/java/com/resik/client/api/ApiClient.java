@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://10.0.2.2:8080/api/"; // Emulator -> host
+    private static final String BASE_URL = "http://43.157.243.87:8081/api/";
     private static ResikApi api;
     private static SharedPreferences prefs;
 

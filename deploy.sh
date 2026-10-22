@@ -45,23 +45,23 @@ docker compose up -d
 
 # Wait for health
 echo "[5/6] Waiting for API to start..."
-sleep 10
+sleep 15
 
 # Health check
 echo "[6/6] Health check..."
-if curl -s http://localhost:8080/api/sampah | grep -q "id"; then
+if curl -s http://localhost:8081/api/sampah | grep -q "id"; then
     echo ""
     echo "============================================"
     echo "  DEPLOYMENT BERHASIL!"
     echo "============================================"
-    echo "  API: http://$(hostname -I | awk '{print $1}'):8080/api"
-    echo "  Sampah endpoint: http://$(hostname -I | awk '{print $1}'):8080/api/sampah"
-    echo "  PostgreSQL: localhost:5432 (db: resik, user: resik)"
+    echo "  API: http://43.157.243.87:8081/api"
+    echo "  Sampah endpoint: http://43.157.243.87:8081/api/sampah"
+    echo "  PostgreSQL: localhost:5433 (db: resik, user: resik)"
     echo "============================================"
 else
     echo "  Waiting for API..."
-    sleep 10
-    if curl -s http://localhost:8080/api/sampah | grep -q "id"; then
+    sleep 15
+    if curl -s http://localhost:8081/api/sampah | grep -q "id"; then
         echo "  API is now running!"
     else
         echo "  WARNING: API might still be starting. Check: docker compose logs"
