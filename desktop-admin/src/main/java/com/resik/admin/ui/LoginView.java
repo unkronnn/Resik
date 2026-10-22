@@ -144,6 +144,7 @@ public class LoginView {
                 AppConfig.userId = ((Number) result.get("userId")).longValue();
                 AppConfig.userRole = (String) result.get("role");
                 AppConfig.userName = (String) result.get("nama");
+                AppConfig.userEmail = email;
 
                 Stage stage = (Stage) view.getScene().getWindow();
                 DashboardView dashboard = new DashboardView();

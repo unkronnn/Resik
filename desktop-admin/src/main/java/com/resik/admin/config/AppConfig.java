@@ -11,4 +11,5 @@ public class AppConfig {
     public static Long userId = null;
     public static String userRole = null;
     public static String userName = null;
+    public static String userEmail = null;
 }

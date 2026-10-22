@@ -3,6 +3,7 @@ package com.resik.admin.ui;
 import com.resik.admin.config.AppConfig;
 import com.resik.admin.model.Penjemputan;
 import com.resik.admin.model.Sampah;
+import com.resik.admin.service.ApiClient;
 import com.resik.admin.service.DummyData;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -115,6 +116,9 @@ public class DashboardView {
             createNavButton("Penjemputan", e -> showPenjemputan()),
             createNavButton("Penimbangan", e -> showTimbang()),
             createNavButton("Data Sampah", e -> showSampah()),
+            createNavButton("Edukasi Sampah", e -> showEdukasi()),
+            createNavButton("Chat Client", e -> showChat()),
+            createNavButton("Lokasi Bank Sampah", e -> showLokasi()),
             createNavButton("Dompet Digital", e -> showDompet()),
             createNavButton("Leaderboard", e -> showLeaderboard()),
             createNavButton("Laporan Harian", e -> showLaporanHarian()),
@@ -246,8 +250,10 @@ public class DashboardView {
         actionBar.add(createBtn("Tambah Penjemputan", "#1A5D3A", "white", e -> {
             CrudDialog.showForm("Tambah Penjemputan", "Simpan",
                 List.of(
+                    new CrudDialog.FormField("kategori", "Kategori (ORGANIK/ANORGANIK/B3/RESIDU)", "ORGANIK"),
+                    new CrudDialog.FormField("estimasiBerat", "Estimasi Berat (kg)", "5"),
                     new CrudDialog.FormField("alamat", "Alamat Penjemputan", "Jl. Contoh No. 1"),
-                    new CrudDialog.FormField("tanggal", "Tanggal (YYYY-MM-DD)", "2026-10-25"),
+                    new CrudDialog.FormField("tanggal", "Tanggal (YYYY-MM-DD)", LocalDate.now().toString()),
                     new CrudDialog.FormField("waktu", "Waktu", "09:00-11:00"),
                     new CrudDialog.FormField("catatan", "Catatan", "Jenis sampah dan estimasi")
                 ), null
@@ -257,12 +263,13 @@ public class DashboardView {
                 p.setAlamat(vals.get("alamat"));
                 try { p.setTanggalJemput(LocalDate.parse(vals.get("tanggal"))); } catch(Exception ex) { p.setTanggalJemput(LocalDate.now()); }
                 p.setWaktuJemput(vals.get("waktu"));
-                p.setCatatan(vals.get("catatan"));
+                String catatan = vals.get("kategori") + " - " + vals.get("estimasiBerat") + "kg | " + vals.get("catatan");
+                p.setCatatan(catatan);
                 p.setStatus("MENUNGGU");
                 p.setQrCode("RESIK-" + UUID.randomUUID().toString().substring(0,8).toUpperCase());
                 penjemputanData.add(p);
                 showPenjemputan();
-                CrudDialog.showInfo("Berhasil", "Penjemputan baru ditambahkan.");
+                CrudDialog.showInfo("Berhasil", "Penjemputan baru ditambahkan.\nKategori: " + vals.get("kategori") + "\nEstimasi: " + vals.get("estimasiBerat") + "kg");
             });
         }));
         actionBar.add(createBtn("Assign Petugas", "#3B82F6", "white", e -> {
@@ -303,7 +310,9 @@ public class DashboardView {
         c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getWaktuJemput()));
         TableColumn<Penjemputan, String> c5 = new TableColumn<>("Status");
         c5.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus()));
-        t.getColumns().addAll(c1, c2, c3, c4, c5);
+        TableColumn<Penjemputan, String> c6 = new TableColumn<>("Catatan");
+        c6.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCatatan()));
+        t.getColumns().addAll(c1, c2, c3, c4, c5, c6);
         contentArea.getChildren().add(t);
     }
 
@@ -737,21 +746,210 @@ public class DashboardView {
         contentArea.getChildren().add(t);
     }
 
+    // ==================== EDUKASI SAMPAH ====================
+    private void showEdukasi() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(createPageHeader("Edukasi Sampah", "Panduan kategori dan harga sampah"));
+
+        String[][] data = {
+            {"Sampah Makanan", "ORGANIK", "Sisa makanan dan dapur.", "Rp 1.000/kg"},
+            {"Daun & Rumput", "ORGANIK", "Daun kering, rumput, tanaman.", "Rp 500/kg"},
+            {"Plastik Botol", "ANORGANIK", "Botol plastik bekas minuman.", "Rp 2.500/kg"},
+            {"Kardus/Karton", "ANORGANIK", "Kardus dan karton bekas.", "Rp 1.500/kg"},
+            {"Kaleng Aluminium", "ANORGANIK", "Kaleng minuman ringan.", "Rp 5.000/kg"},
+            {"Besi/Logam", "ANORGANIK", "Besi dan logam bekas.", "Rp 3.000/kg"},
+            {"Kertas", "ANORGANIK", "Kertas dan koran bekas.", "Rp 1.500/kg"},
+            {"Botol Kaca", "ANORGANIK", "Botol kaca bening dan berwarna.", "Rp 2.000/kg"},
+            {"Baterai Bekas", "B3", "Baterai dan aki bekas. Wajib dipisah!", "Rp 3.000/kg"},
+            {"Elektronik Bekas", "B3", "Komponen elektronik rusak.", "Rp 5.000/kg"},
+            {"Sampah Residu", "RESIDU", "Sampah yang tidak bisa didaur ulang.", "Rp 0/kg"},
+            {"Popok Bekas", "RESIDU", "Popok dan sanitary waste.", "Rp 0/kg"}
+        };
+
+        HBar filterBar = new HBar(8);
+        String[] filters = {"Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU"};
+        for (String f : filters) {
+            String bg = f.equals("ORGANIK") ? "#10B981" : f.equals("ANORGANIK") ? "#3B82F6" : f.equals("B3") ? "#EF4444" : f.equals("RESIDU") ? "#6B7280" : "#1A5D3A";
+            filterBar.add(createBtn(f, bg, "white", e -> {
+                contentArea.getChildren().removeIf(n -> n instanceof TableView);
+                TableView<String[]> t = createStyledTable();
+                ObservableList<String[]> filtered = FXCollections.observableArrayList();
+                for (String[] row : data) {
+                    if (f.equals("Semua") || row[1].equals(f)) filtered.add(row);
+                }
+                t.setItems(filtered);
+                TableColumn<String[], String> c1 = new TableColumn<>("Jenis Sampah");
+                c1.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
+                TableColumn<String[], String> c2 = new TableColumn<>("Kategori");
+                c2.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[1]));
+                TableColumn<String[], String> c3 = new TableColumn<>("Deskripsi");
+                c3.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
+                TableColumn<String[], String> c4 = new TableColumn<>("Harga");
+                c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[3]));
+                t.getColumns().addAll(c1, c2, c3, c4);
+                contentArea.getChildren().add(t);
+            }));
+        }
+        contentArea.getChildren().addAll(filterBar.get(), new Separator());
+
+        TableView<String[]> t = createStyledTable();
+        t.setItems(FXCollections.observableArrayList(Arrays.asList(data)));
+        TableColumn<String[], String> c1 = new TableColumn<>("Jenis Sampah");
+        c1.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
+        TableColumn<String[], String> c2 = new TableColumn<>("Kategori");
+        c2.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[1]));
+        TableColumn<String[], String> c3 = new TableColumn<>("Deskripsi");
+        c3.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
+        TableColumn<String[], String> c4 = new TableColumn<>("Harga");
+        c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[3]));
+        t.getColumns().addAll(c1, c2, c3, c4);
+        contentArea.getChildren().add(t);
+    }
+
+    // ==================== CHAT CLIENT (VPS Connected) ====================
+    private void showChat() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(createPageHeader("Chat Client", "Komunikasi dengan pengguna via VPS"));
+
+        HBar actionBar = new HBar(10);
+        TextField userIdField = new TextField();
+        userIdField.setPromptText("User ID client...");
+        userIdField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-pref-width: 150;");
+        TextField msgField = new TextField();
+        msgField.setPromptText("Ketik pesan...");
+        msgField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-pref-width: 400;");
+        actionBar.add(userIdField);
+        actionBar.add(msgField);
+        actionBar.add(createBtn("Kirim", "#1A5D3A", "white", e -> {
+            String uid = userIdField.getText().trim();
+            String msg = msgField.getText().trim();
+            if (uid.isEmpty() || msg.isEmpty()) {
+                CrudDialog.showInfo("Info", "Isi User ID dan pesan.");
+                return;
+            }
+            try {
+                Map<String, Object> body = new HashMap<>();
+                body.put("userId", Long.parseLong(uid));
+                body.put("message", msg);
+                body.put("sender", "ADMIN");
+                ApiClient.post("/chat", body, Map.class);
+                msgField.clear();
+                loadChatMessages(uid);
+            } catch (Exception ex) {
+                CrudDialog.showInfo("Error", "Gagal kirim: " + ex.getMessage());
+            }
+        }));
+        actionBar.add(createBtn("Muat Pesan", "#3B82F6", "white", e -> {
+            String uid = userIdField.getText().trim();
+            if (!uid.isEmpty()) loadChatMessages(uid);
+        }));
+        contentArea.getChildren().addAll(actionBar.get(), new Separator());
+
+        ListView<String> chatList = new ListView<>();
+        chatList.setId("chatList");
+        chatList.setStyle("-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #E2E8F0; -fx-border-width: 1px;");
+        chatList.setPrefHeight(500);
+        contentArea.getChildren().add(chatList);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void loadChatMessages(String userId) {
+        ListView<String> chatList = (ListView<String>) contentArea.getChildren().stream()
+            .filter(n -> n instanceof ListView && "chatList".equals(n.getId()))
+            .findFirst().orElse(null);
+        if (chatList == null) return;
+        try {
+            List<Map<String, Object>> messages = ApiClient.getList("/chat/" + userId, Map.class);
+            ObservableList<String> items = FXCollections.observableArrayList();
+            for (Map<String, Object> m : messages) {
+                String sender = String.valueOf(m.getOrDefault("sender", "?"));
+                String message = String.valueOf(m.getOrDefault("message", ""));
+                String time = String.valueOf(m.getOrDefault("createdAt", ""));
+                items.add("[" + sender + "] " + message + "  (" + time + ")");
+            }
+            chatList.setItems(items);
+        } catch (Exception e) {
+            chatList.setItems(FXCollections.observableArrayList("Gagal memuat pesan: " + e.getMessage()));
+        }
+    }
+
+    // ==================== LOKASI BANK SAMPAH ====================
+    private void showLokasi() {
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(createPageHeader("Lokasi Bank Sampah", "Titik lokasi pengelolaan sampah"));
+
+        String[][] lokasiData = {
+            {"Bank Sampah Resik Pusat", "Jl. Merdeka No. 45, Jakarta Pusat", "08:00-17:00", "0812-3456-7890"},
+            {"Bank Sampah Resik Selatan", "Jl. Margonda Raya No. 10, Depok", "07:00-16:00", "0813-9876-5432"},
+            {"Bank Sampah Resik Timur", "Jl. Raya Bekas KM 20, Bekasi", "08:00-16:00", "0815-1111-2222"},
+            {"Bank Sampah Resik Barat", "Jl. Daan Mogot No. 88, Tangerang", "09:00-17:00", "0817-3333-4444"}
+        };
+
+        TableView<String[]> t = createStyledTable();
+        t.setItems(FXCollections.observableArrayList(Arrays.asList(lokasiData)));
+        TableColumn<String[], String> c1 = new TableColumn<>("Nama");
+        c1.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[0]));
+        TableColumn<String[], String> c2 = new TableColumn<>("Alamat");
+        c2.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[1]));
+        TableColumn<String[], String> c3 = new TableColumn<>("Jam Operasional");
+        c3.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[2]));
+        TableColumn<String[], String> c4 = new TableColumn<>("Telepon");
+        c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[3]));
+        t.getColumns().addAll(c1, c2, c3, c4);
+        contentArea.getChildren().add(t);
+
+        VBox info = new VBox(8);
+        info.setPadding(new Insets(16, 0, 0, 0));
+        Label infoLabel = new Label("Lokasi bank sampah terdekat akan muncul di aplikasi client Android untuk panduan penjemputan.");
+        infoLabel.setFont(Font.font("SF Pro Display", 13));
+        infoLabel.setTextFill(Color.valueOf("#64748B"));
+        info.getChildren().add(infoLabel);
+        contentArea.getChildren().add(info);
+    }
+
     // ==================== PROFIL ====================
     private void showProfil() {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(createPageHeader("Profil", "Informasi akun administrator"));
+
         VBox card = new VBox(16);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 28; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 8, 0, 0, 2);");
-        Label nm = new Label(AppConfig.userName);
-        nm.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 20)); nm.setTextFill(Color.valueOf("#1E293B"));
-        Label rl = new Label("Role: " + AppConfig.userRole);
-        rl.setFont(Font.font("SF Pro Display", 13)); rl.setTextFill(Color.valueOf("#64748B"));
-        Label em = new Label("Email: admin@resik.id");
-        em.setFont(Font.font("SF Pro Display", 13)); em.setTextFill(Color.valueOf("#64748B"));
-        Label id = new Label("User ID: " + AppConfig.userId);
-        id.setFont(Font.font("SF Pro Display", 13)); id.setTextFill(Color.valueOf("#64748B"));
-        card.getChildren().addAll(nm, rl, em, id);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(16); grid.setVgap(12);
+
+        TextField namaField = new TextField(AppConfig.userName);
+        namaField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+        TextField emailField = new TextField(AppConfig.userEmail != null ? AppConfig.userEmail : "admin@resik.id");
+        emailField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+        TextField telpField = new TextField("0812-0000-0000");
+        telpField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+        TextArea alamatArea = new TextArea("Jl. Resik Admin No. 1, Jakarta");
+        alamatArea.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+        alamatArea.setPrefRowCount(2);
+
+        grid.add(new Label("Nama:"), 0, 0); grid.add(namaField, 1, 0);
+        grid.add(new Label("Email:"), 0, 1); grid.add(emailField, 1, 1);
+        grid.add(new Label("No. Telepon:"), 0, 2); grid.add(telpField, 1, 2);
+        grid.add(new Label("Alamat:"), 0, 3); grid.add(alamatArea, 1, 3);
+
+        Label roleLabel = new Label("Role: " + AppConfig.userRole);
+        roleLabel.setFont(Font.font("SF Pro Display", 13)); roleLabel.setTextFill(Color.valueOf("#64748B"));
+        Label idLabel = new Label("User ID: " + AppConfig.userId);
+        idLabel.setFont(Font.font("SF Pro Display", 13)); idLabel.setTextFill(Color.valueOf("#64748B"));
+
+        HBar actionBar = new HBar(10);
+        actionBar.add(createBtn("Simpan Perubahan", "#1A5D3A", "white", e -> {
+            AppConfig.userName = namaField.getText().trim();
+            AppConfig.userEmail = emailField.getText().trim();
+            CrudDialog.showInfo("Berhasil", "Profil berhasil diperbarui.");
+            showProfil();
+        }));
+        actionBar.add(createBtn("Upload Foto", "#3B82F6", "white", e -> {
+            CrudDialog.showInfo("Info", "Fitur upload foto akan tersedia di versi mendatang.");
+        }));
+
+        card.getChildren().addAll(grid, roleLabel, idLabel, actionBar.get());
         contentArea.getChildren().add(card);
     }
 
