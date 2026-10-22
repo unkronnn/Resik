@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Resik" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.Resik" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/bg_light</item>
         <item name="android:statusBarColor">@color/green_dark</item>
+        <item name="android:navigationBarColor">@color/white</item>
     </style>
     <style name="Theme.Resik.Splash" parent="Theme.Resik">
         <item name="android:windowBackground">@color/green_dark</item>

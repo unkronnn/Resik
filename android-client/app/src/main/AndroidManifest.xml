@@ -31,6 +31,15 @@
         <activity android:name=".ui.LoginActivity" android:exported="false" />
         <activity android:name=".ui.RegisterActivity" android:exported="false" />
         <activity android:name=".ui.MainActivity" android:exported="false" />
+        <activity android:name=".ui.EdukasiActivity" android:exported="false" />
+        <activity android:name=".ui.PenjemputanActivity" android:exported="false" />
+        <activity android:name=".ui.RiwayatActivity" android:exported="false" />
+        <activity android:name=".ui.ChatActivity" android:exported="false" />
+        <activity android:name=".ui.MapActivity" android:exported="false" />
+        <activity android:name=".ui.QrScannerActivity" android:exported="false" />
+        <activity android:name=".ui.DompetActivity" android:exported="false" />
+        <activity android:name=".ui.LeaderboardActivity" android:exported="false" />
+        <activity android:name=".ui.ProfilActivity" android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
