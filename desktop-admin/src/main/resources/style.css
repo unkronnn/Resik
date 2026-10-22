@@ -1,0 +1,39 @@
+/* RESIK Desktop Admin Stylesheet */
+
+.root {
+    -fx-font-family: "System";
+}
+
+.button {
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-opacity: 0.85;
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8;
+}
+
+.table-column-header {
+    -fx-background-color: #1a5d3a;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9f9f9;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: #f0f0f0;
+}
+
+.separator {
+    -fx-padding: 10 0;
+}
