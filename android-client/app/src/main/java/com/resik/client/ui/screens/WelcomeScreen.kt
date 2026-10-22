@@ -1,6 +1,5 @@
 package com.resik.client.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -11,12 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.resik.client.R
 import com.resik.client.ui.theme.*
 
 @Composable
@@ -37,17 +34,17 @@ fun WelcomeScreen(onGetStarted: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.weight(1f))
             // Logo
-            Image(
-                painter = painterResource(R.drawable.ic_logo_large),
-                contentDescription = "Resik Logo",
+            Box(
                 modifier = Modifier
-                    .size(140.dp)
+                    .size(120.dp)
                     .clip(CircleShape)
-                    .background(BgWhite)
-                    .padding(12.dp)
-            )
+                    .background(Brush.linearGradient(listOf(GreenPrimary, GreenLight))),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("♻", fontSize = 56.sp, color = BgWhite)
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Resik", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BgWhite, letterSpacing = 2.sp)
+            Text("RESIK", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = BgWhite, letterSpacing = 2.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Text("Bank Sampah Digital", fontSize = 16.sp, color = GreenMint)
 
