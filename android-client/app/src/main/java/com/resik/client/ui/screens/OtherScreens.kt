@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -124,7 +125,7 @@ fun GradientHeader(title: String, onBack: () -> Unit) {
     }
 }
 
-// ===== CHAT SCREEN — VPS connected =====
+// ===== CHAT SCREEN — VPS connected, real-time polling =====
 @Composable
 fun ChatScreen(onBack: () -> Unit) {
     val context = LocalContext.current
@@ -132,8 +133,12 @@ fun ChatScreen(onBack: () -> Unit) {
     var input by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     val userId = ApiClient.getUserId() ?: 1L
+    var lastMsgCount by remember { mutableStateOf(0) }
+    val listState = rememberLazyListState()
 
+    // Load messages initially + poll every 3 seconds for real-time
     LaunchedEffect(Unit) {
+        // Initial load
         ApiClient.getApi().getChats(userId).enqueue(object : Callback<List<Map<String, Any>>> {
             override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
                 isLoading = false
@@ -145,6 +150,7 @@ fun ChatScreen(onBack: () -> Unit) {
                         val waktu = m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
                         messages.add(ChatMsg(pesan, pengirim == "USER", waktu))
                     }
+                    lastMsgCount = messages.size
                 }
                 if (messages.isEmpty()) messages.add(ChatMsg("Selamat datang di Resik! Ada yang bisa kami bantu?", false, "09:00"))
             }
@@ -153,6 +159,30 @@ fun ChatScreen(onBack: () -> Unit) {
                 messages.add(ChatMsg("Chat offline — tidak terhubung ke server.", false, SimpleDateFormat("HH:mm").format(Date())))
             }
         })
+
+        // Poll every 3 seconds for new messages from admin
+        while (true) {
+            kotlinx.coroutines.delay(3000)
+            ApiClient.getApi().getChats(userId).enqueue(object : Callback<List<Map<String, Any>>> {
+                override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
+                    if (r.isSuccessful && r.body() != null) {
+                        val newCount = r.body()!!.size
+                        if (newCount > lastMsgCount) {
+                            // New messages arrived — reload all
+                            messages.clear()
+                            for (m in r.body()!!) {
+                                val pengirim = m["pengirim"]?.toString() ?: "USER"
+                                val pesan = m["pesan"]?.toString() ?: ""
+                                val waktu = m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
+                                messages.add(ChatMsg(pesan, pengirim == "USER", waktu))
+                            }
+                            lastMsgCount = messages.size
+                        }
+                    }
+                }
+                override fun onFailure(c: Call<List<Map<String, Any>>>, t: Throwable) {}
+            })
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
@@ -171,8 +201,14 @@ fun ChatScreen(onBack: () -> Unit) {
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = GreenPrimary) }
         } else {
-            LazyColumn(modifier = Modifier.weight(1f).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(modifier = Modifier.weight(1f).padding(16.dp), state = listState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(messages) { msg -> ChatBubble(msg) }
+            }
+            // Auto-scroll to bottom when new messages arrive
+            LaunchedEffect(messages.size) {
+                if (messages.isNotEmpty()) {
+                    listState.animateScrollToItem(messages.size - 1)
+                }
             }
         }
 
@@ -189,18 +225,7 @@ fun ChatScreen(onBack: () -> Unit) {
                     val body = mapOf("userId" to userId, "pengirim" to "USER", "pesan" to userMsg)
                     ApiClient.getApi().sendChat(body).enqueue(object : Callback<Map<String, Any>> {
                         override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
-                            val reply = when {
-                                userMsg.contains("jemput", ignoreCase = true) -> "Buka menu Jemput Sampah, pilih jenis, berat, jadwal, alamat. Petugas datang sesuai jadwal."
-                                userMsg.contains("harga", ignoreCase = true) -> "Plastik Rp 2.500/kg, Kardus Rp 1.500/kg, Kaleng Rp 5.000/kg. Lihat Edukasi."
-                                userMsg.contains("saldo", ignoreCase = true) || userMsg.contains("dompet", ignoreCase = true) -> "Saldo masuk otomatis ke Dompet setelah timbang. Cek menu Dompet."
-                                else -> "Terima kasih! Admin akan segera membantu."
-                            }
-                            val rt = SimpleDateFormat("HH:mm").format(Date())
-                            messages.add(ChatMsg(reply, false, rt))
-                            ApiClient.getApi().sendChat(mapOf("userId" to userId, "pengirim" to "ADMIN", "pesan" to reply)).enqueue(object : Callback<Map<String, Any>> {
-                                override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {}
-                                override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {}
-                            })
+                            lastMsgCount = messages.size // update count so polling doesn't double-add
                         }
                         override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
                             messages.add(ChatMsg("Pesan tersimpan lokal (offline).", false, SimpleDateFormat("HH:mm").format(Date())))

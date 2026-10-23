@@ -895,10 +895,12 @@ public class DashboardView {
         contentArea.getChildren().add(t);
     }
 
-    // ==================== CHAT CLIENT (VPS Connected) ====================
+    // ==================== CHAT CLIENT (VPS Connected, Real-time) ====================
+    private javafx.animation.Timeline chatTimeline = null;
+
     private void showChat() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Chat Client", "Komunikasi dengan pengguna via VPS"));
+        contentArea.getChildren().add(createPageHeader("Chat Client", "Komunikasi real-time dengan pengguna via VPS"));
 
         HBar actionBar = new HBar(10);
         TextField userIdField = new TextField();
@@ -908,6 +910,24 @@ public class DashboardView {
         msgField.setPromptText("Ketik pesan...");
         msgField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-pref-width: 400;");
         actionBar.add(userIdField);
+
+        // Send button
+        msgField.setOnAction(e -> {
+            String uid = userIdField.getText().trim();
+            String msg = msgField.getText().trim();
+            if (uid.isEmpty() || msg.isEmpty()) return;
+            try {
+                Map<String, Object> body = new HashMap<>();
+                body.put("userId", Long.parseLong(uid));
+                body.put("pengirim", "ADMIN");
+                body.put("pesan", msg);
+                ApiClient.post("/chat", body, Map.class);
+                msgField.clear();
+                loadChatMessages(uid);
+            } catch (Exception ex) {
+                CrudDialog.showInfo("Error", "Gagal kirim: " + ex.getMessage());
+            }
+        });
         actionBar.add(msgField);
         actionBar.add(createBtn("Kirim", "#1A5D3A", "white", e -> {
             String uid = userIdField.getText().trim();
@@ -919,8 +939,8 @@ public class DashboardView {
             try {
                 Map<String, Object> body = new HashMap<>();
                 body.put("userId", Long.parseLong(uid));
-                body.put("message", msg);
-                body.put("sender", "ADMIN");
+                body.put("pengirim", "ADMIN");
+                body.put("pesan", msg);
                 ApiClient.post("/chat", body, Map.class);
                 msgField.clear();
                 loadChatMessages(uid);
@@ -928,10 +948,25 @@ public class DashboardView {
                 CrudDialog.showInfo("Error", "Gagal kirim: " + ex.getMessage());
             }
         }));
-        actionBar.add(createBtn("Muat Pesan", "#3B82F6", "white", e -> {
-            String uid = userIdField.getText().trim();
-            if (!uid.isEmpty()) loadChatMessages(uid);
+
+        // Auto-refresh toggle
+        Label autoLabel = new Label("Auto-refresh: ON");
+        autoLabel.setFont(Font.font("SF Pro Display", 12));
+        autoLabel.setTextFill(Color.valueOf("#10B981"));
+        actionBar.add(createBtn("Stop Auto", "#EF4444", "white", e -> {
+            if (chatTimeline != null) {
+                chatTimeline.stop();
+                chatTimeline = null;
+                autoLabel.setText("Auto-refresh: OFF");
+                autoLabel.setTextFill(Color.valueOf("#94A3B8"));
+            } else {
+                startChatPolling(userIdField);
+                autoLabel.setText("Auto-refresh: ON");
+                autoLabel.setTextFill(Color.valueOf("#10B981"));
+            }
         }));
+        actionBar.add(autoLabel);
+
         contentArea.getChildren().addAll(actionBar.get(), new Separator());
 
         ListView<String> chatList = new ListView<>();
@@ -939,6 +974,30 @@ public class DashboardView {
         chatList.setStyle("-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #E2E8F0; -fx-border-width: 1px;");
         chatList.setPrefHeight(500);
         contentArea.getChildren().add(chatList);
+
+        // Load messages when userId changes
+        userIdField.textProperty().addListener((obs, o, n) -> {
+            if (n != null && !n.trim().isEmpty()) {
+                loadChatMessages(n.trim());
+            }
+        });
+
+        // Start auto-polling every 3 seconds
+        startChatPolling(userIdField);
+    }
+
+    private void startChatPolling(TextField userIdField) {
+        if (chatTimeline != null) chatTimeline.stop();
+        chatTimeline = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(javafx.util.Duration.seconds(3), e -> {
+                String uid = userIdField.getText().trim();
+                if (!uid.isEmpty()) {
+                    loadChatMessages(uid);
+                }
+            })
+        );
+        chatTimeline.setCycleCount(javafx.animation.Timeline.INDEFINITE);
+        chatTimeline.play();
     }
 
     @SuppressWarnings("unchecked")
@@ -951,14 +1010,21 @@ public class DashboardView {
             List<Map<String, Object>> messages = ApiClient.getList("/chat/" + userId);
             ObservableList<String> items = FXCollections.observableArrayList();
             for (Map<String, Object> m : messages) {
-                String sender = String.valueOf(m.getOrDefault("sender", "?"));
-                String message = String.valueOf(m.getOrDefault("message", ""));
-                String time = String.valueOf(m.getOrDefault("createdAt", ""));
-                items.add("[" + sender + "] " + message + "  (" + time + ")");
+                String sender = String.valueOf(m.getOrDefault("pengirim", m.getOrDefault("sender", "?")));
+                String message = String.valueOf(m.getOrDefault("pesan", m.getOrDefault("message", "")));
+                String time = String.valueOf(m.getOrDefault("waktu", m.getOrDefault("createdAt", "")));
+                if (time.length() > 16) time = time.substring(11, 16);
+                String prefix = sender.equals("ADMIN") ? "[Admin] " : "[Client] ";
+                items.add(prefix + message + "  (" + time + ")");
             }
             chatList.setItems(items);
+            // Auto-scroll to bottom
+            chatList.scrollTo(items.size() - 1);
         } catch (Exception e) {
-            chatList.setItems(FXCollections.observableArrayList("Gagal memuat pesan: " + e.getMessage()));
+            // Silent fail during polling to avoid popup spam
+            if (chatList.getItems() == null || chatList.getItems().isEmpty()) {
+                chatList.setItems(FXCollections.observableArrayList("Gagal memuat pesan: " + e.getMessage()));
+            }
         }
     }
 
