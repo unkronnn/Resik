@@ -4,6 +4,7 @@ import com.resik.admin.config.AppConfig;
 import com.resik.admin.model.Penjemputan;
 import com.resik.admin.model.Sampah;
 import com.resik.admin.service.ApiClient;
+import com.resik.admin.service.ApiService;
 import com.resik.admin.service.DummyData;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -32,7 +33,7 @@ public class DashboardView {
     private final BorderPane view;
     private final VBox contentArea;
     private VBox activeNav = null;
-    private final ObservableList<Penjemputan> penjemputanData = FXCollections.observableArrayList(DummyData.getPenjemputanList());
+    private final ObservableList<Penjemputan> penjemputanData = FXCollections.observableArrayList();
 
     public DashboardView() {
         view = new BorderPane();
@@ -43,7 +44,19 @@ public class DashboardView {
         contentArea.setStyle("-fx-background-color: #F5F7F5;");
         contentArea.setSpacing(16);
         view.setCenter(contentArea);
+        // Load data from VPS
+        loadPenjemputanFromVPS();
         showDashboard();
+    }
+
+    private void loadPenjemputanFromVPS() {
+        try {
+            List<Penjemputan> list = ApiService.getPenjemputan();
+            penjemputanData.setAll(list);
+        } catch (Exception e) {
+            // Fallback to DummyData if VPS unavailable
+            penjemputanData.setAll(DummyData.getPenjemputanList());
+        }
     }
 
     private HBox createTopBar() {
@@ -537,29 +550,42 @@ public class DashboardView {
         return total;
     }
 
-    // ==================== DATA SAMPAH ====================
+    // ==================== DATA SAMPAH (VPS CRUD) ====================
     private void showSampah() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Data Sampah", "Kelola jenis sampah dan harga per kilogram"));
+        contentArea.getChildren().add(createPageHeader("Data Sampah", "Kelola jenis sampah dan harga per kilogram (VPS)"));
         HBar bar = new HBar(10);
         bar.add(createBtn("Tambah Sampah", "#1A5D3A", "white", e -> {
             CrudDialog.showForm("Tambah Jenis Sampah", "Simpan",
                 List.of(
                     new CrudDialog.FormField("nama", "Nama Sampah", "Contoh: Botol Plastik"),
-                    new CrudDialog.FormField("kategori", "Kategori", "ORGANIK/ANORGANIK/B3"),
+                    new CrudDialog.FormField("kategori", "Kategori", "ORGANIK/ANORGANIK/B3/RESIDU"),
                     new CrudDialog.FormField("harga", "Harga per kg (Rp)", "2500"),
                     new CrudDialog.FormField("deskripsi", "Deskripsi", "")
                 ), null
             ).ifPresent(vals -> {
-                DummyData.addSampah(vals.get("nama"), vals.get("kategori"), vals.get("harga"), vals.get("deskripsi"));
-                showSampah();
-                CrudDialog.showInfo("Berhasil", "Jenis sampah ditambahkan.");
+                try {
+                    Sampah s = new Sampah();
+                    s.setNama(vals.get("nama"));
+                    s.setKategori(vals.get("kategori"));
+                    s.setHargaPerKg(new BigDecimal(vals.get("harga")));
+                    s.setDeskripsi(vals.get("deskripsi"));
+                    s.setIsActive(true);
+                    ApiService.createSampah(s);
+                    showSampah();
+                    CrudDialog.showInfo("Berhasil", "Jenis sampah ditambahkan ke VPS.");
+                } catch (Exception ex) {
+                    CrudDialog.showInfo("Error", "Gagal tambah: " + ex.getMessage());
+                }
             });
         }));
+        bar.add(createBtn("Refresh", "#3B82F6", "white", e -> showSampah()));
         contentArea.getChildren().addAll(bar.get(), new Separator());
 
         TableView<Sampah> t = createStyledTable();
-        t.setItems(FXCollections.observableArrayList(DummyData.getSampahList()));
+        List<Sampah> sampahList = ApiService.getSampah();
+        if (sampahList.isEmpty()) sampahList = DummyData.getSampahList();
+        t.setItems(FXCollections.observableArrayList(sampahList));
         TableColumn<Sampah, String> c1 = new TableColumn<>("Nama");
         c1.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNama()));
         TableColumn<Sampah, String> c2 = new TableColumn<>("Kategori");
@@ -569,6 +595,25 @@ public class DashboardView {
         TableColumn<Sampah, String> c4 = new TableColumn<>("Deskripsi");
         c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDeskripsi()));
         t.getColumns().addAll(c1, c2, c3, c4);
+
+        // Context menu for delete
+        ContextMenu cm = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("Hapus Sampah");
+        deleteItem.setOnAction(e -> {
+            Sampah sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                try {
+                    ApiService.deleteSampah(sel.getId());
+                    showSampah();
+                    CrudDialog.showInfo("Berhasil", "Sampah dihapus dari VPS.");
+                } catch (Exception ex) {
+                    CrudDialog.showInfo("Error", "Gagal hapus: " + ex.getMessage());
+                }
+            }
+        });
+        cm.getItems().add(deleteItem);
+        t.setContextMenu(cm);
+
         t.setRowFactory(tv -> {
             TableRow<Sampah> row = new TableRow<>();
             row.setOnMouseClicked(ev -> {
@@ -583,9 +628,17 @@ public class DashboardView {
                             new CrudDialog.FormField("harga","Harga/kg",""), new CrudDialog.FormField("deskripsi","Deskripsi","")
                         ), init
                     ).ifPresent(vals -> {
-                        DummyData.updateSampah(sel.getId(), vals.get("nama"), vals.get("kategori"), vals.get("harga"), vals.get("deskripsi"));
-                        showSampah();
-                        CrudDialog.showInfo("Berhasil", "Data sampah diupdate.");
+                        try {
+                            sel.setNama(vals.get("nama"));
+                            sel.setKategori(vals.get("kategori"));
+                            sel.setHargaPerKg(new BigDecimal(vals.get("harga")));
+                            sel.setDeskripsi(vals.get("deskripsi"));
+                            ApiService.updateSampah(sel.getId(), sel);
+                            showSampah();
+                            CrudDialog.showInfo("Berhasil", "Data sampah diupdate di VPS.");
+                        } catch (Exception ex) {
+                            CrudDialog.showInfo("Error", "Gagal update: " + ex.getMessage());
+                        }
                     });
                 }
             });
@@ -594,16 +647,18 @@ public class DashboardView {
         contentArea.getChildren().add(t);
     }
 
-    // ==================== DOMPET DIGITAL ====================
+    // ==================== DOMPET DIGITAL (VPS) ====================
     private void showDompet() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Dompet Digital", "Saldo dan riwayat transaksi semua pengguna"));
+        contentArea.getChildren().add(createPageHeader("Dompet Digital", "Saldo dan riwayat transaksi semua pengguna (VPS)"));
         VBox list = new VBox(6);
-        for (Map<String,Object> d : DummyData.getDompetList()) {
+        List<Map<String,Object>> dompetList = ApiService.getAllDompet();
+        if (dompetList.isEmpty()) dompetList = DummyData.getDompetList();
+        for (Map<String,Object> d : dompetList) {
             HBox row = new HBox(20);
             row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
             row.setAlignment(Pos.CENTER_LEFT);
-            Label nm = new Label((String) d.get("nama"));
+            Label nm = new Label(String.valueOf(d.get("nama")));
             nm.setFont(Font.font("SF Pro Display", 14)); nm.setTextFill(Color.valueOf("#334155")); nm.setPrefWidth(250);
             Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
             Label sd = new Label((String) d.get("saldo"));
@@ -619,25 +674,53 @@ public class DashboardView {
     // ==================== LEADERBOARD ====================
     private void showLeaderboard() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Leaderboard", "Ranking kontribusi masyarakat"));
+        contentArea.getChildren().add(createPageHeader("Leaderboard", "Ranking kontribusi masyarakat (VPS)"));
         VBox list = new VBox(6);
-        String[] names = {"Syukron Maulana","Zain Ghathfaan","Riri Syafala","Ahmad Fauzi","Siti Nurhaliza"};
-        int[] poins = {320,280,250,180,120};
-        for (int i=0; i<names.length; i++) {
-            HBox row = new HBox(16);
-            row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
-            row.setAlignment(Pos.CENTER_LEFT);
-            Label rank = new Label(String.valueOf(i+1));
-            rank.setPrefWidth(30);
-            rank.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
-            rank.setTextFill(i==0?Color.valueOf("#F39C12"):i==1?Color.valueOf("#94A3B8"):i==2?Color.valueOf("#CD7F32"):Color.valueOf("#94A3B8"));
-            Label nm = new Label(names[i]); nm.setPrefWidth(250);
-            nm.setFont(Font.font("SF Pro Display", 14)); nm.setTextFill(Color.valueOf("#334155"));
-            Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
-            Label pi = new Label(poins[i]+" poin");
-            pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13)); pi.setTextFill(Color.valueOf("#1A5D3A"));
-            row.getChildren().addAll(rank, nm, sp, pi);
-            list.getChildren().add(row);
+        List<Map<String, Object>> lbData = ApiService.getLeaderboard();
+        if (lbData.isEmpty()) {
+            // Fallback
+            String[] names = {"Syukron Maulana","Zain Ghathfaan","Riri Syafala","Ahmad Fauzi","Siti Nurhaliza"};
+            int[] poins = {320,280,250,180,120};
+            for (int i=0; i<names.length; i++) {
+                HBox row = new HBox(16);
+                row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+                row.setAlignment(Pos.CENTER_LEFT);
+                Label rank = new Label(String.valueOf(i+1));
+                rank.setPrefWidth(30);
+                rank.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
+                rank.setTextFill(i==0?Color.valueOf("#F39C12"):i==1?Color.valueOf("#94A3B8"):i==2?Color.valueOf("#CD7F32"):Color.valueOf("#94A3B8"));
+                Label nm = new Label(names[i]); nm.setPrefWidth(250);
+                nm.setFont(Font.font("SF Pro Display", 14)); nm.setTextFill(Color.valueOf("#334155"));
+                Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+                Label pi = new Label(poins[i]+" poin");
+                pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13)); pi.setTextFill(Color.valueOf("#1A5D3A"));
+                row.getChildren().addAll(rank, nm, sp, pi);
+                list.getChildren().add(row);
+            }
+        } else {
+            for (Map<String, Object> item : lbData) {
+                int rank = item.get("rank") != null ? ((Number) item.get("rank")).intValue() : 0;
+                String nama = String.valueOf(item.getOrDefault("nama", "?"));
+                Object poinObj = item.getOrDefault("poin", 0);
+                String poinStr = poinObj instanceof Number ? ((Number) poinObj).intValue() + " poin" : "0 poin";
+                Object saldoObj = item.getOrDefault("saldo", 0);
+                String saldoStr = saldoObj instanceof Number ? "Rp " + ((Number) saldoObj).doubleValue() : "Rp 0";
+
+                HBox row = new HBox(16);
+                row.setStyle("-fx-background-color: white; -fx-padding: 14 18; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+                row.setAlignment(Pos.CENTER_LEFT);
+                Label rankL = new Label(String.valueOf(rank));
+                rankL.setPrefWidth(30);
+                rankL.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
+                rankL.setTextFill(rank==1?Color.valueOf("#F39C12"):rank==2?Color.valueOf("#94A3B8"):rank==3?Color.valueOf("#CD7F32"):Color.valueOf("#94A3B8"));
+                Label nm = new Label(nama); nm.setPrefWidth(250);
+                nm.setFont(Font.font("SF Pro Display", 14)); nm.setTextFill(Color.valueOf("#334155"));
+                Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+                Label pi = new Label(poinStr + " | " + saldoStr);
+                pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13)); pi.setTextFill(Color.valueOf("#1A5D3A"));
+                row.getChildren().addAll(rankL, nm, sp, pi);
+                list.getChildren().add(row);
+            }
         }
         contentArea.getChildren().add(list);
     }
@@ -772,88 +855,67 @@ public class DashboardView {
         contentArea.getChildren().addAll(t, summary);
     }
 
-    // ==================== MANAJEMEN USER ====================
+    // ==================== MANAJEMEN USER (VPS) ====================
     private void showUsers() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Manajemen User", "Kelola akun masyarakat, petugas, admin — role-based access"));
+        contentArea.getChildren().add(createPageHeader("Manajemen User", "Kelola akun masyarakat, petugas, admin (VPS)"));
         HBar bar = new HBar(10);
-        bar.add(createBtn("Tambah User", "#1A5D3A", "white", e -> {
-            CrudDialog.showForm("Tambah User", "Simpan",
-                List.of(
-                    new CrudDialog.FormField("nama","Nama Lengkap","Budi Santoso"),
-                    new CrudDialog.FormField("email","Email","budi@mail.com"),
-                    new CrudDialog.FormField("password","Password","min 6 karakter"),
-                    new CrudDialog.FormField("role","Role","MASYARAKAT/PETUGAS/ADMIN"),
-                    new CrudDialog.FormField("alamat","Alamat",""),
-                    new CrudDialog.FormField("telp","No. Telepon","08xx")
-                ), null
-            ).ifPresent(vals -> {
-                DummyData.addUser(vals.get("nama"), vals.get("email"), vals.get("role"), vals.get("alamat"), vals.get("telp"));
-                showUsers();
-                CrudDialog.showInfo("Berhasil", "User baru ditambahkan.");
-            });
-        }));
+        bar.add(createBtn("Refresh", "#3B82F6", "white", e -> showUsers()));
         contentArea.getChildren().addAll(bar.get(), new Separator());
 
+        // Get users from VPS leaderboard (has userId, nama, poin, saldo)
+        List<Map<String, Object>> vpsUsers = ApiService.getLeaderboard();
+        List<Map<String,Object>> userList = new ArrayList<>();
+        for (Map<String, Object> u : vpsUsers) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", u.get("userId"));
+            m.put("nama", u.getOrDefault("nama", "?"));
+            m.put("email", "-");
+            m.put("role", "MASYARAKAT");
+            m.put("telp", "-");
+            m.put("saldo", u.getOrDefault("saldo", 0));
+            m.put("poin", u.getOrDefault("poin", 0));
+            userList.add(m);
+        }
+        if (userList.isEmpty()) userList = DummyData.getUserList();
+
         TableView<Map<String,Object>> t = createStyledTable();
-        t.setItems(FXCollections.observableArrayList(DummyData.getUserList()));
+        t.setItems(FXCollections.observableArrayList(userList));
         TableColumn<Map<String,Object>, String> c1 = new TableColumn<>("ID");
         c1.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("id"))));
         TableColumn<Map<String,Object>, String> c2 = new TableColumn<>("Nama");
         c2.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("nama"))));
-        TableColumn<Map<String,Object>, String> c3 = new TableColumn<>("Email");
-        c3.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("email"))));
-        TableColumn<Map<String,Object>, String> c4 = new TableColumn<>("Role");
-        c4.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("role"))));
-        TableColumn<Map<String,Object>, String> c5 = new TableColumn<>("No. Telp");
-        c5.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("telp"))));
-        t.getColumns().addAll(c1, c2, c3, c4, c5);
-        t.setRowFactory(tv -> {
-            TableRow<Map<String,Object>> row = new TableRow<>();
-            row.setOnMouseClicked(ev -> {
-                if (ev.getClickCount()==2 && !row.isEmpty()) {
-                    Map<String,Object> sel = row.getItem();
-                    Map<String,String> init = new HashMap<>();
-                    init.put("nama",String.valueOf(sel.get("nama"))); init.put("email",String.valueOf(sel.get("email")));
-                    init.put("role",String.valueOf(sel.get("role"))); init.put("alamat",String.valueOf(sel.get("alamat")));
-                    init.put("telp",String.valueOf(sel.get("telp")));
-                    CrudDialog.showForm("Edit User","Update",
-                        List.of(
-                            new CrudDialog.FormField("nama","Nama",""), new CrudDialog.FormField("email","Email",""),
-                            new CrudDialog.FormField("role","Role","MASYARAKAT/PETUGAS/ADMIN"),
-                            new CrudDialog.FormField("alamat","Alamat",""), new CrudDialog.FormField("telp","No. Telepon","")
-                        ), init
-                    ).ifPresent(vals -> {
-                        DummyData.updateUser((Long)sel.get("id"), vals.get("nama"), vals.get("email"), vals.get("role"), vals.get("alamat"), vals.get("telp"));
-                        showUsers();
-                        CrudDialog.showInfo("Berhasil","Data user diupdate.");
-                    });
-                }
-            });
-            return row;
+        TableColumn<Map<String,Object>, String> c3 = new TableColumn<>("Role");
+        c3.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("role"))));
+        TableColumn<Map<String,Object>, String> c4 = new TableColumn<>("Saldo");
+        c4.setCellValueFactory(d -> {
+            Object s = d.getValue().get("saldo");
+            return new SimpleStringProperty(s instanceof Number ? "Rp " + ((Number) s).doubleValue() : "-");
         });
+        TableColumn<Map<String,Object>, String> c5 = new TableColumn<>("Poin");
+        c5.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("poin"))));
+        t.getColumns().addAll(c1, c2, c3, c4, c5);
         contentArea.getChildren().add(t);
     }
 
-    // ==================== EDUKASI SAMPAH ====================
+    // ==================== EDUKASI SAMPAH (VPS) ====================
     private void showEdukasi() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Edukasi Sampah", "Panduan kategori dan harga sampah"));
+        contentArea.getChildren().add(createPageHeader("Edukasi Sampah", "Panduan kategori dan harga sampah (VPS)"));
 
-        String[][] data = {
-            {"Sampah Makanan", "ORGANIK", "Sisa makanan dan dapur.", "Rp 1.000/kg"},
-            {"Daun & Rumput", "ORGANIK", "Daun kering, rumput, tanaman.", "Rp 500/kg"},
-            {"Plastik Botol", "ANORGANIK", "Botol plastik bekas minuman.", "Rp 2.500/kg"},
-            {"Kardus/Karton", "ANORGANIK", "Kardus dan karton bekas.", "Rp 1.500/kg"},
-            {"Kaleng Aluminium", "ANORGANIK", "Kaleng minuman ringan.", "Rp 5.000/kg"},
-            {"Besi/Logam", "ANORGANIK", "Besi dan logam bekas.", "Rp 3.000/kg"},
-            {"Kertas", "ANORGANIK", "Kertas dan koran bekas.", "Rp 1.500/kg"},
-            {"Botol Kaca", "ANORGANIK", "Botol kaca bening dan berwarna.", "Rp 2.000/kg"},
-            {"Baterai Bekas", "B3", "Baterai dan aki bekas. Wajib dipisah!", "Rp 3.000/kg"},
-            {"Elektronik Bekas", "B3", "Komponen elektronik rusak.", "Rp 5.000/kg"},
-            {"Sampah Residu", "RESIDU", "Sampah yang tidak bisa didaur ulang.", "Rp 0/kg"},
-            {"Popok Bekas", "RESIDU", "Popok dan sanitary waste.", "Rp 0/kg"}
-        };
+        // Load from VPS
+        List<Sampah> sampahList = ApiService.getSampah();
+        if (sampahList.isEmpty()) sampahList = DummyData.getSampahList();
+
+        // Convert to display format
+        String[][] data = new String[sampahList.size()][4];
+        for (int i = 0; i < sampahList.size(); i++) {
+            Sampah s = sampahList.get(i);
+            data[i][0] = s.getNama();
+            data[i][1] = s.getKategori();
+            data[i][2] = s.getDeskripsi() != null ? s.getDeskripsi() : "";
+            data[i][3] = "Rp " + s.getHargaPerKg() + "/kg";
+        }
 
         HBar filterBar = new HBar(8);
         String[] filters = {"Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU"};
@@ -1028,17 +1090,52 @@ public class DashboardView {
         }
     }
 
-    // ==================== LOKASI BANK SAMPAH ====================
+    // ==================== LOKASI BANK SAMPAH (VPS CRUD) ====================
     private void showLokasi() {
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(createPageHeader("Lokasi Bank Sampah", "Titik lokasi pengelolaan sampah"));
+        contentArea.getChildren().add(createPageHeader("Lokasi Bank Sampah", "Kelola lokasi bank sampah (VPS)"));
 
-        String[][] lokasiData = {
-            {"Bank Sampah Resik Pusat", "Jl. Merdeka No. 45, Jakarta Pusat", "08:00-17:00", "0812-3456-7890"},
-            {"Bank Sampah Resik Selatan", "Jl. Margonda Raya No. 10, Depok", "07:00-16:00", "0813-9876-5432"},
-            {"Bank Sampah Resik Timur", "Jl. Raya Bekas KM 20, Bekasi", "08:00-16:00", "0815-1111-2222"},
-            {"Bank Sampah Resik Barat", "Jl. Daan Mogot No. 88, Tangerang", "09:00-17:00", "0817-3333-4444"}
-        };
+        HBar bar = new HBar(10);
+        bar.add(createBtn("Tambah Lokasi", "#1A5D3A", "white", e -> {
+            CrudDialog.showForm("Tambah Lokasi", "Simpan",
+                List.of(
+                    new CrudDialog.FormField("nama", "Nama", "Bank Sampah Resik..."),
+                    new CrudDialog.FormField("alamat", "Alamat", "Jl. ..."),
+                    new CrudDialog.FormField("jam", "Jam Operasional", "08:00-17:00"),
+                    new CrudDialog.FormField("telepon", "Telepon", "0812-...")
+                ), null
+            ).ifPresent(vals -> {
+                try {
+                    ApiService.createLokasi(vals.get("nama"), vals.get("alamat"), vals.get("jam"), vals.get("telepon"));
+                    showLokasi();
+                    CrudDialog.showInfo("Berhasil", "Lokasi ditambahkan ke VPS.");
+                } catch (Exception ex) {
+                    CrudDialog.showInfo("Error", "Gagal tambah: " + ex.getMessage());
+                }
+            });
+        }));
+        bar.add(createBtn("Refresh", "#3B82F6", "white", e -> showLokasi()));
+        contentArea.getChildren().addAll(bar.get(), new Separator());
+
+        List<Map<String, Object>> lokasiList = ApiService.getLokasi();
+        String[][] lokasiData;
+        if (lokasiList.isEmpty()) {
+            lokasiData = new String[][] {
+                {"Bank Sampah Resik Pusat", "Jl. Merdeka No. 45, Jakarta Pusat", "08:00-17:00", "0812-3456-7890"},
+                {"Bank Sampah Resik Selatan", "Jl. Margonda Raya No. 10, Depok", "07:00-16:00", "0813-9876-5432"},
+                {"Bank Sampah Resik Timur", "Jl. Raya Bekasi KM 20, Bekasi", "08:00-16:00", "0815-1111-2222"},
+                {"Bank Sampah Resik Barat", "Jl. Daan Mogot No. 88, Tangerang", "09:00-17:00", "0817-3333-4444"}
+            };
+        } else {
+            lokasiData = new String[lokasiList.size()][4];
+            for (int i = 0; i < lokasiList.size(); i++) {
+                Map<String, Object> l = lokasiList.get(i);
+                lokasiData[i][0] = String.valueOf(l.getOrDefault("nama", ""));
+                lokasiData[i][1] = String.valueOf(l.getOrDefault("alamat", ""));
+                lokasiData[i][2] = String.valueOf(l.getOrDefault("jamOperasional", ""));
+                lokasiData[i][3] = String.valueOf(l.getOrDefault("telepon", ""));
+            }
+        }
 
         TableView<String[]> t = createStyledTable();
         t.setItems(FXCollections.observableArrayList(Arrays.asList(lokasiData)));
@@ -1051,11 +1148,33 @@ public class DashboardView {
         TableColumn<String[], String> c4 = new TableColumn<>("Telepon");
         c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue()[3]));
         t.getColumns().addAll(c1, c2, c3, c4);
+
+        ContextMenu cm = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("Hapus Lokasi");
+        deleteItem.setOnAction(e -> {
+            String[] sel = t.getSelectionModel().getSelectedItem();
+            if (sel != null) {
+                for (Map<String, Object> l : lokasiList) {
+                    if (String.valueOf(l.get("nama")).equals(sel[0])) {
+                        try {
+                            ApiService.deleteLokasi(((Number) l.get("id")).longValue());
+                            showLokasi();
+                            CrudDialog.showInfo("Berhasil", "Lokasi dihapus dari VPS.");
+                        } catch (Exception ex) {
+                            CrudDialog.showInfo("Error", "Gagal hapus: " + ex.getMessage());
+                        }
+                        return;
+                    }
+                }
+            }
+        });
+        cm.getItems().add(deleteItem);
+        t.setContextMenu(cm);
         contentArea.getChildren().add(t);
 
         VBox info = new VBox(8);
         info.setPadding(new Insets(16, 0, 0, 0));
-        Label infoLabel = new Label("Lokasi bank sampah terdekat akan muncul di aplikasi client Android untuk panduan penjemputan.");
+        Label infoLabel = new Label("Lokasi tersimpan di VPS. Data sinkron antara Android dan Desktop.");
         infoLabel.setFont(Font.font("SF Pro Display", 13));
         infoLabel.setTextFill(Color.valueOf("#64748B"));
         info.getChildren().add(infoLabel);
