@@ -810,16 +810,129 @@ public class DashboardView {
 (d -> new SimpleStringProperty(d.getValue().getTransaksi() != null ? "Rp "+d.getValue().getTransaksi().getTotalHarga() : "-"));
         table.getColumns().addAll(tc1, tc2, tc3, tc4);
 
+        // Chart container
+        VBox chartBox = new VBox(12);
+        chartBox.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+        chartBox.setPadding(new Insets(20));
+
         Runnable updateTable = () -> {
             LocalDate selected = datePicker.getValue();
-            table.setItems(FXCollections.observableArrayList(penjemputanData.stream()
+            List<Penjemputan> dayItems = penjemputanData.stream()
                 .filter(p -> p.getTanggalJemput() != null && p.getTanggalJemput().equals(selected))
-                .toList()));
+                .toList();
+            table.setItems(FXCollections.observableArrayList(dayItems));
+            updateCharts(dayItems, chartBox);
         };
         datePicker.valueProperty().addListener((obs,o,n) -> updateTable.run());
         updateTable.run();
 
-        contentArea.getChildren().addAll(dateBox, statsRow, statsCard, table);
+        contentArea.getChildren().addAll(dateBox, statsRow, statsCard, table, chartBox);
+    }
+
+    private void updateCharts(List<Penjemputan> dayItems, VBox chartBox) {
+        chartBox.getChildren().clear();
+
+        // Title
+        Label chartTitle = new Label("Grafik Setoran per Kategori");
+        chartTitle.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 16));
+        chartTitle.setTextFill(Color.valueOf("#1E293B"));
+        chartBox.getChildren().add(chartTitle);
+
+        // Count per kategori from catatan field
+        Map<String, Integer> kategoriCount = new LinkedHashMap<>();
+        kategoriCount.put("ORGANIK", 0);
+        kategoriCount.put("ANORGANIK", 0);
+        kategoriCount.put("B3", 0);
+        kategoriCount.put("RESIDU", 0);
+
+        for (Penjemputan p : dayItems) {
+            String catatan = p.getCatatan() != null ? p.getCatatan().toUpperCase() : "";
+            for (String kat : kategoriCount.keySet()) {
+                if (catatan.contains(kat)) {
+                    kategoriCount.put(kat, kategoriCount.get(kat) + 1);
+                    break;
+                }
+            }
+        }
+
+        // If no data, show all statuses
+        if (dayItems.isEmpty()) {
+            Label empty = new Label("Belum ada data setoran untuk tanggal ini.");
+            empty.setFont(Font.font("SF Pro Display", 13));
+            empty.setTextFill(Color.valueOf("#94A3B8"));
+            chartBox.getChildren().add(empty);
+            return;
+        }
+
+        // Bar chart
+        String[] kategori = {"ORGANIK", "ANORGANIK", "B3", "RESIDU"};
+        String[] colors = {"#10B981", "#3B82F6", "#EF4444", "#6B7280"};
+        int maxVal = 1;
+        for (int v : kategoriCount.values()) if (v > maxVal) maxVal = v;
+
+        VBox barChart = new VBox(8);
+        for (int i = 0; i < kategori.length; i++) {
+            int val = kategoriCount.get(kategori[i]);
+            HBox bar = new HBox(10);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            Label label = new Label(kategori[i]);
+            label.setPrefWidth(80);
+            label.setFont(Font.font("SF Pro Display", 12));
+            label.setTextFill(Color.valueOf("#64748B"));
+            double barWidth = (val * 1.0 / maxVal) * 350;
+            if (barWidth < 4) barWidth = 4;
+            VBox barViz = new VBox();
+            barViz.setStyle("-fx-background-color: " + colors[i] + "; -fx-background-radius: 6; -fx-min-width: " + barWidth + "; -fx-pref-height: 28; -fx-max-width: " + barWidth + ";");
+            Label valLabel = new Label(" " + val + " setoran");
+            valLabel.setFont(Font.font("SF Pro Display", 11));
+            valLabel.setTextFill(Color.valueOf("#64748B"));
+            bar.getChildren().addAll(label, barViz, valLabel);
+            barChart.getChildren().add(bar);
+        }
+        chartBox.getChildren().add(barChart);
+
+        // Pie chart (simple visual using colored circles)
+        Separator sep = new Separator();
+        sep.setPadding(new Insets(8, 0, 8, 0));
+        chartBox.getChildren().add(sep);
+
+        Label pieTitle = new Label("Distribusi Status Penjemputan");
+        pieTitle.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 14));
+        pieTitle.setTextFill(Color.valueOf("#1E293B"));
+        chartBox.getChildren().add(pieTitle);
+
+        Map<String, Integer> statusCount = new LinkedHashMap<>();
+        for (Penjemputan p : dayItems) {
+            String st = p.getStatus() != null ? p.getStatus() : "UNKNOWN";
+            statusCount.put(st, statusCount.getOrDefault(st, 0) + 1);
+        }
+
+        HBox pieRow = new HBox(16);
+        pieRow.setPadding(new Insets(8, 0, 0, 0));
+        for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
+            String status = entry.getKey();
+            int count = entry.getValue();
+            String bg, fg;
+            switch (status) {
+                case "MENUNGGU": bg="#FEF3C7"; fg="#92400E"; break;
+                case "DIJADWALKAN": bg="#DBEAFE"; fg="#1E40AF"; break;
+                case "DIPROSES": bg="#F3E8FF"; fg="#6B21A8"; break;
+                case "SELESAI": bg="#D1FAE5"; fg="#065F46"; break;
+                case "DIBATALKAN": bg="#FEE2E2"; fg="#991B1B"; break;
+                default: bg="#F1F5F9"; fg="#475569";
+            }
+            VBox statusBox = new VBox(4);
+            statusBox.setStyle("-fx-background-color: " + bg + "; -fx-background-radius: 12; -fx-padding: 12 16;");
+            Label stLabel = new Label(status);
+            stLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
+            stLabel.setTextFill(Color.valueOf(fg));
+            Label stCount = new Label(count + " setoran");
+            stCount.setFont(Font.font("SF Pro Display", 10));
+            stCount.setTextFill(Color.valueOf(fg));
+            statusBox.getChildren().addAll(stLabel, stCount);
+            pieRow.getChildren().add(statusBox);
+        }
+        chartBox.getChildren().add(pieRow);
     }
 
     // ==================== RIWAYAT SETORAN ====================
