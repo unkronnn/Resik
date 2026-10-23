@@ -10,6 +10,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -379,14 +381,11 @@ private fun PenjemputanForm(onBack: () -> Unit, onSubmit: (String, String, Strin
             // Step 4: Tanggal & Waktu dengan DatePicker/TimePicker dialogs
             Text("4. Pilih Jadwal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Date picker button — clickable opens DatePickerDialog
-                OutlinedTextField(
-                    value = tanggal, onValueChange = {},
-                    readOnly = true,
-                    placeholder = { Text("Pilih tanggal") },
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
+                // Date picker — gunakan interactionSource untuk detect klik
+                val dateInteraction = remember { MutableInteractionSource() }
+                LaunchedEffect(dateInteraction) {
+                    dateInteraction.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
                             val cal = java.util.Calendar.getInstance()
                             DatePickerDialog(
                                 context,
@@ -397,24 +396,29 @@ private fun PenjemputanForm(onBack: () -> Unit, onSubmit: (String, String, Strin
                                 cal.get(java.util.Calendar.MONTH),
                                 cal.get(java.util.Calendar.DAY_OF_MONTH)
                             ).show()
-                        },
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = tanggal, onValueChange = {},
+                    readOnly = true,
+                    placeholder = { Text("Pilih tanggal") },
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = GreenPrimary) },
                     trailingIcon = { Icon(Icons.Filled.ExpandMore, contentDescription = null, tint = GreenPrimary) },
+                    interactionSource = dateInteraction,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = GreenPrimary,
                         unfocusedBorderColor = BorderLight,
                         disabledBorderColor = BorderLight
                     )
                 )
-                // Time picker button — clickable opens TimePickerDialog
-                OutlinedTextField(
-                    value = waktu, onValueChange = {},
-                    readOnly = true,
-                    placeholder = { Text("Pilih waktu") },
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
+                // Time picker — gunakan interactionSource untuk detect klik
+                val timeInteraction = remember { MutableInteractionSource() }
+                LaunchedEffect(timeInteraction) {
+                    timeInteraction.interactions.collect { interaction ->
+                        if (interaction is PressInteraction.Release) {
                             val cal = java.util.Calendar.getInstance()
                             TimePickerDialog(
                                 context,
@@ -425,10 +429,18 @@ private fun PenjemputanForm(onBack: () -> Unit, onSubmit: (String, String, Strin
                                 cal.get(java.util.Calendar.MINUTE),
                                 true
                             ).show()
-                        },
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = waktu, onValueChange = {},
+                    readOnly = true,
+                    placeholder = { Text("Pilih waktu") },
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(14.dp),
                     leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null, tint = GreenPrimary) },
                     trailingIcon = { Icon(Icons.Filled.ExpandMore, contentDescription = null, tint = GreenPrimary) },
+                    interactionSource = timeInteraction,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = GreenPrimary,
                         unfocusedBorderColor = BorderLight,
