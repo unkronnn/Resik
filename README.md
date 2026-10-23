@@ -117,8 +117,8 @@ resik/
 
 | Platform | File | Kebutuhan |
 |----------|------|-----------|
-| Android | `Resik-Android-v3.0.apk` | Android 7.0+ (API 24) |
-| macOS | `Resik-Admin-macOS-v3.0.dmg` | macOS 11+ (Apple Silicon) |
+| Android | `Resik-Android-v3.1.apk` | Android 7.0+ (API 24) |
+| macOS | `Resik-Admin-macOS-v3.1.dmg` | macOS 11+ (Apple Silicon) |
 | Windows | `Resik-Admin-Setup.exe` | Windows 10/11 (x64) |
 
 > **Catatan:** Windows installer sudah bundle JRE 17 + JavaFX 21, tidak perlu install Java.
