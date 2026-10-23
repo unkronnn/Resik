@@ -175,6 +175,36 @@ public class DashboardView {
             createStatCard("Dijadwalkan", s.get("DIJADWALKAN"), "#3B82F6"),
             createStatCard("Selesai", s.get("SELESAI"), "#10B981"),
             createStatCard("Total User", s.get("TOTAL_USER"), "#8B5CF6"));
+
+        // Simple bar chart - Setoran per kategori
+        VBox chartBox = new VBox(12);
+        chartBox.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 6, 0, 0, 1);");
+        Label chartTitle = new Label("Setoran per Kategori");
+        chartTitle.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 15));
+        chartTitle.setTextFill(Color.valueOf("#1E293B"));
+        String[] kategori = {"ORGANIK", "ANORGANIK", "B3", "RESIDU"};
+        int[] values = {15, 28, 8, 12};
+        String[] colors = {"#10B981", "#3B82F6", "#EF4444", "#6B7280"};
+        int maxVal = 30;
+        VBox chartContent = new VBox(8);
+        for (int i = 0; i < kategori.length; i++) {
+            HBox bar = new HBox(10);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            Label label = new Label(kategori[i]);
+            label.setPrefWidth(80);
+            label.setFont(Font.font("SF Pro Display", 12));
+            label.setTextFill(Color.valueOf("#64748B"));
+            double barWidth = (values[i] * 1.0 / maxVal) * 400;
+            VBox barViz = new VBox();
+            barViz.setStyle("-fx-background-color: " + colors[i] + "; -fx-background-radius: 6; -fx-min-width: " + barWidth + "; -fx-pref-height: 24; -fx-max-width: " + barWidth + ";");
+            Label valLabel = new Label(" " + values[i] + " setoran");
+            valLabel.setFont(Font.font("SF Pro Display", 11));
+            valLabel.setTextFill(Color.valueOf("#64748B"));
+            bar.getChildren().addAll(label, barViz, valLabel);
+            chartContent.getChildren().add(bar);
+        }
+        chartBox.getChildren().addAll(chartTitle, chartContent);
+
         VBox rb = new VBox(12);
         Label rt = new Label("Penjemputan Terbaru");
         rt.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 15));
@@ -208,7 +238,12 @@ public class DashboardView {
             list.getChildren().add(row);
         }
         rb.getChildren().addAll(rt, list);
-        contentArea.getChildren().addAll(sr, rb);
+        HBox twoCol = new HBox(16);
+        chartBox.setPrefWidth(500);
+        rb.setPrefWidth(500);
+        HBox.setHgrow(rb, Priority.ALWAYS);
+        twoCol.getChildren().addAll(chartBox, rb);
+        contentArea.getChildren().addAll(sr, twoCol);
     }
 
     private VBox createStatCard(String label, int value, String color) {
@@ -299,6 +334,30 @@ public class DashboardView {
         contentArea.getChildren().addAll(actionBar.get(), new Separator());
 
         TableView<Penjemputan> t = createStyledTable();
+
+        // Search box
+        HBox searchBox = new HBox(8);
+        searchBox.setPadding(new Insets(0, 0, 8, 0));
+        TextField searchField = new TextField();
+        searchField.setPromptText("Cari alamat, status, atau catatan...");
+        searchField.setStyle("-fx-background-radius: 8; -fx-padding: 8 12; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-pref-width: 400;");
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == null || newVal.isEmpty()) {
+                t.setItems(penjemputanData);
+            } else {
+                ObservableList<Penjemputan> filtered = FXCollections.observableArrayList();
+                for (Penjemputan p : penjemputanData) {
+                    if ((p.getAlamat() != null && p.getAlamat().toLowerCase().contains(newVal.toLowerCase())) ||
+                        (p.getStatus() != null && p.getStatus().toLowerCase().contains(newVal.toLowerCase())) ||
+                        (p.getCatatan() != null && p.getCatatan().toLowerCase().contains(newVal.toLowerCase()))) {
+                        filtered.add(p);
+                    }
+                }
+                t.setItems(filtered);
+            }
+        });
+        searchBox.getChildren().add(searchField);
+        contentArea.getChildren().add(searchBox);
         t.setItems(penjemputanData);
         TableColumn<Penjemputan, String> c1 = new TableColumn<>("ID");
         c1.setCellValueFactory(d -> new SimpleStringProperty(String.format("%03d", d.getValue().getId())));
@@ -593,7 +652,37 @@ public class DashboardView {
         datePicker.setStyle("-fx-background-radius: 14; -fx-border-radius: 14; -fx-padding: 8 12;");
         Label dateLabel = new Label("Pilih tanggal:");
         dateLabel.setFont(Font.font("SF Pro Display", 13)); dateLabel.setTextFill(Color.valueOf("#64748B"));
-        HBox dateBox = new HBox(10, dateLabel, datePicker);
+        HBox dateBox = new HBox(10, dateLabel, datePicker,
+            createBtn("Export ke File", "#1A5D3A", "white", e -> {
+                LocalDate selected = datePicker.getValue();
+                java.io.File file = new java.io.File(System.getProperty("user.home"), "Desktop/Laporan-Resik-" + selected + ".txt");
+                try (java.io.PrintWriter pw = new java.io.PrintWriter(file)) {
+                    pw.println("=====================================");
+                    pw.println("  LAPORAN HARIAN RESIK");
+                    pw.println("  Tanggal: " + selected);
+                    pw.println("=====================================");
+                    pw.println();
+                    int totalSetoran = 0; BigDecimal totalPembayaran = BigDecimal.ZERO; double totalKg = 0;
+                    for (Penjemputan p : penjemputanData) {
+                        if (p.getTanggalJemput() != null && p.getTanggalJemput().equals(selected) && "SELESAI".equals(p.getStatus())) {
+                            totalSetoran++;
+                            if (p.getTransaksi() != null) totalPembayaran = totalPembayaran.add(p.getTransaksi().getTotalHarga());
+                            if (p.getDetailList() != null) for (var d : p.getDetailList()) if (d.getBeratAktual()!=null) totalKg += d.getBeratAktual().doubleValue();
+                            pw.println("ID: #" + p.getId() + " | Alamat: " + p.getAlamat() + " | Status: " + p.getStatus());
+                        }
+                    }
+                    pw.println();
+                    pw.println("Total Setoran Selesai: " + totalSetoran);
+                    pw.println("Total Pembayaran: Rp " + totalPembayaran);
+                    pw.println(String.format("Total Sampah: %.1f kg", totalKg));
+                    pw.println(String.format("Estimasi CO2 Reduction: %.1f kg", totalKg * 2));
+                    pw.println();
+                    pw.println("=====================================");
+                    CrudDialog.showInfo("Berhasil", "Laporan di-export ke:\n" + file.getAbsolutePath());
+                } catch (Exception ex) {
+                    CrudDialog.showInfo("Error", "Gagal export: " + ex.getMessage());
+                }
+            }));
         dateBox.setAlignment(Pos.CENTER_LEFT);
 
         // Stat cards

@@ -54,6 +54,7 @@ data class EdukasiItem(val judul: String, val kategori: String, val deskripsi: S
 object LocalData {
     private const val PREFS = "resik_local"
     private const val KEY_PENJEMPUTAN = "penjemputan_list"
+    private const val KEY_ALAMAT = "saved_alamat_list"
 
     fun savePenjemputan(context: Context, items: List<PenjemputanItem>) {
         val sb = StringBuilder()
@@ -73,6 +74,15 @@ object LocalData {
             }
         }
         return list
+    }
+
+    fun saveAlamat(context: Context, items: List<String>) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_ALAMAT, items.joinToString("\n")).apply()
+    }
+
+    fun loadAlamat(context: Context): MutableList<String> {
+        val data = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_ALAMAT, "") ?: ""
+        return data.lines().filter { it.isNotBlank() }.toMutableList()
     }
 }
 
@@ -259,6 +269,8 @@ private fun PenjemputanForm(onBack: () -> Unit, onSubmit: (String, String, Strin
     var waktu by rememberSaveable { mutableStateOf("") }
     var catatan by rememberSaveable { mutableStateOf("") }
     var isLocating by remember { mutableStateOf(false) }
+    var savedAlamat by remember { mutableStateOf(LocalData.loadAlamat(context)) }
+    var showAlamatPicker by remember { mutableStateOf(false) }
 
     val kategoriList = listOf("ORGANIK", "ANORGANIK", "B3", "RESIDU")
     val kategoriColors = mapOf("ORGANIK" to Color(0xFF10B981), "ANORGANIK" to Color(0xFF3B82F6), "B3" to Color(0xFFEF4444), "RESIDU" to Color(0xFF6B7280))
@@ -340,6 +352,29 @@ private fun PenjemputanForm(onBack: () -> Unit, onSubmit: (String, String, Strin
                 },
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
             )
+
+            // Saved addresses quick select
+            if (savedAlamat.isNotEmpty()) {
+                Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    savedAlamat.take(3).forEachIndexed { idx, addr ->
+                        Box(modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(GreenMint).clickable { alamat = addr }.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                            Text(addr.take(15) + if (addr.length > 15) "..." else "", fontSize = 10.sp, color = GreenPrimary, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+            }
+
+            // Save current address button
+            if (alamat.isNotBlank() && savedAlamat.none { it == alamat }) {
+                TextButton(onClick = {
+                    savedAlamat.add(alamat)
+                    LocalData.saveAlamat(context, savedAlamat)
+                }, modifier = Modifier.padding(start = 4.dp)) {
+                    Icon(Icons.Filled.BookmarkAdd, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Simpan alamat ini", fontSize = 12.sp, color = GreenPrimary)
+                }
+            }
 
             // Step 4: Tanggal & Waktu dengan DatePicker/TimePicker dialogs
             Text("4. Pilih Jadwal", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
@@ -427,23 +462,66 @@ private fun StatusBadge(status: String) {
     Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(bg).padding(horizontal = 10.dp, vertical = 4.dp)) { Text(status, fontSize = 10.sp, color = fg, fontWeight = FontWeight.Bold) }
 }
 
-// ===== RIWAYAT SCREEN =====
+// ===== RIWAYAT SCREEN — with filter & detail dialog =====
 @Composable
 fun RiwayatScreen(onBack: () -> Unit) {
+    var filter by rememberSaveable { mutableStateOf("Semua") }
+    val filters = listOf("Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU")
+    val filtered = if (filter == "Semua") dummyTransaksi else dummyTransaksi.filter { it.jenis.contains(filter, ignoreCase = true) }
+    var selectedItem by remember { mutableStateOf<TransaksiItem?>(null) }
+
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
         GradientHeader("Riwayat Transaksi", onBack)
-        LazyColumn(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(dummyTransaksi) { item ->
-                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite)) {
+
+        // Filter chips
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            filters.forEach { f ->
+                Box(modifier = Modifier.clip(RoundedCornerShape(18.dp)).background(if (filter == f) GreenPrimary else BgWhite).clickable { filter = f }.padding(horizontal = 14.dp, vertical = 8.dp)) {
+                    Text(f, fontSize = 11.sp, color = if (filter == f) BgWhite else TextSecondary, fontWeight = if (filter == f) FontWeight.Bold else FontWeight.Normal)
+                }
+            }
+        }
+
+        LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(filtered) { item ->
+                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite), modifier = Modifier.clickable { selectedItem = item }) {
                     Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(44.dp).clip(CircleShape).background(GreenMint), contentAlignment = Alignment.Center) { Icon(Icons.Filled.Paid, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp)) }
                         Spacer(Modifier.width(12.dp))
                         Column(modifier = Modifier.weight(1f)) { Text(item.jenis, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium); Text(item.tanggal, fontSize = 12.sp, color = TextHint) }
                         Text(item.jumlah, fontSize = 16.sp, color = GreenPrimary, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(4.dp))
+                        Icon(Icons.Filled.ChevronRight, contentDescription = "Detail", tint = TextHint, modifier = Modifier.size(18.dp))
                     }
                 }
             }
         }
+
+        // Detail dialog
+        selectedItem?.let { item ->
+            AlertDialog(
+                onDismissRequest = { selectedItem = null },
+                confirmButton = { TextButton(onClick = { selectedItem = null }) { Text("Tutup", color = GreenPrimary) } },
+                title = { Text("Detail Transaksi", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DetailRow("Jenis", item.jenis)
+                        DetailRow("Tanggal", item.tanggal)
+                        DetailRow("Jumlah", item.jumlah)
+                        DetailRow("Status", item.status)
+                    }
+                },
+                containerColor = BgWhite
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, fontSize = 13.sp, color = TextHint)
+        Text(value, fontSize = 13.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -492,15 +570,30 @@ fun LeaderboardScreen(onBack: () -> Unit) {
     }
 }
 
-// ===== EDUKASI SCREEN =====
+// ===== EDUKASI SCREEN — with search =====
 @Composable
 fun EdukasiScreen(onBack: () -> Unit) {
     var filter by rememberSaveable { mutableStateOf("Semua") }
+    var search by rememberSaveable { mutableStateOf("") }
     val filters = listOf("Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU")
-    val filtered = if (filter == "Semua") dummyEdukasi else dummyEdukasi.filter { it.kategori == filter }
+    val byKategori = if (filter == "Semua") dummyEdukasi else dummyEdukasi.filter { it.kategori == filter }
+    val filtered = if (search.isBlank()) byKategori else byKategori.filter { it.judul.contains(search, ignoreCase = true) || it.deskripsi.contains(search, ignoreCase = true) }
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
         GradientHeader("Edukasi Sampah", onBack)
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        // Search bar
+        OutlinedTextField(
+            value = search, onValueChange = { search = it },
+            placeholder = { Text("Cari jenis sampah...", fontSize = 13.sp) },
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            shape = RoundedCornerShape(14.dp),
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = GreenPrimary) },
+            trailingIcon = { if (search.isNotEmpty()) Icon(Icons.Filled.Clear, contentDescription = "Clear", tint = TextHint, modifier = Modifier.clickable { search = "" }) },
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight)
+        )
+
+        // Filter chips
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             filters.forEach { f ->
                 Box(modifier = Modifier.clip(RoundedCornerShape(18.dp)).background(if (filter == f) GreenPrimary else BgWhite).clickable { filter = f }.padding(horizontal = 14.dp, vertical = 8.dp)) {
                     Text(f, fontSize = 11.sp, color = if (filter == f) BgWhite else TextSecondary, fontWeight = if (filter == f) FontWeight.Bold else FontWeight.Normal)
