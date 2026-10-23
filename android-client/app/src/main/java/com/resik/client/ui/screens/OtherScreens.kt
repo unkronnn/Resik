@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import com.resik.client.api.ApiClient
+import com.resik.client.api.ChatWebSocketClient
 import com.resik.client.ui.theme.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -125,20 +126,33 @@ fun GradientHeader(title: String, onBack: () -> Unit) {
     }
 }
 
-// ===== CHAT SCREEN — VPS connected, real-time polling =====
+// ===== CHAT SCREEN — Real-time via WebSocket =====
 @Composable
 fun ChatScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val messages = remember { mutableStateListOf<ChatMsg>() }
     var input by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
+    var isConnected by remember { mutableStateOf(false) }
     val userId = ApiClient.getUserId() ?: 1L
-    var lastMsgCount by remember { mutableStateOf(0) }
     val listState = rememberLazyListState()
 
-    // Load messages initially + poll every 3 seconds for real-time
+    // WebSocket client for real-time push notifications
+    val wsClient = remember {
+        val baseUrl = ApiClient.getBaseUrl()
+        val wsUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://")
+            .replace("/api/", "/ws/") + "chat?userId=$userId"
+        ChatWebSocketClient(wsUrl)
+    }
+
+    // Cleanup WebSocket when the composable leaves the composition
+    DisposableEffect(wsClient) {
+        onDispose { wsClient.disconnect() }
+    }
+
+    // Load messages initially + connect WebSocket for real-time
     LaunchedEffect(Unit) {
-        // Initial load
+        // Initial REST load
         ApiClient.getApi().getChats(userId).enqueue(object : Callback<List<Map<String, Any>>> {
             override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
                 isLoading = false
@@ -147,10 +161,10 @@ fun ChatScreen(onBack: () -> Unit) {
                     for (m in r.body()!!) {
                         val pengirim = m["pengirim"]?.toString() ?: "USER"
                         val pesan = m["pesan"]?.toString() ?: ""
-                        val waktu = m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
+                        val waktu = m["createdAt"]?.toString()?.takeIf { it.length > 16 }?.substring(11, 16)
+                            ?: m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
                         messages.add(ChatMsg(pesan, pengirim == "USER", waktu))
                     }
-                    lastMsgCount = messages.size
                 }
                 if (messages.isEmpty()) messages.add(ChatMsg("Selamat datang di Resik! Ada yang bisa kami bantu?", false, "09:00"))
             }
@@ -160,23 +174,45 @@ fun ChatScreen(onBack: () -> Unit) {
             }
         })
 
-        // Poll every 3 seconds for new messages from admin
+        // Connect WebSocket — onMessage callback runs on main thread
+        wsClient.connect(
+            onConnect = { isConnected = true },
+            onDisconnect = { isConnected = false },
+            onMessage = { msg ->
+                val type = msg["type"]?.toString() ?: ""
+                if (type == "NEW_MESSAGE") {
+                    val pengirim = msg["pengirim"]?.toString() ?: "USER"
+                    val pesan = msg["pesan"]?.toString() ?: ""
+                    val createdAt = msg["createdAt"]?.toString() ?: ""
+                    val waktu = if (createdAt.length > 16) createdAt.substring(11, 16) else "00:00"
+                    // Avoid duplicates: only add if not already in the list
+                    val exists = messages.any { it.text == pesan && it.time == waktu }
+                    if (!exists) {
+                        messages.add(ChatMsg(pesan, pengirim == "USER", waktu))
+                    }
+                }
+            }
+        )
+    }
+
+    // Fallback polling every 5 seconds (in case WebSocket drops)
+    LaunchedEffect(Unit) {
         while (true) {
-            kotlinx.coroutines.delay(3000)
+            kotlinx.coroutines.delay(5000)
             ApiClient.getApi().getChats(userId).enqueue(object : Callback<List<Map<String, Any>>> {
                 override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
                     if (r.isSuccessful && r.body() != null) {
-                        val newCount = r.body()!!.size
-                        if (newCount > lastMsgCount) {
-                            // New messages arrived — reload all
+                        val body = r.body()!!
+                        // Only reload if message count differs (new messages from server)
+                        if (body.size != messages.size) {
                             messages.clear()
-                            for (m in r.body()!!) {
+                            for (m in body) {
                                 val pengirim = m["pengirim"]?.toString() ?: "USER"
                                 val pesan = m["pesan"]?.toString() ?: ""
-                                val waktu = m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
+                                val waktu = m["createdAt"]?.toString()?.takeIf { it.length > 16 }?.substring(11, 16)
+                                    ?: m["waktu"]?.toString()?.substring(11, 16) ?: "00:00"
                                 messages.add(ChatMsg(pesan, pengirim == "USER", waktu))
                             }
-                            lastMsgCount = messages.size
                         }
                     }
                 }
@@ -195,7 +231,10 @@ fun ChatScreen(onBack: () -> Unit) {
                 Icon(Icons.Filled.SupportAgent, contentDescription = null, tint = BgWhite, modifier = Modifier.size(24.dp))
             }
             Spacer(Modifier.width(10.dp))
-            Column { Text("Admin Resik", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = BgWhite); Text("Online", fontSize = 11.sp, color = GreenMint) }
+            Column {
+                Text("Admin Resik", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = BgWhite)
+                Text(if (isConnected) "Online" else "Menghubungkan...", fontSize = 11.sp, color = if (isConnected) GreenMint else Color.Yellow)
+            }
         }
 
         if (isLoading) {
@@ -224,9 +263,7 @@ fun ChatScreen(onBack: () -> Unit) {
                     messages.add(ChatMsg(userMsg, true, now)); input = ""
                     val body = mapOf("userId" to userId, "pengirim" to "USER", "pesan" to userMsg)
                     ApiClient.getApi().sendChat(body).enqueue(object : Callback<Map<String, Any>> {
-                        override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
-                            lastMsgCount = messages.size // update count so polling doesn't double-add
-                        }
+                        override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {}
                         override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
                             messages.add(ChatMsg("Pesan tersimpan lokal (offline).", false, SimpleDateFormat("HH:mm").format(Date())))
                         }

@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/penjemputan/**").permitAll()
                 .requestMatchers("/api/dompet/**").permitAll()
                 .requestMatchers("/api/chat/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/laporan/lingkungan").permitAll()
                 .anyRequest().authenticated()
             )

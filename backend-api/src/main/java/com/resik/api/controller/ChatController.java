@@ -26,4 +26,23 @@ public class ChatController {
     public List<Chat> getMessages(@PathVariable Long userId) {
         return chatService.getMessages(userId);
     }
+
+    /**
+     * Returns the latest message for each user. Desktop admin uses this to
+     * auto-populate the conversation list without manually entering User IDs.
+     */
+    @GetMapping("/latest")
+    public List<Chat> getLatestPerUser() {
+        return chatService.getLatestPerUser();
+    }
+
+    /**
+     * Mark all messages from a user as read.
+     */
+    @PutMapping("/{userId}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long userId) {
+        chatService.markAsRead(userId);
+        return ResponseEntity.ok().build();
+    }
 }
+

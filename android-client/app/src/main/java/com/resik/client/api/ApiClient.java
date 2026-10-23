@@ -10,6 +10,11 @@ import java.util.concurrent.TimeUnit;
 
 public class ApiClient {
     private static final String BASE_URL = "http://43.157.243.87:8081/api/";
+
+    public static String getBaseUrl() {
+        return BASE_URL;
+    }
+
     private static ResikApi api;
     private static SharedPreferences prefs;
 

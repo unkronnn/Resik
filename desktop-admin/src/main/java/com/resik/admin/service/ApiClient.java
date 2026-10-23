@@ -32,6 +32,15 @@ public class ApiClient {
         }
     }
 
+    public static <T> T put(String path, Object body, Class<T> type) {
+        try {
+            String json = body != null ? mapper.writeValueAsString(body) : "{}";
+            return request("PUT", path, json, type);
+        } catch (Exception e) {
+            throw new RuntimeException("Request failed: " + e.getMessage(), e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static List<Map<String, Object>> getList(String path) {
         try {
