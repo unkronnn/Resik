@@ -6,7 +6,6 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 /**
@@ -47,7 +46,6 @@ public class ChatWebSocketClient {
     private void doConnect() {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            CountDownLatch latch = new CountDownLatch(1);
 
             CompletableFuture<WebSocket> wsFuture = client.newWebSocketBuilder()
                     .buildAsync(URI.create(wsUrl), new WebSocket.Listener() {
@@ -77,7 +75,6 @@ public class ChatWebSocketClient {
                             } catch (Exception e) {
                                 // Ignore parse errors (e.g. pong)
                             }
-                            latch.countDown();
                             return WebSocket.Listener.super.onText(webSocket, data, last);
                         }
 
@@ -94,9 +91,13 @@ public class ChatWebSocketClient {
                         }
                     });
 
-            webSocket = wsFuture.join();
-            // Prevent the JVM from exiting — keep connection alive
-            latch.await();
+            // Use thenAccept/error handling instead of join() to avoid blocking
+            wsFuture.thenAccept(ws -> {
+                this.webSocket = ws;
+            }).exceptionally(ex -> {
+                handleDisconnect();
+                return null;
+            });
         } catch (Exception e) {
             handleDisconnect();
         }

@@ -1116,6 +1116,7 @@ public class DashboardView {
     private javafx.animation.Timeline chatTimeline = null;
     private com.resik.admin.service.ChatWebSocketClient chatWsClient = null;
     private String currentChatUserId = null;
+    private final java.util.concurrent.atomic.AtomicBoolean chatPollingInProgress = new java.util.concurrent.atomic.AtomicBoolean(false);
     private final Map<String, String> clientNames = new java.util.concurrent.ConcurrentHashMap<>();
     private final Map<String, String> clientPreviews = new java.util.concurrent.ConcurrentHashMap<>();
     private final Map<String, String> clientTimes = new java.util.concurrent.ConcurrentHashMap<>();
@@ -1151,7 +1152,7 @@ public class DashboardView {
         headerTitle.setTextFill(Color.WHITE);
         Region hdrSpacer = new Region();
         HBox.setHgrow(hdrSpacer, Priority.ALWAYS);
-        Label refreshChatBtn = createBtn("⟳", "#2D7A4F", "white", e -> loadClientList());
+        Label refreshChatBtn = createBtn("⟳", "#2D7A4F", "white", e -> new Thread(() -> loadClientListAsync(findClientList())).start());
         refreshChatBtn.setFont(Font.font(18));
         leftHeader.getChildren().addAll(statusDot, headerTitle, hdrSpacer, refreshChatBtn);
 
@@ -1320,88 +1321,76 @@ public class DashboardView {
             chatAvatarInit.setText(nama.substring(0, 1).toUpperCase());
 
             clientHasUnread.put(uid, false);
-            loadClientList();
-            loadChatMessages(uid);
-            markMessagesRead(uid);
+            // Load in background — NEVER block JavaFX thread
+            final String finalUid = uid;
+            new Thread(() -> {
+                loadChatMessagesAsync(finalUid);
+                markMessagesRead(finalUid);
+            }).start();
         });
 
-        loadClientList();
-
-        // Auto-select first conversation
-        javafx.application.Platform.runLater(() -> {
-            if (clientList.getItems() != null && !clientList.getItems().isEmpty()) {
-                clientList.getSelectionModel().select(0);
-            }
-        });
+        // Initial load in background thread
+        new Thread(() -> {
+            loadClientListAsync(clientList);
+            javafx.application.Platform.runLater(() -> {
+                if (clientList.getItems() != null && !clientList.getItems().isEmpty()) {
+                    clientList.getSelectionModel().select(0);
+                }
+            });
+        }).start();
 
         connectChatWebSocket(statusDot, chatStatus);
     }
 
     private void connectChatWebSocket(Label statusDot, Label chatStatus) {
-        if (chatWsClient != null) {
-            chatWsClient.disconnect();
-            chatWsClient = null;
-        }
+        if (chatWsClient != null) { chatWsClient.disconnect(); chatWsClient = null; }
 
         chatWsClient = new com.resik.admin.service.ChatWebSocketClient(
             AppConfig.API_BASE_URL,
             msg -> javafx.application.Platform.runLater(() -> {
                 String type = String.valueOf(msg.getOrDefault("type", ""));
                 if ("NEW_MESSAGE".equals(type)) {
-                    Object userIdObj = msg.get("userId");
-                    String msgUserId = userIdObj != null ? String.valueOf(userIdObj) : "";
+                    String msgUserId = msg.get("userId") != null ? String.valueOf(msg.get("userId")) : "";
                     String sender = String.valueOf(msg.getOrDefault("pengirim", ""));
                     String pesan = String.valueOf(msg.getOrDefault("pesan", ""));
-                    Object createdObj = msg.get("createdAt");
-                    String createdAt = createdObj != null ? String.valueOf(createdObj) : "";
+                    String createdAt = msg.get("createdAt") != null ? String.valueOf(msg.get("createdAt")) : "";
                     String time = createdAt.length() > 16 ? createdAt.substring(11, 16) : createdAt;
-
                     clientPreviews.put(msgUserId, pesan.length() > 30 ? pesan.substring(0, 27) + "..." : pesan);
                     clientTimes.put(msgUserId, time);
-
-                    if (!"ADMIN".equals(sender) && !msgUserId.equals(currentChatUserId)) {
-                        clientHasUnread.put(msgUserId, true);
-                    }
-
-                    loadClientList();
-
+                    if (!"ADMIN".equals(sender) && !msgUserId.equals(currentChatUserId)) clientHasUnread.put(msgUserId, true);
+                    // Refresh list in background
+                    new Thread(() -> loadClientListAsync(findClientList())).start();
                     if (msgUserId.equals(currentChatUserId)) {
                         ListView<HBox> chatList = findChatBubbleList();
                         if (chatList != null) {
-                            boolean fromAdmin = "ADMIN".equals(sender);
-                            HBox bubble = createChatBubble(pesan, time, fromAdmin);
+                            HBox bubble = createChatBubble(pesan, time, "ADMIN".equals(sender));
                             chatList.getItems().add(bubble);
                             chatList.scrollTo(chatList.getItems().size() - 1);
                         }
-                        if (!"ADMIN".equals(sender)) {
-                            markMessagesRead(msgUserId);
-                        }
+                        if (!"ADMIN".equals(sender)) new Thread(() -> markMessagesRead(msgUserId)).start();
                     } else {
-                        chatStatus.setText("Pesan baru!");
+                        chatStatus.setText("Pesan baru dari " + clientNames.getOrDefault(msgUserId, "User #" + msgUserId));
                     }
                 }
             }),
-            () -> javafx.application.Platform.runLater(() -> {
-                statusDot.setTextFill(Color.valueOf("#22C55E"));
-                if (currentChatUserId != null) chatStatus.setText("Online");
-            }),
-            () -> javafx.application.Platform.runLater(() -> {
-                statusDot.setTextFill(Color.valueOf("#EF4444"));
-                chatStatus.setText("Menghubungkan...");
-            })
+            () -> javafx.application.Platform.runLater(() -> { statusDot.setTextFill(Color.valueOf("#22C55E")); if (currentChatUserId != null) chatStatus.setText("Online"); }),
+            () -> javafx.application.Platform.runLater(() -> { statusDot.setTextFill(Color.valueOf("#EF4444")); chatStatus.setText("Menghubungkan..."); })
         );
-
-        Thread wsThread = new Thread(() -> chatWsClient.connect());
-        wsThread.setDaemon(true);
-        wsThread.setName("ws-chat-client");
-        wsThread.start();
+        Thread wsThread = new Thread(() -> chatWsClient.connect()); wsThread.setDaemon(true); wsThread.setName("ws-chat"); wsThread.start();
 
         if (chatTimeline != null) chatTimeline.stop();
         chatTimeline = new javafx.animation.Timeline(
-            new javafx.animation.KeyFrame(javafx.util.Duration.seconds(5), e -> {
-                loadClientList();
-                if (currentChatUserId != null && !currentChatUserId.isEmpty()) {
-                    loadChatMessages(currentChatUserId);
+            new javafx.animation.KeyFrame(javafx.util.Duration.seconds(15), e -> {
+                // Guard: skip if previous poll still running
+                if (chatPollingInProgress.compareAndSet(false, true)) {
+                    new Thread(() -> {
+                        try {
+                            loadClientListAsync(findClientList());
+                            if (currentChatUserId != null) loadChatMessagesAsync(currentChatUserId);
+                        } finally {
+                            chatPollingInProgress.set(false);
+                        }
+                    }).start();
                 }
             })
         );
@@ -1410,91 +1399,68 @@ public class DashboardView {
     }
 
     @SuppressWarnings("unchecked")
-    private void loadClientList() {
-        ListView<String> clientList = (ListView<String>) contentArea.getChildren().stream()
-            .filter(n -> n instanceof HBox)
-            .map(n -> (HBox) n)
+    private ListView<String> findClientList() {
+        return contentArea.getChildren().stream()
+            .filter(n -> n instanceof HBox).map(n -> (HBox) n)
             .flatMap(hb -> hb.getChildren().stream())
-            .filter(n -> n instanceof VBox)
-            .map(n -> (VBox) n)
+            .filter(n -> n instanceof VBox).map(n -> (VBox) n)
             .flatMap(vb -> vb.getChildren().stream())
             .filter(n -> n instanceof ListView && "clientList".equals(n.getId()))
-            .findFirst()
-            .map(n -> (ListView<String>) n)
-            .orElse(null);
-        if (clientList == null) return;
+            .findFirst().map(n -> (ListView<String>) n).orElse(null);
+    }
 
+    @SuppressWarnings("unchecked")
+    private void loadClientListAsync(ListView<String> clientList) {
+        if (clientList == null) return;
         try {
             List<Map<String, Object>> latestChats = ApiClient.getList("/chat/latest");
             ObservableList<String> items = FXCollections.observableArrayList();
             for (Map<String, Object> m : latestChats) {
-                String userId;
-                String userDisplay;
-                Object userObj = m.get("user");
-                if (userObj instanceof Map) {
-                    Map<String, Object> userMap = (Map<String, Object>) userObj;
-                    userId = String.valueOf(userMap.getOrDefault("id", m.get("userId")));
-                    userDisplay = String.valueOf(userMap.getOrDefault("nama", "User #" + userId));
-                } else {
-                    userId = m.get("userId") != null ? String.valueOf(m.get("userId")) : "?";
-                    userDisplay = "User #" + userId;
-                }
+                String userId; String userDisplay; Object userObj = m.get("user");
+                if (userObj instanceof Map) { Map<String,Object> um = (Map<String,Object>)userObj; userId = String.valueOf(um.getOrDefault("id", m.get("userId"))); userDisplay = String.valueOf(um.getOrDefault("nama", "User #"+userId)); }
+                else { userId = m.get("userId")!=null ? String.valueOf(m.get("userId")) : "?"; userDisplay = "User #"+userId; }
                 clientNames.put(userId, userDisplay);
-
                 String sender = String.valueOf(m.getOrDefault("pengirim", "?"));
-                String preview = String.valueOf(m.getOrDefault("pesan", ""));
-                if (preview.length() > 30) preview = preview.substring(0, 27) + "...";
-                String time = String.valueOf(m.getOrDefault("createdAt", ""));
-                if (time.length() > 16) time = time.substring(11, 16);
-
-                clientPreviews.put(userId, preview);
-                clientTimes.put(userId, time);
-
-                Boolean isRead = (Boolean) m.get("isRead");
-                boolean unread = "USER".equals(sender) && (isRead == null || !isRead);
+                String preview = String.valueOf(m.getOrDefault("pesan", "")); if (preview.length()>30) preview = preview.substring(0,27)+"...";
+                String time = String.valueOf(m.getOrDefault("createdAt", "")); if (time.length()>16) time = time.substring(11,16);
+                clientPreviews.put(userId, preview); clientTimes.put(userId, time);
+                Boolean isRead = (Boolean) m.get("isRead"); boolean unread = "USER".equals(sender) && (isRead==null || !isRead);
                 if (unread) clientHasUnread.put(userId, true);
-
-                items.add(userId + "|" + userDisplay + "|" + preview + "|" + time + "|" + (clientHasUnread.getOrDefault(userId, false) ? "1" : "0"));
+                items.add(userId+"|"+userDisplay+"|"+preview+"|"+time+"|"+(clientHasUnread.getOrDefault(userId, false)?"1":"0"));
             }
-            String selected = currentChatUserId;
-            clientList.setItems(items);
-            if (selected != null) {
-                for (int i = 0; i < items.size(); i++) {
-                    if (items.get(i).startsWith(selected + "|")) {
-                        clientList.getSelectionModel().select(i);
-                        break;
-                    }
+            // Update UI on JavaFX thread — use setAll to avoid triggering selection listener
+            final ObservableList<String> finalItems = items;
+            javafx.application.Platform.runLater(() -> {
+                int selIdx = clientList.getSelectionModel().getSelectedIndex();
+                clientList.getItems().setAll(finalItems);
+                if (selIdx >= 0 && selIdx < finalItems.size()) {
+                    clientList.getSelectionModel().select(selIdx);
                 }
-            }
+            });
         } catch (Exception e) {
-            // Silent fail
+            // Log error — don't silently swallow to avoid hiding connection issues
+            System.err.println("[Chat] loadClientListAsync error: " + e.getMessage());
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void loadChatMessages(String userId) {
+    private void loadChatMessagesAsync(String userId) {
         ListView<HBox> chatList = findChatBubbleList();
         if (chatList == null) return;
         try {
             List<Map<String, Object>> messages = ApiClient.getList("/chat/" + userId);
             ObservableList<HBox> items = FXCollections.observableArrayList();
             for (Map<String, Object> m : messages) {
-                String sender = String.valueOf(m.getOrDefault("pengirim", "?"));
-                String pesan = String.valueOf(m.getOrDefault("pesan", ""));
-                String time = String.valueOf(m.getOrDefault("createdAt", ""));
-                if (time.length() > 16) time = time.substring(11, 16);
-                boolean fromAdmin = "ADMIN".equals(sender);
-                items.add(createChatBubble(pesan, time, fromAdmin));
+                String sender = String.valueOf(m.getOrDefault("pengirim", "?")); String pesan = String.valueOf(m.getOrDefault("pesan", ""));
+                String time = String.valueOf(m.getOrDefault("createdAt", "")); if (time.length()>16) time = time.substring(11,16);
+                items.add(createChatBubble(pesan, time, "ADMIN".equals(sender)));
             }
-            chatList.setItems(items);
-            if (!items.isEmpty()) {
-                chatList.scrollTo(items.size() - 1);
-            }
+            javafx.application.Platform.runLater(() -> { chatList.setItems(items); if (!items.isEmpty()) chatList.scrollTo(items.size()-1); });
         } catch (Exception e) {
-            if (chatList.getItems() == null || chatList.getItems().isEmpty()) {
-                HBox errBubble = createChatBubble("Gagal memuat pesan: " + e.getMessage(), "", false);
-                chatList.setItems(FXCollections.observableArrayList(errBubble));
-            }
+            javafx.application.Platform.runLater(() -> {
+                if (chatList.getItems()==null || chatList.getItems().isEmpty())
+                    chatList.setItems(FXCollections.observableArrayList(createChatBubble("Gagal memuat pesan: "+e.getMessage(), "", false)));
+            });
         }
     }
 
@@ -1569,17 +1535,23 @@ public class DashboardView {
             CrudDialog.showInfo("Info", "Pilih percakapan dan ketik pesan.");
             return;
         }
-        try {
-            Map<String, Object> body = new HashMap<>();
-            body.put("userId", Long.parseLong(uid));
-            body.put("pengirim", "ADMIN");
-            body.put("pesan", msg);
-            ApiClient.post("/chat", body, Map.class);
-            msgField.clear();
-            loadChatMessages(uid);
-        } catch (Exception ex) {
-            CrudDialog.showInfo("Error", "Gagal kirim: " + ex.getMessage());
-        }
+        final String finalUid = uid;
+        final String finalMsg = msg;
+        msgField.clear();
+        // Send + reload in background thread — NEVER block JavaFX thread
+        new Thread(() -> {
+            try {
+                Map<String, Object> body = new HashMap<>();
+                body.put("userId", Long.parseLong(finalUid));
+                body.put("pengirim", "ADMIN");
+                body.put("pesan", finalMsg);
+                ApiClient.post("/chat", body, Map.class);
+                loadChatMessagesAsync(finalUid);
+            } catch (Exception ex) {
+                javafx.application.Platform.runLater(() ->
+                    CrudDialog.showInfo("Error", "Gagal kirim: " + ex.getMessage()));
+            }
+        }).start();
     }
 
     private void markMessagesRead(String userId) {
