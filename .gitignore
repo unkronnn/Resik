@@ -1,27 +1,28 @@
-# Backend
-/backend-api/target/
-/backend-api/.mvn/
-/backend-api/mvnw
-/backend-api/mvnw.cmd
-
-# Desktop
-/desktop-admin/target/
-/desktop-admin/.mvn/
-/desktop-admin/mvnw
-/desktop-admin/mvnw.cmd
+# Build artifacts
+release/
+desktop-admin/lib/
+desktop-admin/target/
+backend-api/target/
+backend-api/.mvn/
+backend-api/mvnw
+backend-api/mvnw.cmd
+desktop-admin/.mvn/
+desktop-admin/mvnw
+desktop-admin/mvnw.cmd
 
 # Android
-/android-client/.gradle/
-/android-client/build/
-/android-client/app/build/
-/android-client/local.properties
-/android-client/app/google-services.json
+android-client/.gradle/
+android-client/build/
+android-client/app/build/
+android-client/local.properties
+android-client/app/google-services.json
 
 # IDE
 .idea/
 *.iml
 .vscode/
 *.log
+pboppt.code-workspace
 
 # OS
 .DS_Store
@@ -30,5 +31,3 @@ Thumbs.db
 # Env
 .env
 *.env
-release/
-desktop-admin/lib/

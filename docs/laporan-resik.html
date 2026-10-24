@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Manual — Resik | Bank Sampah Digital</title>
+<style>
+  @page { size: A4; margin: 2.5cm 2.5cm 2.5cm 2.5cm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size: 12pt; line-height: 1.7; color: #1a1a1a; background: #fff; }
+  .page { page-break-after: always; padding: 0; min-height: 24cm; }
+  .page:last-child { page-break-after: auto; }
+
+  /* COVER */
+  .cover { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 24cm; page-break-after: always; }
+  .cover .label { font-size: 11pt; letter-spacing: 4px; color: #0b3d20; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
+  .cover .app-logo { width: 260px; margin: 14px 0 10px; }
+  .cover .subtitle { font-size: 16pt; color: #444; margin-bottom: 20px; }
+  .cover .tagline { font-size: 12pt; color: #666; font-style: italic; margin-bottom: 40px; max-width: 500px; }
+  .cover .platform-tag { display: inline-block; background: #0b3d20; color: #fff; padding: 8px 24px; border-radius: 30px; font-size: 10pt; letter-spacing: 2px; margin-bottom: 50px; }
+  .cover .logo { width: 130px; height: 130px; border-radius: 28px; margin-bottom: 20px; }
+  .cover .dosen { text-align: center; margin-bottom: 40px; }
+  .cover .dosen .lbl { font-size: 10pt; color: #888; margin-bottom: 4px; }
+  .cover .dosen .nm { font-size: 12pt; font-weight: 600; color: #333; }
+  .cover .footer-cover { margin-top: auto; text-align: center; font-size: 11pt; color: #333; line-height: 1.8; }
+  .cover .footer-cover .bold { font-weight: 700; }
+
+  /* PENGESAHAN */
+  .pengesahan { padding: 20px 10px; }
+  .pengesahan h1 { text-align: center; font-size: 18pt; color: #0b3d20; margin-bottom: 24px; text-transform: uppercase; }
+  .pengesahan p { font-size: 12pt; text-align: justify; margin-bottom: 16px; }
+  .tbl-pengesahan { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 11pt; }
+  .tbl-pengesahan th, .tbl-pengesahan td { border: 1px solid #333; padding: 10px 8px; text-align: center; vertical-align: middle; }
+  .tbl-pengesahan th { background: #e8f0e8; font-weight: 600; }
+  .pengesahan .sign-block { display: flex; justify-content: space-between; margin-top: 40px; font-size: 11pt; }
+  .pengesahan .sign-block .col { text-align: center; width: 30%; }
+  .pengesahan .sign-block .col .role { margin-bottom: 50px; font-weight: 600; }
+  .pengesahan .sign-block .col .nm { font-weight: 700; border-top: 1px solid #333; padding-top: 4px; }
+  .pengesahan .sign-block .col .nid { font-size: 10pt; color: #555; }
+
+  /* DAFTAR ISI */
+  .daftar-isi h1 { font-size: 18pt; color: #0b3d20; margin-bottom: 20px; text-transform: uppercase; }
+  .daftar-isi ol { list-style: none; padding-left: 0; font-size: 11.5pt; }
+  .daftar-isi ol li { margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px dotted #ccc; padding-bottom: 4px; }
+  .daftar-isi ol li .num { font-weight: 600; color: #0b3d20; }
+  .daftar-isi ol li .pg { color: #888; }
+
+  /* SECTION HEADINGS */
+  h1.sec { font-size: 16pt; color: #0b3d20; margin-bottom: 14px; padding-bottom: 6px; border-bottom: 2px solid #0b3d20; }
+  h2.sub { font-size: 13pt; color: #175c33; margin: 18px 0 8px; }
+  h3.ssub { font-size: 12pt; color: #1e7a44; margin: 14px 0 6px; }
+  p { text-align: justify; margin-bottom: 8px; }
+  .desc { font-size: 11pt; color: #555; margin-bottom: 12px; font-style: italic; }
+
+  /* TABLES */
+  table.tbl { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 10.5pt; }
+  table.tbl th, table.tbl td { border: 1px solid #aaa; padding: 7px 9px; text-align: left; vertical-align: top; }
+  table.tbl th { background: #e8f0e8; font-weight: 600; color: #0b3d20; }
+  table.tbl tr:nth-child(even) { background: #f6f9f6; }
+
+  /* SCREENSHOTS */
+  .ss-row { display: flex; gap: 18px; margin: 12px 0; align-items: flex-start; }
+  .ss-item { flex: 1; text-align: center; }
+  .ss-item img { width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .ss-item .cap { font-size: 10pt; color: #555; margin-top: 5px; font-style: italic; }
+
+  /* FEATURE BOX */
+  .feat-box { border: 1px solid #c8dcc8; border-radius: 8px; padding: 14px 18px; margin: 12px 0; background: #f6f9f6; }
+  .feat-box h3 { color: #0b3d20; margin-bottom: 6px; font-size: 12pt; }
+  .feat-box table.tbl { margin: 4px 0; }
+
+  /* CALLOUT */
+  .callout { border-left: 4px solid #1e7a44; background: #eef5ee; padding: 8px 12px; margin: 10px 0; font-size: 11pt; border-radius: 0 6px 6px 0; }
+
+  /* ARCHITECTURE */
+  .arch { background: #f6f9f6; border: 1px solid #c8dcc8; border-radius: 8px; padding: 14px; font-family: 'Courier New',monospace; font-size: 8pt; line-height: 1.45; white-space: pre; overflow-x: auto; margin: 10px 0; page-break-inside: avoid; }
+
+  .class-desc { font-size: 11pt; line-height: 1.8; }
+  .class-desc code { background: #e8f0e8; padding: 1px 4px; border-radius: 3px; font-size: 10pt; }
+
+  @media print { .page { page-break-after: always; } .no-break { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+
+<!-- ===================== COVER ===================== -->
+<div class="page cover">
+  <div class="label">USER MANUAL</div>
+  <img class="logo" src="assets/logo-uhb.png" alt="Logo Universitas Harapan Bangsa">
+  <img class="app-logo" src="assets/Resik.png" alt="Resik">
+  <div class="subtitle">Bank Sampah Digital</div>
+  <div class="tagline">Platform digital pengelolaan sampah yang menghubungkan masyarakat dengan bank sampah — edukasi, transparansi, dan nilai ekonomis dari limbah.</div>
+  <div class="platform-tag">ANDROID &nbsp;|&nbsp; JAVA SWING / JAVAFX &nbsp;|&nbsp; SPRING BOOT + POSTGRESQL</div>
+  <div class="dosen">
+    <div class="lbl">Dosen Pengampu</div>
+    <div class="nm">Rian Ardianto, S.Kom., M.Kom.</div>
+    <div class="nm">Makmur Setianama, S.Kom., M.Kom.</div>
+  </div>
+  <div class="footer-cover">
+    <div class="bold">PROGRAM STUDI S1 INFORMATIKA</div>
+    <div class="bold">FAKULTAS SAINS DAN TEKNOLOGI</div>
+    <div class="bold">UNIVERSITAS HARAPAN BANGSA</div>
+    <div>2026</div>
+  </div>
+</div>
+
+<!-- ===================== HALAMAN PENGESAHAN ===================== -->
+<div class="page pengesahan">
+  <h1>Halaman Pengesahan</h1>
+  <p>
+    Laporan ini disusun sebagai bentuk pertanggungjawaban atas pelaksanaan Praktik Mata Kuliah Pemrograman Berorientasi Objek Universitas Harapan Bangsa Tahun Akademik 2026/2027. Laporan Kegiatan Kelompok telah selesai disusun oleh:
+  </p>
+  <table class="tbl-pengesahan">
+    <thead>
+      <tr>
+        <th style="width:40px;">No</th>
+        <th>Nama Mahasiswa</th>
+        <th>NIM</th>
+        <th>Program Studi</th>
+        <th>Keterangan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1.</td><td>Syukron Maulana</td><td>250111032</td><td>S1 Informatika</td><td>Ketua</td></tr>
+      <tr><td>2.</td><td>Muhamad Dafa Nuruzzufar Al Mubarok</td><td>250111018</td><td>S1 Informatika</td><td>Anggota</td></tr>
+      <tr><td>3.</td><td>Riri Syafala Ghofaro Jamal</td><td>250111027</td><td>S1 Informatika</td><td>Anggota</td></tr>
+      <tr><td>4.</td><td>Zain Ghathfaan Kiesa</td><td>250111035</td><td>S1 Informatika</td><td>Anggota</td></tr>
+    </tbody>
+  </table>
+  <p>Purwokerto, 24 Januari 2026</p>
+  <div class="sign-block">
+    <div class="col">
+      <div class="role">Menyetujui,<br>Dosen Koordinator<br>Mata Kuliah</div>
+      <div class="nm">Rian Ardianto, S.Kom., M.Kom.</div>
+      <div class="nid">NIK. 119007230298</div>
+    </div>
+    <div class="col">
+      <div class="role">Ketua Kelompok,</div>
+      <div class="nm">Syukron Maulana</div>
+      <div class="nid">NIM. 250111032</div>
+    </div>
+    <div class="col">
+      <div class="role">Mengetahui,<br>Kepala Program Studi</div>
+      <div class="nm">Dr. Imam Ahmad Ashari, S.Kom., M.Kom.</div>
+      <div class="nid">NIK. 115911190894</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== DAFTAR ISI ===================== -->
+<div class="page daftar-isi">
+  <h1>Daftar Isi</h1>
+  <ol>
+    <li><span class="num">HALAMAN PENGESAHAN</span><span class="pg">2</span></li>
+    <li><span class="num">DAFTAR ISI</span><span class="pg">3</span></li>
+    <li><span class="num">RINGKASAN</span><span class="pg">4</span></li>
+    <li><span class="num">01. INFORMASI APLIKASI</span><span class="pg">5</span></li>
+    <li><span class="num">02. PANDUAN SINGKAT MEMULAI</span><span class="pg">6</span></li>
+    <li><span class="num">03. MENGENAL TAMPILAN APLIKASI</span><span class="pg">7</span></li>
+    <li><span class="num">04. PENGGUNA DAN HAK AKSES</span><span class="pg">8</span></li>
+    <li><span class="num">05. ALUR KERJA UTAMA APLIKASI</span><span class="pg">9</span></li>
+    <li><span class="num">06. PANDUAN SETIAP FITUR</span><span class="pg">10</span></li>
+    <li><span class="num">07. PENGELOLAAN DATA DAN TRANSAKSI</span><span class="pg">15</span></li>
+    <li><span class="num">08. LAPORAN, CETAK, DAN EKSPOR DATA</span><span class="pg">16</span></li>
+    <li><span class="num">09. ATURAN PENGGUNAAN DAN PENGELOLAAN DATA</span><span class="pg">17</span></li>
+    <li><span class="num">10. PEMECAHAN MASALAH (TROUBLESHOOTING)</span><span class="pg">18</span></li>
+    <li><span class="num">11. PERTANYAAN YANG SERING DIAJUKAN (FAQ)</span><span class="pg">19</span></li>
+    <li><span class="num">12. KETERBATASAN APLIKASI</span><span class="pg">20</span></li>
+    <li><span class="num">13. INFORMASI TEKNIS DAN VERSI</span><span class="pg">21</span></li>
+    <li><span class="num">14. LAMPIRAN DAN INFORMASI PENGEMBANG</span><span class="pg">22</span></li>
+    <li><span class="num">DAFTAR PUSTAKA</span><span class="pg">23</span></li>
+  </ol>
+</div>
+
+<!-- ===================== RINGKASAN ===================== -->
+<div class="page">
+  <h1 class="sec">Ringkasan</h1>
+  <p>
+    <strong>Resik</strong> (Resik = Bersih) adalah aplikasi Bank Sampah Digital yang dibangun untuk mengatasi dua permasalahan utama dalam pengelolaan sampah di Indonesia: minimnya edukasi pemilahan sampah dan tidak adanya platform terpusat yang menghubungkan masyarakat dengan bank sampah. Aplikasi ini menghubungkan masyarakat sebagai penyetor sampah dengan pengelola bank sampah sebagai verifikator, sehingga seluruh proses — dari penjemputan, penimbangan, hingga pembayaran — tercatat secara digital dan transparan.
+  </p>
+  <p>
+    Tujuan jangka panjang Resik adalah mengubah perilaku masyarakat terhadap pengelolaan sampah: dari sekadar membuang menjadi memilah dan memanfaatkan nilai ekonomisnya. Target ini dicapai melalui tiga pilar: <strong>edukasi</strong> (panduan kategori sampah dan harga per kg), <strong>transparansi</strong> (riwayat transaksi real-time dan dompet digital), serta <strong>insentif</strong> (pembayaran langsung ke dompet digital dan leaderboard kontribusi).
+  </p>
+  <p>
+    Metode yang digunakan adalah pengembangan <em>full-stack</em> dengan pendekatan berorientasi objek. Backend dibangun dengan <strong>Spring Boot 3.2.5</strong> dan <strong>PostgreSQL 16</strong>, menerapkan pewarisan (inheritance) pada entitas <code>User</code> dengan tiga peran: <code>Admin</code>, <code>Petugas</code>, dan <code>Masyarakat</code>. Aplikasi Android dibangun dengan <strong>Kotlin + Jetpack Compose</strong> menggunakan pola MVVM, sedangkan aplikasi desktop admin dibangun dengan <strong>Java + JavaFX 21</strong>. Komunikasi antar-komponen menggunakan REST API dengan autentikasi JWT dan WebSocket untuk fitur chat real-time.
+  </p>
+  <p>
+    Kegiatan yang telah dilakukan meliputi: analisis kebutuhan, desain arsitektur tiga-tier (Android Client — Backend API — Desktop Admin), implementasi CRUD lengkap untuk data sampah dan lokasi bank sampah, sistem penjemputan dengan status real-time (Menunggu → Dijadwalkan → Diproses → Selesai), sistem penimbangan dengan kalkulasi harga otomatis dan transfer ke dompet digital, serta deployment ke VPS menggunakan Docker Compose. Aplikasi telah diuji dengan akun demo pada server produksi dan siap digunakan.
+  </p>
+</div>
+
+<!-- ===================== 01. INFORMASI APLIKASI ===================== -->
+<div class="page">
+  <h1 class="sec">01. Informasi Aplikasi</h1>
+  <p class="desc">Memperkenalkan aplikasi secara ringkas agar pengguna langsung memahami kegunaan produk.</p>
+  <table class="tbl">
+    <tr><th style="width:30%;">Informasi</th><th>Isi</th></tr>
+    <tr><td><strong>Nama aplikasi</strong></td><td>Resik — Bank Sampah Digital</td></tr>
+    <tr><td><strong>Versi</strong></td><td>3.1.0</td></tr>
+    <tr><td><strong>Fungsi utama</strong></td><td>Platform digital yang menghubungkan masyarakat dengan bank sampah untuk penjemputan sampah, penimbangan, pembayaran digital, dan edukasi pemilahan sampah.</td></tr>
+    <tr><td><strong>Target pengguna</strong></td><td>Masyarakat umum (penyetor sampah) dan Pengelola/Petugas Bank Sampah (admin/operator)</td></tr>
+    <tr><td><strong>Platform</strong></td><td>Android (Client), Desktop Windows/macOS (Admin)</td></tr>
+    <tr><td><strong>Teknologi</strong></td><td>Spring Boot 3.2.5, PostgreSQL 16, JWT, Kotlin + Jetpack Compose, Java + JavaFX 21, Docker Compose</td></tr>
+    <tr><td><strong>Status</strong></td><td>Siap digunakan (versi produksi, deployed di VPS)</td></tr>
+  </table>
+
+  <h2 class="sub">Arsitektur Sistem</h2>
+  <div class="arch">┌─────────────────┐     ┌─────────────────┐
+│  Android Client  │     │  Desktop Admin  │
+│  (Kotlin/Compose)│     │  (Java/JavaFX)   │
+└────────┬────────┘     └────────┬─────────┘
+         │                       │
+         │      HTTP / REST      │
+         │   (JSON + JWT Auth)   │
+         ▼                       ▼
+┌─────────────────────────────────────┐
+│        Backend API (Spring Boot)    │
+│  Port: 8081  │  VPS: 43.157.243.87  │
+└──────────────────┬──────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────┐
+│       PostgreSQL 16 (Docker)         │
+│       Port: 5433                     │
+└─────────────────────────────────────┘</div>
+
+</div>
+
+<div class="page">
+  <h1 class="sec" style="border-bottom:none; padding-bottom:0; margin-bottom:6px;">Implementasi Pemrograman Berorientasi Objek</h1>
+  <p class="desc" style="margin-top:0;">Penerapan konsep OOP pada setiap lapisan arsitektur aplikasi.</p>
+  <div class="class-desc">
+    <p>Aplikasi ini menerapkan konsep OOP secara menyeluruh pada setiap lapisan arsitektur:</p>
+    <h3 class="ssub">Inheritance (Pewarisan)</h3>
+    <p>Kelas <code>User</code> merupakan <em>abstract class</em> dengan strategi <code>SINGLE_TABLE</code>. Tiga subclass mewarisi seluruh atribut dan method dasar:</p>
+    <ul style="margin-left:20px; margin-bottom:8px;">
+      <li><code>Admin</code> — pengelola aplikasi (role: ADMIN)</li>
+      <li><code>Petugas</code> — petugas penjemputan (role: PETUGAS)</li>
+      <li><code>Masyarakat</code> — penyetor sampah (role: MASYARAKAT)</li>
+    </ul>
+    <h3 class="ssub">Encapsulation (Pembungkusan)</h3>
+    <p>Semua entitas (<code>Penjemputan</code>, <code>Sampah</code>, <code>Transaksi</code>, <code>DetailPenjemputan</code>, <code>LokasiBankSampah</code>, <code>Notifikasi</code>) menggunakan modifier <code>private</code> untuk atribut dan method getter/setter publik untuk akses terkontrol.</p>
+    <h3 class="ssub">Polymorphism (Polimorfisme)</h3>
+    <p>Method abstrak <code>getRole()</code> pada <code>User</code> di-<em>override</em> oleh setiap subclass untuk mengembalikan role spesifik. Enum <code>PenjemputanStatus</code> dan <code>TransaksiStatus</code> menggunakan <code>@Enumerated(EnumType.STRING)</code> untuk fleksibilitas.</p>
+    <h3 class="ssub">Composition & Association</h3>
+    <p><code>Penjemputan</code> memiliki relasi <code>@OneToMany</code> dengan <code>DetailPenjemputan</code> dan <code>@OneToOne</code> dengan <code>Transaksi</code>. <code>@ManyToOne</code> menghubungkan <code>Penjemputan</code> dengan <code>User</code> (penyetor) dan <code>User</code> (petugas).</p>
+  </div>
+</div>
+
+<!-- ===================== 02. PANDUAN SINGKAT MEMULAI ===================== -->
+<div class="page">
+  <h1 class="sec">02. Panduan Singkat Memulai (Quick Start Guide)</h1>
+  <p class="desc">Membantu pengguna baru menjalankan aplikasi dari awal sampai siap digunakan.</p>
+
+  <h3 class="ssub">Persyaratan Sistem</h3>
+  <table class="tbl">
+    <tr><th style="width:30%;">Komponen</th><th>Persyaratan</th></tr>
+    <tr><td><strong>Android</strong></td><td>Android 7.0+ (API 24), minimal 2GB RAM</td></tr>
+    <tr><td><strong>Desktop (Windows)</strong></td><td>Windows 10/11 (x64), installer sudah bundle JRE 17 + JavaFX 21</td></tr>
+    <tr><td><strong>Desktop (macOS)</strong></td><td>macOS 11+ (Apple Silicon atau Intel)</td></tr>
+    <tr><td><strong>Koneksi Internet</strong></td><td>Diperlukan — aplikasi terhubung ke server VPS</td></tr>
+  </table>
+
+  <h3 class="ssub">Langkah Memulai</h3>
+  <table class="tbl">
+    <tr><th style="width:40px;">Langkah</th><th>Instruksi</th></tr>
+    <tr><td>1</td><td>Periksa persyaratan sistem sesuai platform yang digunakan.</td></tr>
+    <tr><td>2</td><td>Untuk Android: unduh dan install file <code>Resik-Android-v3.1.apk</code>. Untuk Desktop: jalankan <code>Resik-Admin-Setup.exe</code> (Windows) atau buka <code>.dmg</code> (macOS).</td></tr>
+    <tr><td>3</td><td>Pastikan koneksi internet aktif — aplikasi memerlukan akses ke server VPS di <code>43.157.243.87:8081</code>.</td></tr>
+    <tr><td>4</td><td>Buka aplikasi. Pada Android akan muncul splash screen, lalu halaman welcome. Pada Desktop akan muncul halaman login.</td></tr>
+    <tr><td>5</td><td>Login menggunakan akun demo atau akun yang telah didaftarkan. Pastikan halaman utama/dashboard tampil dan data termuat.</td></tr>
+  </table>
+
+  <div class="callout">
+    <strong>Akun Demo (Production VPS):</strong><br>
+    Admin: <code>admin2@resik.id</code> / <code>admin123</code><br>
+    Masyarakat: <code>test@resik.id</code> / <code>test123</code>
+  </div>
+
+  <h3 class="ssub">Lokasi Database</h3>
+  <p>Database PostgreSQL berjalan pada VPS dalam container Docker pada port 5433. Tidak ada database lokal yang perlu dikonfigurasi oleh pengguna — semua data tersimpan di server.</p>
+</div>
+
+<!-- ===================== 03. MENGENAL TAMPILAN APLIKASI ===================== -->
+<div class="page">
+  <h1 class="sec">03. Mengenal Tampilan Aplikasi</h1>
+  <p class="desc">Screenshot antarmuka aplikasi desktop dan mobile beserta penjelasan fungsinya.</p>
+
+  <h2 class="sub">Aplikasi Desktop (Admin) — Dashboard</h2>
+  <div class="ss-row">
+    <div class="ss-item">
+      <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48.jpeg" alt="Dashboard Desktop">
+      <div class="cap">Dashboard — Statistik operasional real-time</div>
+    </div>
+    <div class="ss-item">
+      <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48 (2).jpeg" alt="Data Sampah Desktop">
+      <div class="cap">Data Sampah — Kelola jenis &amp; harga/kg</div>
+    </div>
+  </div>
+
+  <table class="tbl">
+    <tr><th style="width:40px;">Penanda</th><th>Bagian Antarmuka</th><th>Fungsi</th></tr>
+    <tr><td>1</td><td>Sidebar Navigasi</td><td>Menu utama: Dashboard, Penjemputan, Data Sampah, Edukasi, Lokasi, Chat, Dompet, Leaderboard, Laporan, Riwayat, User, Profil</td></tr>
+    <tr><td>2</td><td>Top Bar</td><td>Menampilkan logo Resik, nama admin, dan tombol logout</td></tr>
+    <tr><td>3</td><td>Kartu Statistik</td><td>Ringkasan data: total penjemputan, total sampah, total transaksi, pengguna aktif</td></tr>
+    <tr><td>4</td><td>Tabel Data</td><td>Menampilkan daftar data dengan fitur pencarian, filter, dan aksi CRUD</td></tr>
+  </table>
+
+  <h2 class="sub">Aplikasi Mobile (Android) — Beranda &amp; Login</h2>
+  <div class="ss-row">
+    <div class="ss-item">
+      <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.44.jpeg" alt="Splash Screen">
+      <div class="cap">Splash Screen — Onboarding</div>
+    </div>
+    <div class="ss-item">
+      <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.45.jpeg" alt="Beranda Mobile">
+      <div class="cap">Beranda — Saldo, Poin &amp; Layanan</div>
+    </div>
+  </div>
+
+  <table class="tbl">
+    <tr><th style="width:40px;">Penanda</th><th>Bagian Antarmuka</th><th>Fungsi</th></tr>
+    <tr><td>1</td><td>Splash Screen</td><td>Logo Resik, animasi loading saat aplikasi dibuka</td></tr>
+    <tr><td>2</td><td>Header Beranda</td><td>Menampilkan nama pengguna, saldo dompet digital, dan poin reward</td></tr>
+    <tr><td>3</td><td>Kartu Layanan</td><td>Shortcut ke fitur: Penjemputan, Riwayat, Edukasi, Dompet, Leaderboard, Lokasi, Chat, Scan QR</td></tr>
+    <tr><td>4</td><td>Bottom Navigation</td><td>Navigasi cepat antar halaman utama</td></tr>
+  </table>
+</div>
+
+<!-- ===================== 04. PENGGUNA DAN HAK AKSES ===================== -->
+<div class="page">
+  <h1 class="sec">04. Pengguna dan Hak Akses</h1>
+  <p class="desc">Jenis pengguna yang didukung aplikasi beserta hak aksesnya.</p>
+
+  <table class="tbl">
+    <tr><th>Jenis Pengguna</th><th>Deskripsi</th><th>Hak Akses Utama</th></tr>
+    <tr>
+      <td><strong>Admin</strong></td>
+      <td>Pengelola aplikasi — akses penuh ke semua fitur desktop</td>
+      <td>Dashboard, Manajemen Penjemputan, Penimbangan, CRUD Data Sampah, Edukasi, Lokasi Bank Sampah, Chat Client, Dompet Digital, Leaderboard, Laporan Harian, Riwayat Setoran, Manajemen User, Profil</td>
+    </tr>
+    <tr>
+      <td><strong>Petugas</td>
+      <td>Petugas operasional penjemputan dan penimbangan</td>
+      <td>Melihat penjemputan yang di-assign, update status penjemputan, input berat aktual, kalkulasi harga, konfirmasi pembayaran</td>
+    </tr>
+    <tr>
+      <td><strong>Masyarakat</strong></td>
+      <td>Pengguna umum / penyetor sampah — akses via aplikasi Android</td>
+      <td>Registrasi &amp; Login, Penjemputan Sampah, Riwayat Setoran, Dompet Digital, Edukasi, Leaderboard, Chat Admin, Lokasi Bank Sampah, Scan QR Code, Profil</td>
+    </tr>
+  </table>
+
+  <h3 class="ssub">Login dan Logout</h3>
+  <p><strong>Login:</strong> Pengguna memasukkan email dan password. Sistem mengirimkan JWT token yang disimpan secara lokal dan digunakan untuk semua permintaan API selanjutnya.</p>
+  <p><strong>Logout:</strong> Pengguna menekan tombol logout (di desktop: top bar; di Android: menu profil). JWT token dihapus dari penyimpanan lokal dan pengguna dikembalikan ke halaman welcome/login.</p>
+
+  <div class="callout">
+    Implementasi OOP: Pewarisan <code>@Inheritance(strategy = InheritanceType.SINGLE_TABLE)</code> pada kelas <code>User</code> dengan <code>@DiscriminatorColumn</code> memungkinkan tiga peran disimpan dalam satu tabel dengan discriminator <code>role</code>.
+  </div>
+</div>
+
+<!-- ===================== 05. ALUR KERJA UTAMA ===================== -->
+<div class="page">
+  <h1 class="sec">05. Alur Kerja Utama Aplikasi</h1>
+  <p class="desc">Alur lengkap dari registrasi hingga pembayaran.</p>
+
+  <h2 class="sub">Alur Masyarakat (Android)</h2>
+  <table class="tbl">
+    <tr><th style="width:40px;">Urutan</th><th>Tindakan Pengguna</th><th>Hasil yang Diharapkan</th></tr>
+    <tr><td>1</td><td>Buka aplikasi, registrasi atau login</td><td>Halaman beranda tampil dengan info saldo dan poin</td></tr>
+    <tr><td>2</td><td>Pilih menu Penjemputan, isi form (kategori sampah, estimasi berat, tanggal, waktu, alamat GPS)</td><td>Data penjemputan tersimpan, status: MENUNGGU</td></tr>
+    <tr><td>3</td><td>Tunggu petugas dijadwalkan dan datang</td><td>Status berubah: DIJADWALKAN → DIPROSES</td></tr>
+    <tr><td>4</td><td>Petugas menimbang berat aktual</td><td>Sistem kalkulasi harga berdasarkan berat × harga/kg</td></tr>
+    <tr><td>5</td><td>Verifikasi &amp; pembayaran</td><td>Saldo masuk ke dompet digital, status: SELESAI</td></tr>
+    <tr><td>6</td><td>Cek riwayat dan saldo dompet</td><td>Transaksi tampil di riwayat dengan detail lengkap</td></tr>
+  </table>
+
+  <h2 class="sub">Alur Admin (Desktop)</h2>
+  <table class="tbl">
+    <tr><th style="width:40px;">Urutan</th><th>Tindakan Pengguna</th><th>Hasil yang Diharapkan</th></tr>
+    <tr><td>1</td><td>Login dengan akun admin</td><td>Dashboard tampil dengan statistik operasional</td></tr>
+    <tr><td>2</td><td>Buka menu Penjemputan, lihat daftar penjemputan menunggu</td><td>Tabel penjemputan tampil dengan filter status</td></tr>
+    <tr><td>3</td><td>Assign petugas ke penjemputan</td><td>Status berubah ke DIJADWALKAN, petugas terpilih</td></tr>
+    <tr><td>4</td><td>Buka menu Penimbangan, input berat aktual</td><td>Sistem kalkulasi total harga otomatis</td></tr>
+    <tr><td>5</td><td>Konfirmasi pembayaran</td><td>Saldo ditransfer ke dompet masyarakat, status: SELESAI</td></tr>
+    <tr><td>6</td><td>Buka Laporan untuk cetak laporan harian</td><td>Laporan tampil dengan filter tanggal</td></tr>
+  </table>
+
+  <div class="callout">
+    <strong>State Machine Penjemputan:</strong> <code>MENUNGGU → DIJADWALKAN → DIPROSES → SELESAI</code> (atau <code>DIBATALKAN</code>). Diimplementasikan dengan enum <code>PenjemputanStatus</code> yang menerapkan prinsip OOP type-safety.
+  </div>
+</div>
+
+<!-- ===================== 06. PANDUAN SETIAP FITUR ===================== -->
+<div class="page">
+  <h1 class="sec">06. Panduan Setiap Fitur (Feature-by-Feature Guide)</h1>
+  <p class="desc">Panduan langkah demi langkah untuk setiap fitur utama aplikasi.</p>
+
+  <h2 class="sub">A. Fitur Aplikasi Mobile (Android)</h2>
+
+  <div class="feat-box">
+    <h3>1. Registrasi &amp; Login</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mendaftarkan akun baru dan masuk ke aplikasi</td></tr>
+      <tr><td><strong>Kondisi awal</strong></td><td>Aplikasi terbuka di halaman Welcome/Login</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Daftar" → 2. Isi nama, email, password, alamat, no. telp → 3. Klik "Registrasi" → 4. Login dengan email &amp; password → 5. Beranda tampil</td></tr>
+      <tr><td><strong>Hasil</strong></td><td>Pengguna masuk ke beranda dengan saldo Rp 0 dan poin 0</td></tr>
+      <tr><td><strong>Jika bermasalah</strong></td><td>Email sudah terdaftar → gunakan email lain. Password salah → cek kembali atau login dengan akun demo</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.44.jpeg" alt="Splash">
+        <div class="cap">Splash Screen</div>
+      </div>
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.44 (1).jpeg" alt="Login">
+        <div class="cap">Halaman Login</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>2. Penjemputan Sampah</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Memesan penjemputan sampah dari petugas</td></tr>
+      <tr><td><strong>Kondisi awal</strong></td><td>Sudah login, di halaman Beranda</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Penjemputan" → 2. Pilih kategori (Organik/Anorganik/B3/Residu) → 3. Isi estimasi berat → 4. Pilih tanggal &amp; waktu → 5. Isi alamat (GPS otomatis) → 6. Submit</td></tr>
+      <tr><td><strong>Hasil</strong></td><td>Penjemputan tersimpan dengan status MENUNGGU, muncul di riwayat</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.47 (1).jpeg" alt="Form Penjemputan">
+        <div class="cap">Form Penjemputan Sampah</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>3. Riwayat Setoran &amp; Dompet Digital</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Melihat histori transaksi dan saldo dompet digital</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Riwayat" → 2. Lihat daftar transaksi dengan status → 3. Klik "Dompet" → 4. Lihat saldo &amp; riwayat pembayaran</td></tr>
+      <tr><td><strong>Hasil</strong></td><td>Transaksi tampil dengan detail: tanggal, kategori, berat, harga, status</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.46.jpeg" alt="Riwayat">
+        <div class="cap">Riwayat Transaksi</div>
+      </div>
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.48.jpeg" alt="Dompet">
+        <div class="cap">Dompet Digital — Saldo &amp; Pembayaran</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>4. Edukasi Sampah</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mempelajari jenis sampah, kategori, dan harga per kg</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Edukasi" → 2. Pilih kategori filter → 3. Lihat daftar sampah &amp; harga</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.47 (2).jpeg" alt="Edukasi">
+        <div class="cap">Edukasi Sampah — Jenis &amp; Harga/kg</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>5. Leaderboard &amp; Lokasi Bank Sampah</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Melihat peringkat kontribusi &amp; menemukan bank sampah terdekat</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Leaderboard" → 2. Lihat ranking → 3. Klik "Lokasi" → 4. Lihat denah bank sampah</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.49 (1).jpeg" alt="Leaderboard">
+        <div class="cap">Leaderboard Kontribusi</div>
+      </div>
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.49.jpeg" alt="Lokasi">
+        <div class="cap">Lokasi Bank Sampah Terdekat</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>6. Chat Admin &amp; Scan QR Code</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Berkomunikasi dengan admin &amp; memindai QR untuk verifikasi</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Chat" → 2. Kirim pesan ke admin → 3. Untuk Scan QR: klik "Scan QR" → 4. Arahkan kamera ke kode QR</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.46 (1).jpeg" alt="Chat">
+        <div class="cap">Chat Admin — Real-time via VPS</div>
+      </div>
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.48 (1).jpeg" alt="Scan QR">
+        <div class="cap">Scan QR Code — Verifikasi</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>7. Profil Pengguna</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mengelola informasi akun (foto, nama, email, no. telp, alamat)</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Klik "Profil" → 2. Edit data → 3. Upload foto → 4. Simpan</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.47.jpeg" alt="Profil">
+        <div class="cap">Profil Pengguna</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 06 (lanjutan) — FITUR DESKTOP ===================== -->
+<div class="page">
+  <h2 class="sub">B. Fitur Aplikasi Desktop (Admin)</h2>
+
+  <div class="feat-box">
+    <h3>1. Dashboard</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Memantau statistik operasional bank sampah secara real-time</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Login → 2. Dashboard tampil otomatis → 3. Lihat kartu statistik &amp; ringkasan</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48.jpeg" alt="Dashboard">
+        <div class="cap">Dashboard — Statistik operasional real-time</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>2. Manajemen Penjemputan &amp; Penimbangan</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mengelola penjemputan: assign petugas, update status, timbang sampah</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Buka menu Penjemputan → 2. Pilih penjemputan → 3. Assign petugas → 4. Update status → 5. Buka Penimbangan → 6. Input berat aktual → 7. Kalkulasi → 8. Konfirmasi bayar → 9. Selesai</td></tr>
+      <tr><td><strong>Hasil</strong></td><td>Saldo ditransfer ke dompet masyarakat, status: SELESAI</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48 (1).jpeg" alt="Penjemputan">
+        <div class="cap">Manajemen Penjemputan — assign petugas &amp; status</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>3. CRUD Data Sampah &amp; Edukasi</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mengelola jenis sampah, harga per kg, dan konten edukasi</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Buka Data Sampah → 2. Klik "Tambah" → 3. Isi kategori, nama, harga/kg → 4. Simpan → 5. Untuk edit/hapus: pilih baris, klik aksi</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48 (2).jpeg" alt="Data Sampah">
+        <div class="cap">Data Sampah — Kelola jenis &amp; harga/kg</div>
+      </div>
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.49.jpeg" alt="Edukasi">
+        <div class="cap">Edukasi Sampah — panduan kategori &amp; harga</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>4. Lokasi Bank Sampah &amp; Chat Client</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mengelola lokasi bank sampah &amp; berkomunikasi dengan client</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Buka Lokasi → 2. Tambah/edit/hapus lokasi → 3. Buka Chat → 4. Kirim pesan ke client</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.49 (1).jpeg" alt="Lokasi">
+        <div class="cap">Lokasi Bank Sampah — data sinkron</div>
+      </div>
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.49 (2).jpeg" alt="Chat">
+        <div class="cap">Chat Client — komunikasi admin &amp; pengguna</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>5. Dompet Digital &amp; Leaderboard</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Monitoring saldo semua pengguna &amp; ranking kontribusi</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Buka Dompet → 2. Lihat saldo semua user → 3. Buka Leaderboard → 4. Lihat ranking</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50.jpeg" alt="Dompet">
+        <div class="cap">Dompet Digital — saldo &amp; riwayat semua pengguna</div>
+      </div>
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (1).jpeg" alt="Leaderboard">
+        <div class="cap">Leaderboard — ranking kontribusi masyarakat</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>6. Laporan Harian &amp; Riwayat Setoran</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>Mencetak laporan harian &amp; melihat semua transaksi</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Buka Laporan → 2. Pilih tanggal (date picker) → 3. Lihat statistik → 4. Buka Riwayat → 5. Lihat semua transaksi</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (2).jpeg" alt="Laporan">
+        <div class="cap">Laporan Harian — statistik &amp; date picker</div>
+      </div>
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (3).jpeg" alt="Riwayat">
+        <div class="cap">Riwayat Setoran — semua transaksi</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feat-box">
+    <h3>7. Manajemen User &amp; Profil Admin</h3>
+    <table class="tbl">
+      <tr><th style="width:25%;">Elemen</th><th>Isi</th></tr>
+      <tr><td><strong>Tujuan</strong></td><td>CRUD data pengguna &amp; edit profil admin</td></tr>
+      <tr><td><strong>Langkah</strong></td><td>1. Buka User → 2. Lihat/tambah/edit/hapus user → 3. Buka Profil → 4. Edit informasi admin → 5. Simpan</td></tr>
+    </table>
+    <div class="ss-row">
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.51.jpeg" alt="User">
+        <div class="cap">Manajemen User — CRUD data pengguna</div>
+      </div>
+      <div class="ss-item">
+        <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.51 (1).jpeg" alt="Profil">
+        <div class="cap">Profil Admin — edit informasi akun</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 07. PENGELOLAAN DATA & TRANSAKSI ===================== -->
+<div class="page">
+  <h1 class="sec">07. Pengelolaan Data dan Transaksi</h1>
+  <p class="desc">Operasi CRUD yang tersedia dalam aplikasi.</p>
+
+  <table class="tbl">
+    <tr><th style="width:15%;">Operasi</th><th style="width:45%;">Langkah Penggunaan</th><th>Pemeriksaan Hasil</th></tr>
+    <tr>
+      <td><strong>Tambah (Create)</strong></td>
+      <td>Buka menu terkait → Klik "Tambah" → Isi form → Klik "Simpan"</td>
+      <td>Data baru muncul di tabel/list</td>
+    </tr>
+    <tr>
+      <td><strong>Lihat/Cari (Read)</strong></td>
+      <td>Buka menu terkait → Gunakan kolom pencarian/filter → Lihat tabel</td>
+      <td>Data yang sesuai filter ditampilkan</td>
+    </tr>
+    <tr>
+      <td><strong>Ubah (Update)</strong></td>
+      <td>Pilih baris data → Klik "Edit" → Perbarui data → Klik "Simpan"</td>
+      <td>Perubahan tampil setelah disimpan</td>
+    </tr>
+    <tr>
+      <td><strong>Hapus (Delete)</strong></td>
+      <td>Pilih baris data → Klik "Hapus" → Konfirmasi "Ya"</td>
+      <td>Data tidak lagi muncul di tabel</td>
+    </tr>
+  </table>
+
+  <h2 class="sub">Validasi dan Konfirmasi</h2>
+  <ul style="margin-left:20px; font-size:11pt; line-height:1.8;">
+    <li><strong>Validasi input:</strong> Kolom wajib (nama, email, harga) tidak boleh kosong. Format email divalidasi.</li>
+    <li><strong>Data duplikat:</strong> Email yang sudah terdaftar akan ditolak saat registrasi.</li>
+    <li><strong>Konfirmasi hapus:</strong> Dialog konfirmasi muncul sebelum penghapusan data.</li>
+    <li><strong>Pemeriksaan simpan:</strong> Setelah simpan, data langsung tersinkron dengan database VPS.</li>
+  </ul>
+</div>
+
+<!-- ===================== 08. LAPORAN, CETAK, EKSPOR ===================== -->
+<div class="page">
+  <h1 class="sec">08. Laporan, Cetak, dan Ekspor Data</h1>
+  <p class="desc">Fitur laporan harian yang tersedia di aplikasi Desktop Admin.</p>
+
+  <table class="tbl">
+    <tr><th style="width:40px;">Tahap</th><th>Petunjuk</th></tr>
+    <tr><td>1</td><td>Buka menu "Laporan" dari sidebar</td></tr>
+    <tr><td>2</td><td>Pilih tanggal menggunakan date picker</td></tr>
+    <tr><td>3</td><td>Sistem menampilkan statistik: total setoran, total berat, total pembayaran, jumlah transaksi</td></tr>
+    <tr><td>4</td><td>Gunakan tombol cetak (print) untuk mencetak laporan</td></tr>
+    <tr><td>5</td><td>Periksa kelengkapan data sebelum dicetak</td></tr>
+  </table>
+
+  <div class="ss-row">
+    <div class="ss-item">
+      <img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (2).jpeg" alt="Laporan Harian">
+      <div class="cap">Laporan Harian — statistik &amp; date picker</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    Fitur laporan menggunakan data real-time dari VPS. Filter per hari memungkinkan admin melihat ringkasan aktivitas bank sampah pada tanggal tertentu.
+  </div>
+</div>
+
+<!-- ===================== 09. ATURAN PENGGUNAAN ===================== -->
+<div class="page">
+  <h1 class="sec">09. Aturan Penggunaan dan Pengelolaan Data</h1>
+  <p class="desc">Aturan yang perlu diketahui agar data tetap benar dan tidak terjadi kesalahan operasional.</p>
+
+  <table class="tbl">
+    <tr><th style="width:25%;">Hal yang Diperhatikan</th><th>Aturan/Petunjuk</th></tr>
+    <tr>
+      <td><strong>Input Data</strong></td>
+      <td>
+        • Nama: wajib diisi, minimal 3 karakter<br>
+        • Email: format email valid, unik<br>
+        • Password: minimal 6 karakter<br>
+        • Harga sampah: angka positif (> 0)<br>
+        • Berat sampah: angka positif, satuan kg
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Ubah/Hapus Data</strong></td>
+      <td>
+        • Perubahan data sampah (harga) tidak berlaku surut ke transaksi lama<br>
+        • Penghapusan user tidak menghapus riwayat transaksi (soft delete)<br>
+        • Konfirmasi wajib sebelum setiap penghapusan
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Akun dan Akses</strong></td>
+      <td>
+        • JWT token disimpan di localStorage (Android) / memory (Desktop)<br>
+        • Logout menghapus token dan mengakhiri sesi<br>
+        • Password di-hash menggunakan BCrypt di sisi server
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Database/Backup</strong></td>
+      <td>
+        • Database PostgreSQL berjalan di VPS dalam container Docker<br>
+        • Port 5433 (internal), tidak diakses langsung oleh pengguna<br>
+        • Backup dilakukan admin VPS secara berkala
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===================== 10. TROUBLESHOOTING ===================== -->
+<div class="page">
+  <h1 class="sec">10. Pemecahan Masalah (Troubleshooting)</h1>
+  <p class="desc">Masalah realistis beserta gejala, penyebab, dan tindakan aman.</p>
+
+  <table class="tbl">
+    <tr><th style="width:30%;">Masalah/Gejala</th><th style="width:35%;">Kemungkinan Penyebab</th><th>Tindakan yang Disarankan</th></tr>
+    <tr>
+      <td>Aplikasi tidak terbuka (Android)</td>
+      <td>Android version &lt; 7.0, APK corrupt, storage penuh</td>
+      <td>Periksa versi Android (min 7.0), unduh ulang APK, bersihkan storage</td>
+    </tr>
+    <tr>
+      <td>Aplikasi Desktop tidak terbuka</td>
+      <td>JRE tidak tersedia (Windows tanpa installer bundle)</td>
+      <td>Gunakan installer <code>.exe</code> yang sudah bundle JRE 17 + JavaFX 21</td>
+    </tr>
+    <tr>
+      <td>Data tidak muncul / tabel kosong</td>
+      <td>Koneksi internet terputus, server VPS sedang tidak aktif</td>
+      <td>Periksa koneksi internet, coba refresh halaman, hubungi admin jika VPS down</td>
+    </tr>
+    <tr>
+      <td>Login gagal / "Unauthorized"</td>
+      <td>Email/password salah, token expired</td>
+      <td>Gunakan akun demo yang benar, logout lalu login ulang</td>
+    </tr>
+    <tr>
+      <td>Penjemputan tidak tersimpan</td>
+      <td>Form belum lengkap, koneksi terputus saat submit</td>
+      <td>Lengkapi semua kolom wajib, pastikan online, coba kirim ulang</td>
+    </tr>
+    <tr>
+      <td>Saldo dompet tidak bertambah</td>
+      <td>Penimbangan belum dikonfirmasi admin, transaksi masih PENDING</td>
+      <td>Hubungi admin untuk konfirmasi penimbangan, cek status di Riwayat</td>
+    </tr>
+    <tr>
+      <td>Chat tidak terkirim / tidak ada balasan</td>
+      <td>WebSocket terputus, admin offline</td>
+      <td>Refresh halaman chat, pastikan koneksi internet stabil</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===================== 11. FAQ ===================== -->
+<div class="page">
+  <h1 class="sec">11. Pertanyaan yang Sering Diajukan (FAQ)</h1>
+
+  <table class="tbl">
+    <tr><th style="width:45%;">Pertanyaan</th><th>Jawaban</th></tr>
+    <tr>
+      <td>Bagaimana jika salah memasukkan data penjemputan?</td>
+      <td>Penjemputan yang masih berstatus MENUNGGU dapat dibatalkan. Hubungi admin untuk pembatalan. Buat penjemputan baru dengan data yang benar.</td>
+    </tr>
+    <tr>
+      <td>Apakah data tetap tersimpan setelah aplikasi ditutup?</td>
+      <td>Ya. Semua data tersimpan di server VPS (PostgreSQL). Saat buka kembali, data akan otomatis dimuat dari server.</td>
+    </tr>
+    <tr>
+      <td>Bagaimana cara menemukan riwayat transaksi saya?</td>
+      <td>Buka menu "Riwayat" di aplikasi Android. Semua transaksi tampil dengan filter kategori. Di Desktop, buka menu "Riwayat Setoran".</td>
+    </tr>
+    <tr>
+      <td>Apa yang dilakukan jika muncul error?</td>
+      <td>Catat pesan error, periksa koneksi internet, coba refresh/restart aplikasi. Jika berlanjut, hubungi admin dengan screenshot error.</td>
+    </tr>
+    <tr>
+      <td>Berapa lama penjemputan diproses?</td>
+      <td>Admin akan menjadwalkan penjemputan (status DIJADWALKAN), lalu petugas datang sesuai jadwal (status DIPROSES). Setelah penimbangan &amp; konfirmasi, status menjadi SELESAI.</td>
+    </tr>
+    <tr>
+      <td>Apakah saldo dompet bisa ditarik?</td>
+      <td>Saat ini saldo dompet digital berfungsi sebagai catatan pembayaran. Fitur penarikan ke rekening bank belum tersedia (lihat Keterbatasan).</td>
+    </tr>
+    <tr>
+      <td>Apakah aplikasi bisa digunakan offline?</td>
+      <td>Tidak. Aplikasi memerlukan koneksi internet untuk berkomunikasi dengan server VPS.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===================== 12. KETERBATASAN ===================== -->
+<div class="page">
+  <h1 class="sec">12. Keterbatasan Aplikasi dan Rekomendasi Penggunaan</h1>
+  <p class="desc">Kondisi yang belum ditangani dan batasan penggunaan.</p>
+
+  <table class="tbl">
+    <tr><th style="width:30%;">Aspek</th><th>Status/Keterangan</th></tr>
+    <tr>
+      <td><strong>Fitur belum tersedia</strong></td>
+      <td>
+        • Penarikan saldo dompet ke rekening bank<br>
+        • Notifikasi push notification (Android)<br>
+        • Multi-bahasa (hanya Bahasa Indonesia)<br>
+        • Integrasi pembayaran e-wallet (GoPay, OVO, DANA)
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Batasan penggunaan</strong></td>
+      <td>
+        • Wajib online — tidak mendukung mode offline<br>
+        • Akun demo terbatas, data dapat direset sewaktu-waktu<br>
+        • Kapasitas server VPS terbatas (shared resource)
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Ketergantungan</strong></td>
+      <td>
+        • Koneksi internet stabil untuk performa optimal<br>
+        • Server VPS aktif (43.157.243.87:8081)<br>
+        • Android 7.0+ untuk aplikasi mobile
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Kondisi belum diuji</strong></td>
+      <td>
+        • Beban pengguna simultan > 100 user<br>
+        • Kondisi jaringan tidak stabil (2G/3G)<br>
+        • Skenario failover server (high availability)
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Rekomendasi</strong></td>
+      <td>
+        • Gunakan untuk skala komunitas/RT/RW<br>
+        • Pastikan koneksi internet stabil saat transaksi<br>
+        • Backup data secara berkala via admin VPS
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===================== 13. INFORMASI TEKNIS ===================== -->
+<div class="page">
+  <h1 class="sec">13. Informasi Teknis dan Versi</h1>
+  <p class="desc">Informasi teknis untuk instalasi, identifikasi versi, dan pemeliharaan.</p>
+
+  <table class="tbl">
+    <tr><th style="width:30%;">Informasi</th><th>Keterangan</th></tr>
+    <tr><td><strong>Versi aplikasi</strong></td><td>3.1.0</td></tr>
+    <tr><td><strong>Tanggal rilis</strong></td><td>24 Januari 2026</td></tr>
+    <tr><td><strong>Sistem operasi</strong></td><td>Android 7.0+ (API 24), Windows 10/11 (x64), macOS 11+</td></tr>
+    <tr><td><strong>Runtime (Desktop)</strong></td><td>JRE 17 (bundled in Windows installer), JavaFX 21.0.2</td></tr>
+    <tr><td><strong>Backend</strong></td><td>Spring Boot 3.2.5, Java 17, PostgreSQL 16, Flyway migration</td></tr>
+    <tr><td><strong>Autentikasi</strong></td><td>JWT (jjwt 0.12.5), BCrypt password hashing</td></tr>
+    <tr><td><strong>Real-time</strong></td><td>WebSocket untuk fitur chat (Spring WebSocket)</td></tr>
+    <tr><td><strong>Deployment</strong></td><td>Docker Compose pada VPS (43.157.243.87:8081)</td></tr>
+    <tr><td><strong>Build tools</strong></td><td>Maven (Backend + Desktop), Gradle (Android), NSIS (Windows installer)</td></tr>
+    <tr><td><strong>CI/CD</strong></td><td>GitHub Actions (auto-deploy ke VPS on push)</td></tr>
+    <tr><td><strong>Catatan versi</strong></td><td>v3.1 — Penambahan fitur QR Scanner, perbaikan UI, optimasi API</td></tr>
+  </table>
+
+  <h2 class="sub">Struktur Repository</h2>
+  <div class="arch">resik/
+├── backend-api/          # Spring Boot REST API + PostgreSQL
+├── desktop-admin/        # JavaFX Desktop App (Admin/Petugas)
+├── android-client/       # Android App (Kotlin + Compose)
+├── docs/                 # PRD &amp; dokumentasi presentasi
+├── scripts/              # Build &amp; deploy scripts
+├── .github/workflows/    # CI/CD (auto-deploy ke VPS)
+├── docker-compose.yml    # VPS deployment config
+├── deploy.sh             # VPS deployment script
+└── README.md</div>
+</div>
+
+<!-- ===================== 14. LAMPIRAN & INFORMASI PENGEMBANG ===================== -->
+<div class="page">
+  <h1 class="sec">14. Lampiran dan Informasi Pengembang</h1>
+
+  <h2 class="sub">Daftar Istilah</h2>
+  <table class="tbl">
+    <tr><th style="width:30%;">Istilah</th><th>Penjelasan</th></tr>
+    <tr><td>Bank Sampah</td><td>Lembaga pengelola sampah yang menerima, menimbun, dan memproses sampah dari masyarakat</td></tr>
+    <tr><td>Penjemputan</td><td>Proses pemesanan pengambilan sampah oleh masyarakat untuk dijemput petugas</td></tr>
+    <tr><td>Penimbangan</td><td>Proses penimbangan berat aktual sampah oleh petugas untuk kalkulasi harga</td></tr>
+    <tr><td>Dompet Digital</td><td>Saldo elektronik yang berisi pembayaran dari transaksi penyetoran sampah</td></tr>
+    <tr><td>JWT</td><td>JSON Web Token — standar autentikasi yang digunakan untuk sesi login</td></tr>
+    <tr><td>VPS</td><td>Virtual Private Server — server tempat backend &amp; database di-host</td></tr>
+    <tr><td>CRUD</td><td>Create, Read, Update, Delete — operasi dasar pengelolaan data</td></tr>
+    <tr><td>OOP</td><td>Object-Oriented Programming — paradigma pemrograman berbasis objek</td></tr>
+  </table>
+
+  <h2 class="sub">Informasi Pengembang</h2>
+  <table class="tbl">
+    <tr><th style="width:30%;">Informasi</th><th>Isi</th></tr>
+    <tr><td><strong>Nama pengembang/kelompok</strong></td><td>Resik Team — Kelompok PBO 2026</td></tr>
+    <tr><td><strong>Program studi/institusi</strong></td><td>S1 Informatika, Universitas Harapan Bangsa</td></tr>
+    <tr><td><strong>Repository</strong></td><td><code>github.com/unkronnn/resik</code></td></tr>
+    <tr><td><strong>Lisensi</strong></td><td>MIT License — bebas digunakan untuk keperluan edukasi dan non-komersial</td></tr>
+  </table>
+
+  <h2 class="sub">Pembagian Tugas</h2>
+  <table class="tbl">
+    <tr><th style="width:40px;">No</th><th>Nama</th><th>NIM</th><th>Peran</th></tr>
+    <tr><td>1</td><td>Syukron Maulana</td><td>250111032</td><td>Ketua Kelompok — Full Stack Developer (Backend, Android, Desktop, Deployment)</td></tr>
+    <tr><td>2</td><td>Muhamad Dafa Nuruzzufar Al Mubarok</td><td>250111018</td><td>Anggota — Dokumentasi &amp; Penyusunan Laporan</td></tr>
+    <tr><td>3</td><td>Riri Syafala Ghofaro Jamal</td><td>250111027</td><td>Anggota — Review Dokumentasi &amp; Pengujian Aplikasi</td></tr>
+    <tr><td>4</td><td>Zain Ghathfaan Kiesa</td><td>250111035</td><td>Anggota — Quality Assurance &amp; Presentasi</td></tr>
+  </table>
+
+  <div class="callout">
+    <strong>Catatan:</strong> Seluruh proses pengembangan aplikasi (backend, Android, desktop, deployment) dikerjakan oleh Syukron Maulana sebagai Full-Stack Developer. Pembagian tugas lainnya disesuaikan untuk kelengkapan dokumentasi dan presentasi.
+  </div>
+</div>
+
+<!-- ===================== DAFTAR PUSTAKA ===================== -->
+<div class="page">
+  <h1 class="sec">Daftar Pustaka</h1>
+  <div style="font-size: 11pt; line-height: 1.8;">
+    <p>1. Documentation, O. (2024). <em>The Java Tutorials — Object-Oriented Programming Concepts.</em> Oracle Corporation.</p>
+    <p>2. Johnson, R., Hoeller, J., Donald, K., Sampaleanu, C., &amp; Harrop, R. (2024). <em>Spring Framework Reference Documentation v3.2.5.</em> VMware, Inc.</p>
+    <p>3. Walls, C. (2024). <em>Spring in Action, Sixth Edition.</em> Manning Publications.</p>
+    <p>4. PostgreSQL Global Development Group. (2024). <em>PostgreSQL 16 Documentation.</em></p>
+    <p>5. Google. (2024). <em>Jetpack Compose — Android Developers.</em> developer.android.com/jetpack/compose.</p>
+    <p>6. Oracle. (2024). <em>JavaFX 21 Documentation.</em> docs.oracle.com/javase/8/javafx/.</p>
+    <p>7. Docker, Inc. (2024). <em>Docker Compose Documentation.</em> docs.docker.com/compose/.</p>
+    <p>8. JWT.io. (2024). <em>JSON Web Tokens Introduction.</em> jwt.io/introduction.</p>
+    <p>9. Eckel, B. (2024). <em>Thinking in Java, Fourth Edition.</em> Prentice Hall.</p>
+    <p>10. Schildt, H. (2024). <em>Java: The Complete Reference, Twelfth Edition.</em> McGraw-Hill Education.</p>
+    <p>11. Kurniawan, T. (2023). <em>Pemrograman Berorientasi Objek dengan Java.</em] Informatika Bandung.</p>
+    <p>12. Firth, G. (2024). <em>Building Modern Web Applications with Spring Boot.</em> Apress.</p>
+  </div>
+</div>
+
+</body>
+</html>

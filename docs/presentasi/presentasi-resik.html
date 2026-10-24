@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>Resik — Bank Sampah Digital | Presentasi</title>
+<style>
+  :root{
+    --green-800:#12492a; --green-700:#175c33; --green-600:#1e7a44;
+    --green-100:#e6f2ea; --gold:#e8a713; --ink:#1d2b22; --paper:#f7f9f7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:#222;font-family:"Segoe UI",Arial,Helvetica,sans-serif;color:var(--ink);}
+  .slide{
+    width:1280px;height:720px;background:var(--paper);
+    position:relative;overflow:hidden;
+    margin:24px auto;box-shadow:0 8px 30px rgba(0,0,0,.45);
+    page-break-after:always;break-after:page;
+    display:flex;flex-direction:column;
+  }
+  .pad{padding:48px 64px 56px;flex:1;display:flex;flex-direction:column;min-height:0;}
+  h2{font-size:34px;color:var(--green-800);margin-bottom:6px;}
+  .kicker{letter-spacing:3px;text-transform:uppercase;font-size:14px;color:var(--green-600);font-weight:700;margin-bottom:8px;}
+  .rule{width:70px;height:5px;background:var(--gold);border-radius:3px;margin:10px 0 22px;flex:0 0 5px;}
+  ul{list-style:none;flex:0 0 auto;}
+  ul li{position:relative;padding-left:26px;margin-bottom:10px;font-size:19px;line-height:1.4;}
+  ul li::before{content:"";position:absolute;left:0;top:9px;width:10px;height:10px;border-radius:3px;background:var(--green-600);}
+  .card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(20,60,35,.08);padding:20px 22px;}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;
+    background:var(--green-700);color:#fff;font-weight:700;font-size:16px;margin-right:12px;flex:0 0 34px;}
+  .logo-sm{position:absolute;top:26px;right:34px;height:52px;background:#fff;border-radius:10px;padding:4px;}
+  .footer{position:absolute;bottom:0;left:0;right:0;height:34px;background:var(--green-800);color:#cfe6d6;
+    font-size:12px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
+  .shot{background:#fff;border-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,.15);overflow:hidden;display:flex;flex-direction:column;min-height:0;align-self:start;width:100%;}
+  .shot img{width:100%;height:auto;max-height:470px;object-fit:contain;object-position:top;display:block;background:#f8faf8;}
+  .shot .cap{font-size:13px;font-weight:600;color:var(--green-800);padding:8px 10px;text-align:center;background:var(--green-100);flex:0 0 auto;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;flex:1;min-height:0;}
+  table.tbl{width:100%;border-collapse:collapse;font-size:17px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(20,60,35,.08);}
+  table.tbl th{background:var(--green-700);color:#fff;padding:12px 16px;text-align:left;}
+  table.tbl td{padding:11px 16px;border-bottom:1px solid #e4ece6;}
+  table.tbl tr:last-child td{border-bottom:none;}
+  .pill{display:inline-block;background:var(--green-100);color:var(--green-800);border-radius:999px;padding:6px 14px;font-size:15px;font-weight:600;margin:4px 6px 4px 0;}
+  .title-slide{background:linear-gradient(150deg,#0b3d20 0%,#175c33 55%,#1e7a44 100%);color:#fff;}
+  .title-slide .center{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;}
+  .title-slide img.biglogo{width:170px;height:170px;border-radius:36px;box-shadow:0 10px 40px rgba(0,0,0,.4);background:#fff;padding:14px;}
+  .title-slide h1{color:#fff;font-size:64px;margin-top:26px;letter-spacing:6px;}
+  .title-slide p.sub{font-size:24px;color:#cfe6d6;margin-top:8px;}
+  .team{margin-top:36px;font-size:17px;line-height:1.8;color:#eaf5ee;}
+  @media print{
+    body{background:#fff;}
+    .slide{margin:0;box-shadow:none;}
+    @page{size:1280px 720px;margin:0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1 : COVER -->
+<div class="slide title-slide">
+  <div class="center">
+    <img class="biglogo" src="assets/Resik.png" alt="Logo Resik">
+    <h1>RESIK</h1>
+    <p class="sub">Bank Sampah Digital — Kelola Sampah, Hemat Lingkungan, Dapatkan Poin Reward</p>
+    <div class="team">
+      <b>Presentasi UTS — Pemrograman Berorientasi Objek (PBO)</b><br><br>
+      Muhamad Dafa Nuruzzufar Al Mubarok — 250111018<br>
+      Riri Syafala Ghofaro Jamal — 250111027<br>
+      Syukron Maulana — 250111032<br>
+      Zain Ghathfaan Kiesa — 250111035
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2 : AGENDA -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Agenda</div>
+    <h2>Outline Presentasi</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <ul style="font-size:21px;">
+        <li>Latar Belakang</li>
+        <li>Rumusan Masalah</li>
+        <li>Tujuan &amp; Manfaat Aplikasi</li>
+        <li>Solusi: Resik — Bank Sampah Digital</li>
+        <li>Fitur Utama Aplikasi</li>
+      </ul>
+      <ul style="font-size:21px;">
+        <li>Demo Aplikasi Mobile (Android)</li>
+        <li>Demo Aplikasi Desktop (Admin)</li>
+        <li>Arsitektur &amp; Teknologi</li>
+        <li>Penerapan Konsep OOP</li>
+        <li>Pembagian Tugas &amp; Rencana Lanjutan</li>
+      </ul>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 3 : LATAR BELAKANG -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Latar Belakang</div>
+    <h2>Masalah Sampah di Indonesia</h2>
+    <div class="rule"></div>
+    <div class="grid2" style="align-items:center;">
+      <div>
+        <ul>
+          <li>Indonesia menghasilkan <b>jutaan ton sampah setiap tahun</b> (data KLHK), namun budaya pemilahan sampah masih rendah.</li>
+          <li>Pencampuran sampah organik dan anorganik masih sering terjadi di rumah tangga.</li>
+          <li>Proses bank sampah selama ini berjalan <b>manual dan tidak terstruktur</b> — pencatatan di buku, sulit dilacak.</li>
+          <li>Masyarakat sulit mengetahui ke mana menyetor sampah, bagaimana prosesnya, dan berapa nilainya.</li>
+        </ul>
+      </div>
+      <div class="card" style="background:var(--green-100);">
+        <h3 style="color:var(--green-800);margin-bottom:12px;">Fakta Kunci</h3>
+        <p style="font-size:18px;line-height:1.7;">
+          Sampah yang dipilah dengan baik memiliki <b>nilai jual</b>, namun masyarakat belum menyadari bahwa sampah dapat menjadi <b>sumber penghasilan tambahan</b>. Dibutuhkan platform digital yang menghubungkan masyarakat dengan bank sampah.
+        </p>
+      </div>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 4 : RUMUSAN MASALAH -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Rumusan Masalah</div>
+    <h2>Empat Masalah Utama</h2>
+    <div class="rule"></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:16px;justify-content:center;">
+      <div class="card" style="display:flex;align-items:center;"><span class="num">1</span>
+        <p style="font-size:19px;"><b>Minimnya edukasi pemilahan sampah</b> — masyarakat belum mengetahui jenis sampah yang dapat didaur ulang, dijual, atau dibuang.</p></div>
+      <div class="card" style="display:flex;align-items:center;"><span class="num">2</span>
+        <p style="font-size:19px;"><b>Belum adanya nilai ekonomis dari sampah</b> — potensi penghasilan dari sampah terpilah belum termanfaatkan.</p></div>
+      <div class="card" style="display:flex;align-items:center;"><span class="num">3</span>
+        <p style="font-size:19px;"><b>Proses penyetoran yang tidak terstruktur</b> — masyarakat bingung ke mana, bagaimana, dan berapa nilai setoran sampah.</p></div>
+      <div class="card" style="display:flex;align-items:center;"><span class="num">4</span>
+        <p style="font-size:19px;"><b>Kurangnya transparansi &amp; tracking</b> — tidak ada sistem untuk melacak riwayat setoran dan pendapatan.</p></div>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 5 : TUJUAN -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Tujuan &amp; Manfaat</div>
+    <h2>Tujuan Pengembangan Aplikasi</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <ul>
+        <li>Menyediakan <b>platform digital</b> penghubung masyarakat (penyetor) dan pengelola bank sampah (verifikator).</li>
+        <li>Memberikan <b>edukasi pemilahan sampah</b> melalui informasi jenis sampah dan nilainya.</li>
+        <li>Memfasilitasi <b>penjadwalan penjemputan</b> sampah dari rumah masyarakat.</li>
+        <li>Sistem <b>penimbangan &amp; kalkulasi harga</b> yang transparan.</li>
+      </ul>
+      <ul>
+        <li>Integrasi <b>dompet digital</b> untuk pembayaran hasil setoran.</li>
+        <li><b>Dashboard riwayat transaksi</b> untuk tracking &amp; transparansi.</li>
+        <li>Mendorong partisipasi melalui sistem <b>poin reward &amp; leaderboard</b>.</li>
+        <li>Tools operasional bagi pengelola bank sampah yang <b>efisien dan terdokumentasi</b>.</li>
+      </ul>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 6 : SOLUSI -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Solusi</div>
+    <h2>Resik — Bank Sampah Digital</h2>
+    <div class="rule"></div>
+    <div style="flex:1;display:flex;gap:30px;align-items:center;">
+      <div style="flex:1.1;">
+        <p style="font-size:19px;line-height:1.65;margin-bottom:18px;">
+          <b>Resik</b> (Resik = Bersih) adalah platform Bank Sampah Digital yang <b>mendigitalisasi proses bank sampah</b> dari hulu ke hilir: edukasi pemilahan → penjemputan → penimbangan → pembayaran → reward.
+        </p>
+        <div>
+          <span class="pill">📱 Aplikasi Android (Masyarakat)</span>
+          <span class="pill">💻 Aplikasi Desktop (Admin/Petugas)</span>
+          <span class="pill">☁️ Backend API + Database di VPS</span>
+          <span class="pill">🔄 Data sinkron antar platform</span>
+        </div>
+      </div>
+      <div class="card" style="flex:1;">
+        <h3 style="color:var(--green-800);margin-bottom:12px;">Alur End-to-End</h3>
+        <p style="font-size:17px;line-height:2;">
+          1. Masyarakat memilih kategori &amp; estimasi berat sampah<br>
+          2. Admin assign petugas &amp; menjadwalkan penjemputan<br>
+          3. Petugas menimbang sampah aktual<br>
+          4. Sistem kalkulasi harga otomatis<br>
+          5. Pembayaran masuk ke dompet digital + poin reward
+        </p>
+      </div>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 7 : FITUR UTAMA -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Fitur Utama</div>
+    <h2>Fitur Aplikasi Mobile &amp; Desktop</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+        <h3 style="color:var(--green-800);margin-bottom:12px;">📱 Android — Client (Masyarakat)</h3>
+        <ul style="font-size:17px;">
+          <li>Login &amp; Registrasi</li>
+          <li>Penjemputan Sampah (Organik/Anorganik/B3/Residu)</li>
+          <li>Riwayat Transaksi &amp; Status Real-time</li>
+          <li>Dompet Digital — saldo &amp; riwayat pembayaran</li>
+          <li>Edukasi Sampah — jenis &amp; harga per kg</li>
+          <li>Leaderboard Kontribusi</li>
+          <li>Chat Admin — komunikasi via VPS</li>
+          <li>Lokasi Bank Sampah terdekat</li>
+          <li>Scan QR Code untuk verifikasi</li>
+          <li>Profil Lengkap — upload foto, edit data</li>
+        </ul>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;min-height:0;">
+        <h3 style="color:var(--green-800);margin-bottom:12px;">💻 Desktop — Admin (Petugas)</h3>
+        <ul style="font-size:17px;">
+          <li>Dashboard — statistik real-time &amp; akses cepat</li>
+          <li>Manajemen Penjemputan — assign petugas, status</li>
+          <li>Penimbangan — timbang → kalkulasi → bayar</li>
+          <li>Data Sampah — CRUD jenis &amp; harga per kg</li>
+          <li>Eduk
+asi Sampah — 12 jenis, 4 kategori</li>
+          <li>Chat Client — komunikasi via VPS</li>
+          <li>Lokasi Bank Sampah</li>
+          <li>Dompet Digital — monitoring saldo</li>
+          <li>Leaderboard &amp; Laporan Harian</li>
+          <li>Riwayat Setoran &amp; Manajemen User</li>
+          <li>Profil Admin</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 8 : SECTION - DEMO MOBILE -->
+<div class="slide title-slide">
+  <div class="center">
+    <img class="biglogo" style="width:130px;height:130px;" src="assets/Resik.png" alt="logo">
+    <h1 style="font-size:48px;">Demo Aplikasi Mobile</h1>
+    <p class="sub">Resik Android — Client (Kotlin + Jetpack Compose)</p>
+  </div>
+</div>
+
+<!-- SLIDE 9 : MOBILE 1 — Splash & Login -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Splash &amp; Login</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.44.jpeg"><div class="cap">Splash Screen — Onboarding</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.44 (1).jpeg"><div class="cap">Halaman Login</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 10 : MOBILE 2 — Beranda & Edukasi -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Beranda &amp; Edukasi Sampah</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.45.jpeg"><div class="cap">Beranda — Saldo, Poin &amp; Layanan</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.47 (2).jpeg"><div class="cap">Edukasi Sampah — Jenis &amp; Harga/kg</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 11 : MOBILE 3 — Penjemputan & Scan -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Penjemputan &amp; Scan QR</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.47 (1).jpeg"><div class="cap">Form Penjemputan Sampah</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.48 (1).jpeg"><div class="cap">Scan QR Code — Verifikasi</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 12 : MOBILE 4 — Riwayat & Dompet -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Riwayat Transaksi &amp; Dompet Digital</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.46.jpeg"><div class="cap">Riwayat Transaksi</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.48.jpeg"><div class="cap">Dompet Digital — Saldo &amp; Pembayaran</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 13 : MOBILE 5 — Leaderboard & Lokasi -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Leaderboard &amp; Lokasi Bank Sampah</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.49 (1).jpeg"><div class="cap">Leaderboard Kontribusi</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.49.jpeg"><div class="cap">Lokasi Bank Sampah Terdekat</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 14 : MOBILE 6 — Chat & Profil -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Chat Admin &amp; Profil</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.46 (1).jpeg"><div class="cap">Chat Admin — Real-time via VPS</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.47.jpeg"><div class="cap">Profil Pengguna</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 15 : MOBILE 7 — Transaksi (filter) -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Mobile</div>
+    <h2>Riwayat Transaksi (Filter Kategori)</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.48 (2).jpeg"><div class="cap">Riwayat — Filter Kategori</div></div>
+      <div class="shot"><img src="screenshootandroid/WhatsApp Image 2026-10-24 at 13.12.45.jpeg"><div class="cap">Beranda — Shortcut Layanan</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Mobile</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 16 : SECTION - DEMO DESKTOP -->
+<div class="slide title-slide">
+  <div class="center">
+    <img class="biglogo" style="width:130px;height:130px;" src="assets/Resik.png" alt="logo">
+    <h1 style="font-size:48px;">Demo Aplikasi Desktop</h1>
+    <p class="sub">Resik Admin (Java + JavaFX 21) — Manajemen Operasional Bank Sampah</p>
+  </div>
+</div>
+
+<!-- SLIDE 17 : DESKTOP 1 — Dashboard & Data Sampah -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Desktop</div>
+    <h2>Dashboard &amp; Data Sampah</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48.jpeg"><div class="cap">Dashboard — Statistik operasional real-time</div></div>
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48 (2).jpeg"><div class="cap">Data Sampah — Kelola jenis &amp; harga/kg</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Desktop</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 18 : DESKTOP 2 — Manajemen Penjemputan & Edukasi -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Desktop</div>
+    <h2>Manajemen Penjemputan &amp; Edukasi</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.48 (1).jpeg"><div class="cap">Manajemen Penjemputan — assign petugas &amp; status</div></div>
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.49.jpeg"><div class="cap">Edukasi Sampah — panduan kategori &amp; harga</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Desktop</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 19 : DESKTOP 3 — Lokasi & Chat -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Desktop</div>
+    <h2>Lokasi Bank Sampah &amp; Chat Client</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.49 (1).jpeg"><div class="cap">Lokasi Bank Sampah — data sinkron</div></div>
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.49 (2).jpeg"><div class="cap">Chat Client — komunikasi admin &amp; pengguna</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Desktop</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 20 : DESKTOP 4 — Dompet & Leaderboard -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Desktop</div>
+    <h2>Dompet Digital &amp; Leaderboard</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50.jpeg"><div class="cap">Dompet Digital — saldo &amp; riwayat semua pengguna</div></div>
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (1).jpeg"><div class="cap">Leaderboard — ranking kontribusi masyarakat</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Desktop</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 21 : DESKTOP 5 — Laporan & Riwayat -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Desktop</div>
+    <h2>Laporan Harian &amp; Riwayat Setoran</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (2).jpeg"><div class="cap">Laporan Harian — statistik &amp; date picker</div></div>
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.50 (3).jpeg"><div class="cap">Riwayat Setoran — semua transaksi</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Desktop</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 22 : DESKTOP 6 — User & Profil -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Demo Desktop</div>
+    <h2>Manajemen User &amp; Profil Admin</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.51.jpeg"><div class="cap">Manajemen User — CRUD data pengguna</div></div>
+      <div class="shot"><img src="ScreenshootDesktop/WhatsApp Image 2026-10-24 at 12.57.51 (1).jpeg"><div class="cap">Profil Admin — edit informasi akun</div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Demo Aplikasi Desktop</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 23 : ARSITEKTUR -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Arsitektur</div>
+    <h2>Arsitektur &amp; Teknologi</h2>
+    <div class="rule"></div>
+    <div class="grid2" style="align-items:center;">
+      <div>
+        <table class="tbl">
+          <tr><th>Komponen</th><th>Teknologi</th></tr>
+          <tr><td>Backend API</td><td>Spring Boot 3.2.5 + PostgreSQL 16 + JWT</td></tr>
+          <tr><td>Android Client</td><td>Kotlin + Jetpack Compose + Material 3</td></tr>
+          <tr><td>Desktop Admin</td><td>Java + JavaFX 21 + Jackson</td></tr>
+          <tr><td>Deployment</td><td>Docker Compose pada VPS (port 8081)</td></tr>
+          <tr><td>Build Tools</td><td>Maven (Desktop), Gradle (Android)</td></tr>
+        </table>
+      </div>
+      <div class="card" style="text-align:center;font-size:17px;line-height:2;">
+        <b style="color:var(--green-800);">Skema Arsitektur</b><br><br>
+        📱 Android Client<br>⬇ HTTP/REST (JSON + JWT)<br>💻 Desktop Admin<br>⬇<br>
+        <b>⚙️ Backend API (Spring Boot)</b><br>⬇<br>
+        <b>🗄️ PostgreSQL 16 (Docker)</b>
+      </div>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 24 : OOP -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Konsep OOP</div>
+    <h2>Penerapan Pemrograman Berorientasi Objek</h2>
+    <div class="rule"></div>
+    <div class="grid2">
+      <div>
+        <ul>
+          <li><b>Class &amp; Object</b> — User, Masyarakat, Petugas, Sampah, Penjemputan, Transaksi, DompetDigital.</li>
+          <li><b>Encapsulation</b> — atribut <i>private</i> dengan getter &amp; setter yang memvalidasi data.</li>
+          <li><b>Inheritance</b> — <code>User</code> (abstract) diwarisi <code>Masyarakat</code> dan <code>Petugas</code>.</li>
+          <li><b>Polymorphism</b> — overriding <code>getRole()</code>, overloading <code>buatPenjemputan()</code>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--green-800);margin-bottom:10px;">Rel
+asi Antar Class</h3>
+        <p style="font-size:16px;line-height:2;">
+          Masyarakat 1 ── * Penjemputan<br>
+          Penjemputan 1 ── * DetailPenjemputan<br>
+          DetailPenjemputan * ── 1 Sampah<br>
+          Penjemputan 1 ── 1 Transaksi<br>
+          Masyarakat 1 ── 1 DompetDigital<br>
+          Petugas 1 ── * Penjemputan (verifikator)
+        </p>
+      </div>
+    </div>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 25 : PEMBAGIAN TUGAS -->
+<div class="slide">
+  <div class="pad">
+    <div class="kicker">Tim</div>
+    <h2>Pembagian Tugas Anggota</h2>
+    <div class="rule"></div>
+    <table class="tbl" style="margin-top:10px;">
+      <tr><th>Anggota</th><th>Peran</th><th>Detail Tugas</th></tr>
+      <tr><td><b>Syukron Maulana</b><br>250111032</td><td>Full Stack Developer</td><td>Arsitektur &amp; pengembangan aplikasi end-to-end — Backend (Spring Boot + PostgreSQL), Android (Kotlin/Compose), Desktop (JavaFX), deployment Docker/VPS, dan integrasi antar platform</td></tr>
+      <tr><td><b>Zain Ghathfaan Kiesa</b><br>250111035</td><td>Business Analyst &amp; QA</td><td>Analisis kebutuhan bisnis, dokumentasi PRD, perancangan alur transaksi &amp; dompet digital, serta pengujian fitur (testing) untuk memastikan kualitas aplikasi</td></tr>
+      <tr><td><b>Riri Syafala Ghofaro Jamal</b><br>250111027</td><td>UI/UX Designer &amp; Dokumentasi</td><td>Desain wireframe &amp; prototipe (Figma), riset edukasi sampah, penyusunan dokumentasi proyek, serta presentasi</td></tr>
+      <tr><td><b>Muhamad Dafa Nuruzzufar Al Mubarok</b><br>250111018</td><td>DevOps &amp; Data Engineer</td><td>Konfigurasi deployment (Docker Compose, VPS), manajemen database PostgreSQL, monitoring server, serta optimasi performa backend</td></tr>
+    </table>
+  </div>
+  <img class="logo-sm" src="assets/Resik.png" alt="logo">
+  <div class="footer"><span>Resik — Bank Sampah Digital</span><span>UTS PBO 2026</span></div>
+</div>
+
+<!-- SLIDE 26 : PENUTUP -->
+<div class="slide title-slide">
+  <div class="center">
+    <img class="biglogo" style="width:140px;height:140px;" src="assets/Resik.png" alt="logo">
+    <h1 style="font-size:54px;">Terima Kasih</h1>
+    <p class="sub">Resik — Bank Sampah Digital<br>Kelola Sampah, Hemat Lingkungan, Dapatkan Poin Reward</p>
+    <div class="team" style="margin-top:26px;">
+      <b>Rencana Lanjutan (Target UAS):</b><br>
+      Database terintegrasi • 5+ alur end-to-end • Sistem poin reward • Kuis edukasi interaktif<br>
+      Notifikasi push • Laporan lingkungan (CO2) • Multi-cabang bank sampah • Export laporan PDF/Excel
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
