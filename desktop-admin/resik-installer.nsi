@@ -1,9 +1,9 @@
 ; Resik Admin Installer
 !define APPNAME "Resik"
-!define APPVERSION "1.0.0"
+!define APPVERSION "3.6.0"
 
 Name "${APPNAME} Admin"
-OutFile "Resik-Setup.exe"
+OutFile "RESIK-Admin-3.6.0.exe"
 InstallDir "$PROGRAMFILES64\${APPNAME}"
 RequestExecutionLevel admin
 ShowInstDetails show
