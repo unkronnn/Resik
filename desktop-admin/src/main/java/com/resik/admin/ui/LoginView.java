@@ -155,7 +155,20 @@ public class LoginView {
                 stage.setResizable(true);
                 stage.setMaximized(true);
             } catch (Exception e) {
-                errorLabel.setText("Koneksi gagal. Pastikan server berjalan.");
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                if (msg.contains("Email tidak ditemukan")) {
+                    errorLabel.setText("Email tidak ditemukan. Periksa kembali email Anda.");
+                } else if (msg.contains("Password salah")) {
+                    errorLabel.setText("Password salah. Coba lagi.");
+                } else if (msg.contains("401")) {
+                    errorLabel.setText("Email atau password salah.");
+                } else if (msg.contains("403")) {
+                    errorLabel.setText("Akses ditolak oleh server.");
+                } else if (msg.contains("Koneksi gagal") || msg.contains("Server tidak")) {
+                    errorLabel.setText("Koneksi gagal. Pastikan server berjalan di 43.157.243.87:8081");
+                } else {
+                    errorLabel.setText("Login gagal. Periksa email & password Anda.");
+                }
                 errorLabel.setVisible(true);
             }
         }

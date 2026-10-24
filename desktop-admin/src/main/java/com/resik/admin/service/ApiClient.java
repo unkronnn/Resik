@@ -108,11 +108,25 @@ public class ApiClient {
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 400) {
-                throw new RuntimeException("Login gagal. Periksa email & password.");
+                String errorBody = response.body();
+                String errorMsg = "Login gagal. Periksa email & password.";
+                if (errorBody != null && !errorBody.isEmpty()) {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> err = mapper.readValue(errorBody, Map.class);
+                        Object errField = err.get("error");
+                        if (errField != null) errorMsg = errField.toString();
+                    } catch (Exception ignored) {
+                        // If body is not JSON, use generic message
+                    }
+                }
+                throw new RuntimeException(errorMsg + " (" + response.statusCode() + ")");
             }
             return mapper.readValue(response.body(), Map.class);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Login error: " + e.getMessage(), e);
+            throw new RuntimeException("Koneksi gagal. Server tidak dapat dijangkau.", e);
         }
     }
 }
