@@ -31,6 +31,7 @@ import java.util.*;
 public class DashboardView {
 
     private final BorderPane view;
+    private final ScrollPane contentScroll;
     private final VBox contentArea;
     private VBox activeNav = null;
     private final ObservableList<Penjemputan> penjemputanData = FXCollections.observableArrayList();
@@ -43,7 +44,13 @@ public class DashboardView {
         contentArea.setPadding(new Insets(28, 32, 28, 32));
         contentArea.setStyle("-fx-background-color: #F5F7F5;");
         contentArea.setSpacing(16);
-        view.setCenter(contentArea);
+        contentScroll = new ScrollPane(contentArea);
+        contentScroll.setFitToWidth(true);
+        contentScroll.setFitToHeight(true);
+        contentScroll.setStyle("-fx-background: #F5F7F5; -fx-background-color: #F5F7F5;");
+        contentScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        contentScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        view.setCenter(contentScroll);
         // Load data from VPS
         loadPenjemputanFromVPS();
         showDashboard();
@@ -73,7 +80,7 @@ public class DashboardView {
         title.setTextFill(Color.WHITE);
         Label sub = new Label("Bank Sampah Digital");
         sub.setFont(Font.font("SF Pro Display", 12));
-        sub.setTextFill(Color.valueOf("#C8E6D0"));
+        sub.setTextFill(Color.valueOf("#E2E8F0"));
         bar.getChildren().addAll(logoIv, title, sub);
 
         Region spacer = new Region();
@@ -82,9 +89,9 @@ public class DashboardView {
 
         Label un = new Label(AppConfig.userName);
         un.setTextFill(Color.WHITE);
-        un.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
+        un.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 14));
         Label rl = new Label(AppConfig.userRole);
-        rl.setTextFill(Color.valueOf("#C8E6D0"));
+        rl.setTextFill(Color.valueOf("#E2E8F0"));
         rl.setFont(Font.font("SF Pro Display", 11));
         VBox userBox = new VBox(un, rl);
         userBox.setAlignment(Pos.CENTER_RIGHT);
@@ -114,46 +121,81 @@ public class DashboardView {
 
     private VBox createSidebar() {
         VBox sb = new VBox();
-        sb.setPrefWidth(220);
+        sb.setPrefWidth(240);
+        sb.setMinWidth(240);
         sb.setStyle("-fx-background-color: #0D4E2C;");
         sb.setPadding(new Insets(16, 10, 16, 10));
-        sb.setSpacing(4);
-        Label mh = new Label("MENU");
-        mh.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 10));
+        sb.setSpacing(2);
+
+        Label mh = new Label("MENU UTAMA");
+        mh.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
         mh.setTextFill(Color.valueOf("#7BA89A"));
-        mh.setStyle("-fx-letter-spacing: 2px;");
-        mh.setPadding(new Insets(12, 12, 8, 12));
-        VBox nav = new VBox(2);
-        nav.getChildren().addAll(
-            createNavButton("Dashboard", e -> showDashboard()),
-            createNavButton("Penjemputan", e -> showPenjemputan()),
-            createNavButton("Penimbangan", e -> showTimbang()),
-            createNavButton("Data Sampah", e -> showSampah()),
-            createNavButton("Edukasi Sampah", e -> showEdukasi()),
-            createNavButton("Chat Client", e -> showChat()),
-            createNavButton("Lokasi Bank Sampah", e -> showLokasi()),
-            createNavButton("Dompet Digital", e -> showDompet()),
-            createNavButton("Leaderboard", e -> showLeaderboard()),
-            createNavButton("Laporan Harian", e -> showLaporanHarian()),
-            createNavButton("Riwayat Setoran", e -> showRiwayatSetoran()),
-            createNavButton("Manajemen User", e -> showUsers()),
-            createNavButton("Profil", e -> showProfil()));
-        sb.getChildren().addAll(mh, nav);
+        mh.setStyle("-fx-letter-spacing: 1.5px;");
+        mh.setPadding(new Insets(8, 12, 6, 12));
+        VBox navMain = new VBox(2);
+        navMain.getChildren().addAll(
+            createNavButton(">  Dashboard", e -> showDashboard()),
+            createNavButton(">  Penjemputan", e -> showPenjemputan()),
+            createNavButton(">  Penimbangan", e -> showTimbang()));
+
+        Label mh2 = new Label("DATA");
+        mh2.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
+        mh2.setTextFill(Color.valueOf("#7BA89A"));
+        mh2.setStyle("-fx-letter-spacing: 1.5px;");
+        mh2.setPadding(new Insets(12, 12, 6, 12));
+        VBox navData = new VBox(2);
+        navData.getChildren().addAll(
+            createNavButton(">  Data Sampah", e -> showSampah()),
+            createNavButton(">  Edukasi Sampah", e -> showEdukasi()),
+            createNavButton(">  Lokasi Bank Sampah", e -> showLokasi()));
+
+        Label mh3 = new Label("KOMUNIKASI");
+        mh3.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
+        mh3.setTextFill(Color.valueOf("#7BA89A"));
+        mh3.setStyle("-fx-letter-spacing: 1.5px;");
+        mh3.setPadding(new Insets(12, 12, 6, 12));
+        VBox navComms = new VBox(2);
+        navComms.getChildren().addAll(
+            createNavButton(">  Chat Client", e -> showChat()));
+
+        Label mh4 = new Label("KEUANGAN");
+        mh4.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
+        mh4.setTextFill(Color.valueOf("#7BA89A"));
+        mh4.setStyle("-fx-letter-spacing: 1.5px;");
+        mh4.setPadding(new Insets(12, 12, 6, 12));
+        VBox navFinance = new VBox(2);
+        navFinance.getChildren().addAll(
+            createNavButton(">  Dompet Digital", e -> showDompet()),
+            createNavButton(">  Leaderboard", e -> showLeaderboard()),
+            createNavButton(">  Laporan Harian", e -> showLaporanHarian()),
+            createNavButton(">  Riwayat Setoran", e -> showRiwayatSetoran()));
+
+        Label mh5 = new Label("SISTEM");
+        mh5.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
+        mh5.setTextFill(Color.valueOf("#7BA89A"));
+        mh5.setStyle("-fx-letter-spacing: 1.5px;");
+        mh5.setPadding(new Insets(12, 12, 6, 12));
+        VBox navSystem = new VBox(2);
+        navSystem.getChildren().addAll(
+            createNavButton(">  Manajemen User", e -> showUsers()),
+            createNavButton(">  Profil", e -> showProfil()));
+
+        sb.getChildren().addAll(mh, navMain, mh2, navData, mh3, navComms, mh4, navFinance, mh5, navSystem);
         return sb;
     }
 
     private VBox createNavButton(String label, javafx.event.EventHandler<javafx.scene.input.MouseEvent> handler) {
         VBox btn = new VBox();
-        String n = "-fx-background-color: transparent; -fx-padding: 10 16; -fx-background-radius: 12; -fx-cursor: hand;";
-        String h = "-fx-background-color: rgba(255,255,255,0.08); -fx-padding: 10 16; -fx-background-radius: 12; -fx-cursor: hand;";
-        String a = "-fx-background-color: rgba(255,255,255,0.12); -fx-padding: 10 16; -fx-background-radius: 12; -fx-cursor: hand;";
+        String n = "-fx-background-color: transparent; -fx-padding: 12 16; -fx-background-radius: 10; -fx-cursor: hand;";
+        String h = "-fx-background-color: rgba(255,255,255,0.08); -fx-padding: 12 16; -fx-background-radius: 10; -fx-cursor: hand;";
+        String a = "-fx-background-color: rgba(255,255,255,0.15); -fx-padding: 12 16; -fx-background-radius: 10; -fx-cursor: hand;";
         btn.setStyle(n);
         btn.setOnMouseEntered(e -> { if (btn != activeNav) btn.setStyle(h); });
         btn.setOnMouseExited(e -> { if (btn != activeNav) btn.setStyle(n); });
         btn.setOnMouseClicked(e -> { if (activeNav != null) activeNav.setStyle(n); btn.setStyle(a); activeNav = btn; handler.handle(e); });
         Label t = new Label(label);
-        t.setTextFill(Color.valueOf("#C8E6D0"));
-        t.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
+        t.setTextFill(Color.valueOf("#E2E8F0"));
+        t.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 14));
         btn.getChildren().add(t);
         return btn;
     }
@@ -693,7 +735,7 @@ public class DashboardView {
                 nm.setFont(Font.font("SF Pro Display", 14)); nm.setTextFill(Color.valueOf("#334155"));
                 Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
                 Label pi = new Label(poins[i]+" poin");
-                pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13)); pi.setTextFill(Color.valueOf("#1A5D3A"));
+                pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 14)); pi.setTextFill(Color.valueOf("#1A5D3A"));
                 row.getChildren().addAll(rank, nm, sp, pi);
                 list.getChildren().add(row);
             }
@@ -717,7 +759,7 @@ public class DashboardView {
                 nm.setFont(Font.font("SF Pro Display", 14)); nm.setTextFill(Color.valueOf("#334155"));
                 Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
                 Label pi = new Label(poinStr + " | " + saldoStr);
-                pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13)); pi.setTextFill(Color.valueOf("#1A5D3A"));
+                pi.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 14)); pi.setTextFill(Color.valueOf("#1A5D3A"));
                 row.getChildren().addAll(rankL, nm, sp, pi);
                 list.getChildren().add(row);
             }
@@ -1212,7 +1254,7 @@ public class DashboardView {
         Label chatStatus = new Label("");
         chatStatus.setId("chatStatus");
         chatStatus.setFont(Font.font("SF Pro Display", 12));
-        chatStatus.setTextFill(Color.valueOf("#C8E6D0"));
+        chatStatus.setTextFill(Color.valueOf("#E2E8F0"));
         chatTitleBox.getChildren().addAll(chatName, chatStatus);
 
         Region hdrSpacer2 = new Region();
