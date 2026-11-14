@@ -1,17 +1,17 @@
 package com.resik.admin;
 
+import com.resik.admin.ui.LoginView;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import com.resik.admin.ui.LoginView;
 
 public class ResikDesktopApp extends Application {
 
     @Override
     public void start(Stage stage) {
         LoginView loginView = new LoginView();
-        Scene scene = new Scene(loginView.getView(), 460, 600);
+        Scene scene = new Scene(loginView.getView(), 520, 720);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 
         var logoStream = getClass().getResourceAsStream("/resik-logo.png");
@@ -21,8 +21,8 @@ public class ResikDesktopApp extends Application {
 
         stage.setTitle("Resik — Bank Sampah Digital");
         stage.setScene(scene);
-        stage.setMinWidth(400);
-        stage.setMinHeight(560);
+        stage.setMinWidth(420);
+        stage.setMinHeight(600);
         stage.setResizable(true);
         stage.centerOnScreen();
         stage.show();

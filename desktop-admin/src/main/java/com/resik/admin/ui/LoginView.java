@@ -2,103 +2,104 @@ package com.resik.admin.ui;
 
 import com.resik.admin.config.AppConfig;
 import com.resik.admin.service.ApiClient;
+import com.resik.admin.ui.design.GlassCanvas;
+import com.resik.admin.ui.design.Theme;
+import com.resik.admin.ui.design.Ui;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+
 import java.util.Map;
 
+/** Liquid-glass login screen: a frosted card floating on the green ambient canvas. */
 public class LoginView {
 
-    private final VBox view;
+    private final StackPane view;
     private final Label errorLabel;
+    private final ComboBox<String> roleCombo;
 
     public LoginView() {
-        view = new VBox();
-        view.setAlignment(Pos.CENTER);
-        view.setStyle("-fx-background-color: #F5F7F5;");
+        view = new StackPane();
+        view.getChildren().add(new GlassCanvas());
 
-        VBox card = new VBox(14);
+        VBox card = new VBox(12);
         card.setAlignment(Pos.CENTER);
-        card.setPadding(new Insets(40, 36, 40, 36));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 20, 0, 0, 4);");
+        card.setPadding(new Insets(38, 36, 38, 36));
         card.setMaxWidth(400);
-        card.setMinWidth(320);
+        card.setMinWidth(340);
+        card.getStyleClass().add("glass-card-strong");
 
-        ImageView logoView = new ImageView(new Image(getClass().getResourceAsStream("/resik-logo-large.png")));
-        logoView.setFitWidth(80);
-        logoView.setFitHeight(80);
-        logoView.setPreserveRatio(true);
-        logoView.setSmooth(true);
-        StackPane logoPane = new StackPane(logoView);
-        logoPane.setPadding(new Insets(0, 0, 4, 0));
+        StackPane logoPane = new StackPane();
+        logoPane.setMinSize(84, 84);
+        logoPane.setPrefSize(84, 84);
+        logoPane.setMaxSize(84, 84);
+        logoPane.setStyle("-fx-background-color: linear-gradient(to bottom right, " + Theme.ACCENT_LIGHT + ", " + Theme.ACCENT_DEEP + ");"
+                + " -fx-background-radius: 24;");
+        var logoStream = getClass().getResourceAsStream("/resik-logo-large.png");
+        if (logoStream != null) {
+            ImageView logoView = new ImageView(new Image(logoStream));
+            logoView.setFitWidth(54);
+            logoView.setFitHeight(54);
+            logoView.setPreserveRatio(true);
+            logoView.setSmooth(true);
+            logoPane.getChildren().add(logoView);
+        } else {
+            Label fallback = new Label("R");
+            fallback.setFont(Theme.fontBold(36));
+            fallback.setTextFill(Color.WHITE);
+            logoPane.getChildren().add(fallback);
+        }
 
         Label titleLabel = new Label("Resik");
-        titleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 26));
-        titleLabel.setTextFill(Color.valueOf("#1A5D3A"));
+        titleLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: 800; -fx-text-fill: " + Theme.ACCENT + ";");
 
         Label subtitleLabel = new Label("Bank Sampah Digital");
-        subtitleLabel.setFont(Font.font("SF Pro Display", 14));
-        subtitleLabel.setTextFill(Color.valueOf("#64748B"));
+        subtitleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Theme.TEXT_MUTED + ";");
 
-        Label roleLabel = new Label("ADMINISTRATOR");
-        roleLabel.setFont(Font.font("SF Pro Display", FontWeight.BOLD, 11));
-        roleLabel.setTextFill(Color.valueOf("#94A3B8"));
-        roleLabel.setStyle("-fx-letter-spacing: 2px;");
-        roleLabel.setPadding(new Insets(16, 0, 8, 0));
+        Label roleLabel = new Label("PILIH ROLE");
+        roleLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: 800; -fx-text-fill: " + Theme.TEXT_SUBTLE + ";");
+        roleLabel.setPadding(new Insets(14, 0, 8, 0));
+
+        roleCombo = new ComboBox<>(FXCollections.observableArrayList("ADMIN", "BANK_SAMPAH"));
+        roleCombo.setValue("ADMIN");
+        roleCombo.setMaxWidth(Double.MAX_VALUE);
+        roleCombo.getStyleClass().add("glass-combo");
 
         Label emailLabel = new Label("Email");
-        emailLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
-        emailLabel.setTextFill(Color.valueOf("#64748B"));
+        emailLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 700; -fx-text-fill: " + Theme.TEXT_MUTED + ";");
 
-        TextField emailField = new TextField();
-        emailField.setPromptText("masukkan email");
+        TextField emailField = Ui.textField("masukkan email");
         emailField.setMaxWidth(Double.MAX_VALUE);
-        VBox.setVgrow(emailField, Priority.SOMETIMES);
-        emailField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-        emailField.focusedProperty().addListener((obs, old, isFocus) -> {
-            if (isFocus) {
-                emailField.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #1A5D3A; -fx-border-width: 1.5px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-            } else {
-                emailField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-            }
-        });
 
         Label passLabel = new Label("Password");
-        passLabel.setFont(Font.font("SF Pro Display", FontWeight.MEDIUM, 13));
-        passLabel.setTextFill(Color.valueOf("#64748B"));
+        passLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 700; -fx-text-fill: " + Theme.TEXT_MUTED + ";");
         passLabel.setPadding(new Insets(8, 0, 0, 0));
 
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("masukkan password");
+        PasswordField passwordField = Ui.passwordField("masukkan password");
         passwordField.setMaxWidth(Double.MAX_VALUE);
-        VBox.setVgrow(passwordField, Priority.SOMETIMES);
-        passwordField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-        passwordField.focusedProperty().addListener((obs, old, isFocus) -> {
-            if (isFocus) {
-                passwordField.setStyle("-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #1A5D3A; -fx-border-width: 1.5px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-            } else {
-                passwordField.setStyle("-fx-background-color: #F8FAF8; -fx-background-radius: 14; -fx-border-color: #D1D5DB; -fx-border-width: 1px; -fx-border-radius: 14; -fx-padding: 12 16; -fx-font-size: 14px; -fx-text-fill: #1E293B;");
-            }
-        });
 
         errorLabel = new Label();
-        errorLabel.setTextFill(Color.valueOf("#DC2626"));
-        errorLabel.setFont(Font.font("SF Pro Display", 12));
+        errorLabel.setTextFill(Color.web(Theme.DANGER));
+        errorLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Theme.DANGER + ";");
+        errorLabel.setWrapText(true);
         errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
 
-        Button loginBtn = new Button("Masuk");
+        Button loginBtn = Ui.button("Masuk", "btn-primary");
         loginBtn.setMaxWidth(Double.MAX_VALUE);
-        loginBtn.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;");
-        loginBtn.setOnMouseEntered(e -> loginBtn.setStyle("-fx-background-color: #0D4E2C; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;"));
-        loginBtn.setOnMouseExited(e -> loginBtn.setStyle("-fx-background-color: #1A5D3A; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 14 0; -fx-background-radius: 16; -fx-font-size: 16px;"));
+        loginBtn.setStyle(loginBtn.getStyle() + " -fx-padding: 13 0; -fx-font-size: 15px;");
         loginBtn.setOnAction(e -> handleLogin(emailField.getText(), passwordField.getText()));
 
         card.getChildren().addAll(
@@ -106,6 +107,7 @@ public class LoginView {
                 titleLabel,
                 subtitleLabel,
                 roleLabel,
+                roleCombo,
                 emailLabel, emailField,
                 passLabel, passwordField,
                 errorLabel,
@@ -113,68 +115,75 @@ public class LoginView {
         );
 
         view.getChildren().add(card);
+        view.setStyle("-fx-background-color: linear-gradient(to bottom right, " + Theme.CANVAS_TOP + ", " + Theme.CANVAS_BOTTOM + ");");
     }
 
     private void handleLogin(String email, String password) {
         if (email == null || email.trim().isEmpty()) {
-            errorLabel.setText("Email tidak boleh kosong");
-            errorLabel.setVisible(true);
+            showError("Email tidak boleh kosong");
             return;
         }
 
         if (AppConfig.DEMO_MODE) {
             AppConfig.authToken = "demo-token";
             AppConfig.userId = 1L;
-            AppConfig.userRole = "ADMIN";
-            AppConfig.userName = email.contains("@") ? email.split("@")[0] : "Administrator";
-
-            Stage stage = (Stage) view.getScene().getWindow();
-            DashboardView dashboard = new DashboardView();
-            Scene scene = new Scene(dashboard.getView(), 1200, 700);
-            scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-            stage.setScene(scene);
-            stage.setTitle("Resik Admin — " + AppConfig.userName);
-            stage.setResizable(true);
-            stage.setMaximized(true);
+            AppConfig.userRole = roleCombo.getValue() == null ? "ADMIN" : roleCombo.getValue();
+            String selectedRole = AppConfig.userRole;
+            if ("BANK_SAMPAH".equals(selectedRole)) {
+                AppConfig.userName = "Bank Sampah Resik Pusat";
+            } else {
+                AppConfig.userName = email.contains("@") ? email.split("@")[0] : "Administrator";
+            }
+            openDashboard();
         } else {
             try {
                 errorLabel.setVisible(false);
+                errorLabel.setManaged(false);
                 Map<String, Object> result = ApiClient.login(email, password);
                 AppConfig.authToken = (String) result.get("token");
                 AppConfig.userId = ((Number) result.get("userId")).longValue();
                 AppConfig.userRole = (String) result.get("role");
                 AppConfig.userName = (String) result.get("nama");
                 AppConfig.userEmail = email;
-
-                Stage stage = (Stage) view.getScene().getWindow();
-                DashboardView dashboard = new DashboardView();
-                Scene scene = new Scene(dashboard.getView(), 1200, 700);
-                scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-                stage.setScene(scene);
-                stage.setTitle("Resik Admin — " + AppConfig.userName);
-                stage.setResizable(true);
-                stage.setMaximized(true);
+                openDashboard();
             } catch (Exception e) {
                 String msg = e.getMessage() != null ? e.getMessage() : "";
                 if (msg.contains("Email tidak ditemukan")) {
-                    errorLabel.setText("Email tidak ditemukan. Periksa kembali email Anda.");
+                    showError("Email tidak ditemukan. Periksa kembali email Anda.");
                 } else if (msg.contains("Password salah")) {
-                    errorLabel.setText("Password salah. Coba lagi.");
+                    showError("Password salah. Coba lagi.");
                 } else if (msg.contains("401")) {
-                    errorLabel.setText("Email atau password salah.");
+                    showError("Email atau password salah.");
                 } else if (msg.contains("403")) {
-                    errorLabel.setText("Akses ditolak oleh server.");
+                    showError("Akses ditolak oleh server.");
                 } else if (msg.contains("Koneksi gagal") || msg.contains("Server tidak")) {
-                    errorLabel.setText("Koneksi gagal. Pastikan server berjalan di 43.157.243.87:8081");
+                    showError("Koneksi gagal. Pastikan server berjalan di 43.157.243.87:8081");
                 } else {
-                    errorLabel.setText("Login gagal. Periksa email & password Anda.");
+                    showError("Login gagal. Periksa email & password Anda.");
                 }
-                errorLabel.setVisible(true);
             }
         }
     }
 
-    public VBox getView() {
+    private void showError(String text) {
+        errorLabel.setText(text);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private void openDashboard() {
+        Stage stage = (Stage) view.getScene().getWindow();
+        DashboardView dashboard = new DashboardView();
+        Scene scene = new Scene(dashboard.getView(), 1280, 780);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        stage.setScene(scene);
+        stage.setTitle("Resik Admin — " + AppConfig.userName);
+        stage.setResizable(true);
+        stage.centerOnScreen();
+        stage.setMaximized(true);
+    }
+
+    public StackPane getView() {
         return view;
     }
 }

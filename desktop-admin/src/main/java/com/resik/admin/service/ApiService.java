@@ -28,6 +28,19 @@ public class ApiService {
         return getList("/sampah", Sampah.class);
     }
 
+    /** Generic JSON POST for admin actions (approval, dll). */
+    public static Map<String, Object> post(String path, Map<String, Object> body) {
+        try {
+            String json = mapper.writeValueAsString(body == null ? Map.of() : body);
+            HttpRequest req = request("POST", path, json);
+            HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+            if (res.body() == null || res.body().isBlank()) return Map.of("ok", true);
+            return mapper.readValue(res.body(), new TypeReference<Map<String, Object>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("POST " + path + " failed: " + e.getMessage());
+        }
+    }
+
     public static Sampah createSampah(Sampah s) {
         try {
             String json = mapper.writeValueAsString(s);
