@@ -1,0 +1,47 @@
+name: Build Desktop EXE
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "desktop-admin/**"
+      - ".github/workflows/desktop-exe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-exe:
+    name: Build Resik Admin (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop-admin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build desktop JAR (skip tests)
+        run: mvn -B -ntp -DskipTests package
+
+      - name: Build Windows EXE via launch4j
+        run: mvn -B -ntp -DskipTests -Pexe package
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resik-desktop-jar
+          path: desktop-admin/target/resik-desktop-1.0.0.jar
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resik-admin-setup-exe
+          path: desktop-admin/target/Resik-Admin-Setup.exe
