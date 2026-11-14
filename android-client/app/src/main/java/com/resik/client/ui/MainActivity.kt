@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
         var userName by mutableStateOf("Loading...")
         var saldo by mutableStateOf("Rp 0")
         var poin by mutableStateOf("0")
+        var role by mutableStateOf("")
 
         ApiClient.getApi().getMe(ApiClient.getAuthHeader())
             .enqueue(object : Callback<Map<String, Any>> {
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
                         userName = user["nama"]?.toString() ?: "User"
                         saldo = "Rp ${user["saldoDompet"] ?: 0}"
                         poin = (user["poinReward"] ?: 0).toString()
+                        role = user["role"]?.toString() ?: "MASYARAKAT"
                     }
                 }
                 override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
@@ -40,25 +42,39 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ResikTheme {
-                HomeScreen(
-                    userName = userName,
-                    saldo = saldo,
-                    poin = poin,
-                    onLogout = {
-                        ApiClient.logout()
-                        startActivity(Intent(this, WelcomeActivity::class.java))
-                        finish()
-                    },
-                    onNavEdukasi = { startActivity(Intent(this, EdukasiActivity::class.java)) },
-                    onNavPenjemputan = { startActivity(Intent(this, PenjemputanActivity::class.java)) },
-                    onNavRiwayat = { startActivity(Intent(this, RiwayatActivity::class.java)) },
-                    onNavChat = { startActivity(Intent(this, ChatActivity::class.java)) },
-                    onNavMap = { startActivity(Intent(this, MapActivity::class.java)) },
-                    onNavQr = { startActivity(Intent(this, QrScannerActivity::class.java)) },
-                    onNavDompet = { startActivity(Intent(this, DompetActivity::class.java)) },
-                    onNavLeaderboard = { startActivity(Intent(this, LeaderboardActivity::class.java)) },
-                    onNavProfil = { startActivity(Intent(this, ProfilActivity::class.java)) },
-                )
+                if (role.equals("BANK_SAMPAH", ignoreCase = true)) {
+                    BankSampahHomeScreen(
+                        userName = userName,
+                        onLogout = {
+                            ApiClient.logout()
+                            startActivity(Intent(this, WelcomeActivity::class.java))
+                            finish()
+                        },
+                        onNavChat = { startActivity(Intent(this, ChatActivity::class.java)) },
+                        onNavProfil = { startActivity(Intent(this, ProfilActivity::class.java)) },
+                        onNavRiwayat = { startActivity(Intent(this, RiwayatActivity::class.java)) },
+                    )
+                } else {
+                    HomeScreen(
+                        userName = userName,
+                        saldo = saldo,
+                        poin = poin,
+                        onLogout = {
+                            ApiClient.logout()
+                            startActivity(Intent(this, WelcomeActivity::class.java))
+                            finish()
+                        },
+                        onNavEdukasi = { startActivity(Intent(this, EdukasiActivity::class.java)) },
+                        onNavPenjemputan = { startActivity(Intent(this, PenjemputanActivity::class.java)) },
+                        onNavRiwayat = { startActivity(Intent(this, RiwayatActivity::class.java)) },
+                        onNavChat = { startActivity(Intent(this, ChatActivity::class.java)) },
+                        onNavMap = { startActivity(Intent(this, MapActivity::class.java)) },
+                        onNavQr = { startActivity(Intent(this, QrScannerActivity::class.java)) },
+                        onNavDompet = { startActivity(Intent(this, DompetActivity::class.java)) },
+                        onNavLeaderboard = { startActivity(Intent(this, LeaderboardActivity::class.java)) },
+                        onNavProfil = { startActivity(Intent(this, ProfilActivity::class.java)) },
+                    )
+                }
             }
         }
     }
