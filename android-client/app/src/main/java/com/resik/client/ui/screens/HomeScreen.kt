@@ -2,6 +2,7 @@ package com.resik.client.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -121,9 +122,9 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             QuickMenuButton("Jemput", Icons.Filled.LocalShipping, GreenPrimary, onNavPenjemputan)
-            QuickMenuButton("Edukasi", Icons.Filled.MenuBook, OrangeAccent, onNavEdukasi)
-            QuickMenuButton("Dompet", Icons.Filled.AccountBalanceWallet, Color(0xFF8B5CF6), onNavDompet)
-            QuickMenuButton("Scan QR", Icons.Filled.QrCodeScanner, Color(0xFF3B82F6), onNavQr)
+            QuickMenuButton("Edukasi", Icons.Filled.MenuBook, GreenPrimary, onNavEdukasi)
+            QuickMenuButton("Dompet", Icons.Filled.AccountBalanceWallet, GreenPrimary, onNavDompet)
+            QuickMenuButton("Scan QR", Icons.Filled.QrCodeScanner, GreenPrimary, onNavQr)
         }
 
         // ===== Menu tambahan =====
@@ -166,10 +167,10 @@ fun QuickMenuButton(label: String, icon: ImageVector, color: Color, onClick: () 
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.size(56.dp).clip(CircleShape).background(color.copy(alpha = 0.12f)),
+            modifier = Modifier.size(56.dp).clip(CircleShape).background(GreenPale).border(1.dp, BorderLight, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(28.dp))
+            Icon(icon, contentDescription = label, tint = GreenPrimary, modifier = Modifier.size(28.dp))
         }
         Spacer(Modifier.height(6.dp))
         Text(label, fontSize = 11.sp, color = TextPrimary, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center)
@@ -183,10 +184,10 @@ fun ExtraMenuCard(item: QuickMenuItem, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.size(48.dp).clip(CircleShape).background(item.bgColor),
+            modifier = Modifier.size(48.dp).clip(CircleShape).background(BgWhite).border(1.dp, BorderLight, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(item.icon, contentDescription = item.label, tint = TextPrimary, modifier = Modifier.size(24.dp))
+            Icon(item.icon, contentDescription = item.label, tint = GreenPrimary, modifier = Modifier.size(24.dp))
         }
         Spacer(Modifier.height(4.dp))
         Text(item.label, fontSize = 10.sp, color = TextSecondary, textAlign = TextAlign.Center)
