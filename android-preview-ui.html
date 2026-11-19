@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resik Android — Liquid Glass UI Preview</title>
+<style>
+  :root {
+    --canvas-top: #FFFFFF;
+    --canvas-bottom: #FFFFFF;
+    --glass: rgba(255,255,255,0.90);
+    --glass-strong: #FFFFFF;
+    --hairline: #E8ECF4;
+    --hairline-soft: #E8ECF4;
+    --ink: #1E232C;
+    --muted: #6A707C;
+    --subtle: #8391A1;
+    --accent: #4FAE5A;
+    --accent-deep: #35A94A;
+    --accent-light: #5CC16B;
+    --accent-soft: #EAF7EE;
+    --accent-border: #C8EBCF;
+    --blue: #1877F2;
+    --amber: #D97706;
+    --violet: #6D28D9;
+    --red: #DC2626;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow: 0 12px 32px rgba(30,35,44,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Urbanist, Poppins, Inter, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(180deg, var(--canvas-top), var(--canvas-bottom));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    color: var(--ink);
+  }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 18px; max-width: 900px; }
+  .toolbar button {
+    background: var(--glass-strong);
+    border: 1px solid var(--hairline);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    backdrop-filter: blur(18px);
+  }
+  .toolbar button.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .phone {
+    width: 375px;
+    max-width: 96vw;
+    background: var(--glass-strong);
+    border: 1px solid var(--hairline);
+    border-radius: 36px;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.9);
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(24px);
+  }
+  .screen { display: none; flex-direction: column; min-height: 720px; background: transparent; }
+  .screen.active { display: flex; }
+
+  .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 22px 4px; font-size: 11px; color: var(--ink); }
+  .glass-header {
+    background: linear-gradient(180deg, var(--accent-deep), var(--accent));
+    border-radius: 0 0 28px 28px;
+    padding: 14px 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .glass-header::after { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent); }
+  .row { display: flex; align-items: center; }
+  .spread { justify-content: space-between; }
+  .gap8 { gap: 8px; } .gap10 { gap: 10px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.92); color: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 15px; flex: none; }
+  .greet { color: var(--accent-soft); font-size: 12px; }
+  .name { color: white; font-size: 18px; font-weight: 800; }
+  .ghost-chip { width: 36px; height: 36px; border-radius: 50%; background: rgba(220,38,38,0.16); color: #FECACA; display: grid; place-items: center; border: 1px solid rgba(254,202,202,0.35); }
+
+  .glass-card {
+    background: var(--glass-strong);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    padding: 18px;
+  }
+  .balance-grid { display: flex; align-items: center; }
+  .balance-col { flex: 1; }
+  .caption { font-size: 11px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .value { font-size: 24px; font-weight: 800; color: var(--accent); margin-top: 4px; letter-spacing: -0.02em; }
+  .value-amber { color: var(--amber); }
+  .divider { width: 1px; height: 44px; background: var(--hairline); margin: 0 16px; }
+
+  .quick-row { display: flex; justify-content: space-around; padding: 18px 8px; background: var(--glass); border: 1px solid var(--hairline); border-radius: var(--radius-lg); margin: 16px 16px 0; backdrop-filter: blur(18px); }
+  .quick-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .quick-circle { width: 52px; height: 52px; border-radius: 50%; background: var(--accent-soft); border: 1px solid var(--accent-border); display: grid; place-items: center; color: var(--accent); }
+  .quick-label { font-size: 11px; font-weight: 600; color: var(--ink); }
+
+  .section-title { font-size: 15px; font-weight: 800; color: var(--ink); padding: 18px 16px 10px; }
+  .extra-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 0 16px; }
+  .extra-item { background: var(--glass-strong); border: 1px solid var(--hairline); border-radius: var(--radius-md); padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; backdrop-filter: blur(16px); }
+  .extra-circle { width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid var(--hairline); display: grid; place-items: center; color: var(--accent); }
+  .extra-label { font-size: 10px; color: var(--muted); font-weight: 600; }
+
+  .bottom-nav { margin-top: auto; background: var(--glass-strong); border-top: 1px solid var(--hairline); display: flex; justify-content: space-around; padding: 8px 8px 16px; }
+  .nav-tab { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; color: var(--subtle); font-weight: 600; }
+  .nav-tab.active { color: var(--accent); font-weight: 800; }
+
+  .list { padding: 0 16px; display: flex; flex-direction: column; gap: 12px; }
+  .list-card { background: var(--glass-strong); border: 1px solid var(--hairline); border-radius: var(--radius-md); padding: 16px; backdrop-filter: blur(16px); }
+  .pill { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+  .pill-green { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+  .pill-blue { background: #EDF4FE; color: var(--blue); border: 1px solid #C5D9F8; }
+  .pill-violet { background: #F3E8FF; color: var(--violet); border: 1px solid #DDD0F5; }
+  .pill-amber { background: #FFF7E8; color: var(--amber); border: 1px solid #F8DFA8; }
+  .pill-red { background: #FEF1F1; color: var(--red); border: 1px solid #F5C6C6; }
+  .meta { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+
+  .btn-primary { width: 100%; background: linear-gradient(180deg, var(--accent-light), var(--accent-deep)); color: white; border: none; border-radius: var(--radius-sm); padding: 12px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 18px rgba(13,78,44,0.25); }
+  .btn-secondary { width: 100%; background: var(--glass-strong); border: 1px solid var(--hairline); color: var(--ink); border-radius: var(--radius-sm); padding: 12px; font-weight: 700; font-size: 13px; }
+
+  .input { width: 100%; background: var(--glass-strong); border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 13px 14px; font-size: 14px; color: var(--ink); outline: none; backdrop-filter: blur(16px); }
+  .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,93,58,0.14); }
+  .label { font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 14px; }
+  .link { color: var(--accent); font-size: 12px; font-weight: 700; }
+
+  .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .ico-sm { width: 16px; height: 16px; }
+  .ico-lg { width: 24px; height: 24px; }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    body { padding: 12px; gap: 12px; }
+    .toolbar { gap: 6px; }
+    .toolbar button { padding: 7px 10px; font-size: 11px; }
+    .phone { width: 100%; max-width: 100%; border-radius: 28px; }
+    .screen { min-height: 640px; }
+    .section-title { padding-left: 12px; padding-right: 12px; }
+    .list { padding-left: 12px; padding-right: 12px; }
+    .quick-row { margin-left: 12px; margin-right: 12px; }
+    .extra-row { padding-left: 12px; padding-right: 12px; gap: 6px; }
+    .statusbar { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="toolbar" id="tabs"></div>
+
+  <div class="phone">
+
+    <!-- LOGIN -->
+    <div class="screen active" data-screen="login">
+      <div class="statusbar"><span>9:41</span><span>▲ ▮ 🔋</span></div>
+      <div style="display:flex;flex-direction:column;padding:16px 22px 0">
+        <div style="width:41px;height:41px;border-radius:12px;background:var(--glass-strong);border:1px solid var(--hairline);display:grid;place-items:center;color:var(--ink)">
+          <svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div style="font-size:30px;font-weight:800;color:var(--ink);line-height:1.3;margin-top:24px;letter-spacing:-0.3px">
+          Welcome back! Resik<br>to see you, Again!
+        </div>
+
+        <div class="label" style="margin-top:28px">Email</div>
+        <input class="input" placeholder="Enter your email" style="background:#F7F8F9;border-color:var(--hairline);border-radius:8px;height:56px">
+        <div class="label" style="margin-top:14px">Password</div>
+        <div style="position:relative">
+          <input class="input" type="password" placeholder="Enter your password" style="background:#F7F8F9;border-color:var(--hairline);border-radius:8px;height:56px;padding-right:46px">
+          <svg class="ico ico-sm" viewBox="0 0 24 24" style="position:absolute;right:16px;top:19px;color:var(--subtle)"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div style="align-self:flex-end;margin-top:8px;font-size:14px;color:var(--muted);font-weight:600">Forgot Password?</div>
+
+        <button class="btn-primary" style="margin-top:22px;background:var(--accent);border-radius:8px;height:56px;font-size:15px;font-weight:700">Login</button>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-top:22px">
+          <div style="flex:1;height:1px;background:var(--hairline)"></div>
+          <span style="font-size:14px;color:var(--muted);font-weight:600">Or Login with</span>
+          <div style="flex:1;height:1px;background:var(--hairline)"></div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:22px">
+          <div style="flex:1;height:56px;border-radius:8px;background:white;border:1px solid var(--hairline);display:grid;place-items:center;color:#1877F2;font-weight:800">f</div>
+          <div style="flex:1;height:56px;border-radius:8px;background:white;border:1px solid var(--hairline);display:grid;place-items:center;color:#4285F4;font-weight:800">G</div>
+          <div style="flex:1;height:56px;border-radius:8px;background:white;border:1px solid var(--hairline);display:grid;place-items:center;color:#000;font-weight:800"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:26px;font-size:15px;color:var(--muted)">
+          Don’t have an account? <span style="color:var(--accent);font-weight:800">Register Now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME MASYARAKAT -->
+    <div class="screen" data-screen="home-masyarakat">
+      <div class="statusbar"><span>9:41</span><span>▲ ▮ 🔋</span></div>
+      <div style="padding:12px 16px 0;display:flex;flex-direction:column">
+        <div class="row spread">
+          <div class="row gap10">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:white;font-weight:800">R</div>
+            <div><div style="font-size:12px;color:var(--muted)">Welcome to</div><div style="font-size:20px;font-weight:800;color:var(--ink)">RESIK</div></div>
+          </div>
+          <div class="row gap8">
+            <div style="width:36px;height:36px;border-radius:20px;background:white;border:1px solid var(--hairline);display:grid;place-items:center">•••</div>
+            <div style="width:36px;height:36px;border-radius:50%;background:#FEE2E2;display:grid;place-items:center;color:var(--red);font-weight:800">✕</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;border-radius:16px;background:linear-gradient(135deg,#35A94A,#1E7A34);padding:18px;color:white;box-shadow:0 12px 28px rgba(30,122,52,0.28)">
+          <div style="font-size:12px;opacity:.85">Your Balance</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-top:4px">RP. 909.900,00</div>
+          <div style="font-size:11px;opacity:.75;margin-top:6px">Account Number: (62) 857 9999</div>
+          <div class="row gap8" style="margin-top:16px">
+            <div style="flex:1;height:38px;border-radius:20px;background:rgba(0,0,0,0.18);display:grid;place-items:center;font-weight:700;font-size:13px">Bayar</div>
+            <div style="flex:1;height:38px;border-radius:20px;background:rgba(0,0,0,0.18);display:grid;place-items:center;font-weight:700;font-size:13px">Isi Saldo</div>
+          </div>
+          <div class="row spread" style="margin-top:14px">
+            <div style="text-align:center;color:white"><div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.18);display:grid;place-items:center;margin:0 auto">🛒</div><div style="font-size:10px;margin-top:4px">Marketplace</div></div>
+            <div style="text-align:center;color:white"><div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.18);display:grid;place-items:center;margin:0 auto">🏠</div><div style="font-size:10px;margin-top:4px">Relearn</div></div>
+            <div style="text-align:center;color:white"><div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.18);display:grid;place-items:center;margin:0 auto">☰</div><div style="font-size:10px;margin-top:4px">Others</div></div>
+          </div>
+        </div>
+
+        <div class="row gap8" style="margin-top:14px">
+          <div style="flex:1;border-radius:14px;background:white;border:1px solid var(--hairline);padding:14px;display:flex;align-items:center;gap:10px">
+            <div style="width:42px;height:42px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center">🚛</div>
+            <div><div style="font-weight:800;font-size:13px">RePickup</div><div style="font-size:10px;color:var(--muted)">Always on time</div></div>
+          </div>
+          <div style="flex:1;border-radius:14px;background:white;border:1px solid var(--hairline);padding:14px;display:flex;align-items:center;gap:10px">
+            <div style="width:42px;height:42px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center">🛍️</div>
+            <div><div style="font-weight:800;font-size:13px">ReShop</div><div style="font-size:10px;color:var(--muted)">Eco-friendly products</div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;border-radius:14px;background:white;border:1px solid var(--hairline);padding:16px">
+          <div class="row spread">
+            <div><div style="font-weight:800;font-size:15px">ReLearning</div><div style="font-size:11px;color:var(--muted)">Education & Waste Management</div></div>
+            <div style="width:48px;height:48px;border-radius:12px;background:var(--accent-soft);display:grid;place-items:center">🌍</div>
+          </div>
+          <div class="row gap8" style="margin-top:12px">
+            <div style="flex:1;height:36px;border-radius:20px;border:1px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-size:12px;font-weight:700">My Classes</div>
+            <div style="flex:1;height:36px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:white;display:grid;place-items:center;font-size:12px;font-weight:700">Start Learning</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;border-radius:14px;background:#FEE2E2;padding:14px;display:flex;align-items:center;gap:10px">
+          <div style="width:44px;height:44px;border-radius:10px;background:white;display:grid;place-items:center;font-weight:800;color:var(--red)">50%</div>
+          <div><div style="font-weight:800;font-size:13px">AYO LANGGANAN RELEARN</div><div style="font-size:10px;color:var(--muted)">Discount 50% from 16/07–1/8/21</div></div>
+        </div>
+
+        <div class="section-title" style="padding-left:0;padding-right:0">Promotion campaign</div>
+        <div class="row gap8">
+          <div style="flex:1;border-radius:12px;background:#FEF9C3;padding:10px"><div style="font-size:10px;font-weight:800;color:var(--accent)">-15%</div><div style="font-size:11px;font-weight:700;margin-top:6px">Baterai Bekas</div></div>
+          <div style="flex:1;border-radius:12px;background:#FEF9C3;padding:10px"><div style="font-size:10px;font-weight:800;color:var(--accent)">-15%</div><div style="font-size:11px;font-weight:700;margin-top:6px">Kardus Bekas</div></div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-tab active"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</div>
+        <div class="nav-tab"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5M4 9h16l-1 12H5zM9 21v-8h6v8"/></svg>Stores</div>
+        <div class="nav-tab"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"/></svg>Order</div>
+        <div class="nav-tab"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+      </div>
+    </div>
+
+    <!-- HOME BANK SAMPAH -->
+    <div class="screen" data-screen="home-bank">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row spread">
+          <div class="row gap10">
+            <div class="avatar">B</div>
+            <div><div class="greet">Bank Sampah</div><div class="name">Resik Pusat</div></div>
+          </div>
+          <div class="ghost-chip"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+        </div>
+        <div class="glass-card" style="margin-top:16px">
+          <div class="caption"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M1 5h12v9H1zM13 8h4l3 3v3h-2M6 17a2 2 0 1 0 .01 0zM15 17a2 2 0 1 0 .01 0z"/></svg>Penjemputan Hari Ini</div>
+          <div class="value" style="margin-top:6px">3 penjemputan</div>
+          <div style="font-size:11px;color:var(--subtle);margin-top:4px">Buka Google Maps untuk navigasi & tracking realtime</div>
+        </div>
+      </div>
+
+      <div class="section-title">Daftar Penjemputan</div>
+      <div class="list">
+        <div class="list-card">
+          <div class="row"><span style="font-size:12px;font-weight:800;color:var(--subtle);margin-right:8px">#004</span><span style="font-size:15px;font-weight:800;flex:1">Rina Marlina</span><span class="pill pill-blue">DIJADWALKAN</span></div>
+          <div class="meta"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Jl. Dipatiukur No. 7, Bandung</div>
+          <div class="meta"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2"/></svg>09:00-11:00</div>
+          <button class="btn-primary" style="margin-top:12px">Navigasi via Google Maps</button>
+        </div>
+        <div class="list-card">
+          <div class="row"><span style="font-size:12px;font-weight:800;color:var(--subtle);margin-right:8px">#005</span><span style="font-size:15px;font-weight:800;flex:1">Dewi Anggraini</span><span class="pill pill-violet">DIPROSES</span></div>
+          <div class="meta"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Jl. Asia Afrika No. 88, Bandung</div>
+          <div class="meta"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2"/></svg>13:00-15:00</div>
+          <button class="btn-primary" style="margin-top:12px">Navigasi via Google Maps</button>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-tab active"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Home</div>
+        <div class="nav-tab"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>Riwayat</div>
+        <div class="nav-tab"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>Chat</div>
+        <div class="nav-tab"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil</div>
+      </div>
+    </div>
+
+    <!-- PENJEMPUTAN -->
+    <div class="screen" data-screen="penjemputan">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">R</div>
+          <div><div class="greet">Layanan</div><div class="name">Minta Penjemputan</div></div>
+        </div>
+      </div>
+      <div class="list" style="margin-top:16px">
+        <div class="list-card">
+          <div class="label" style="margin-top:0">Kategori Sampah</div>
+          <div class="row gap8" style="margin-top:8px"><span class="pill pill-green">ORGANIK</span><span class="pill pill-blue">ANORGANIK</span><span class="pill pill-red">B3</span><span class="pill" style="background:#F1F5F9;color:#64748B">RESIDU</span></div>
+          <div class="label">Estimasi Berat</div>
+          <input class="input" placeholder="contoh: 3 kg" style="margin-top:6px">
+          <div class="label">Tanggal & Waktu</div>
+          <input class="input" value="2026-10-22 · 09:00-11:00" style="margin-top:6px">
+          <div class="label">Alamat + GPS</div>
+          <input class="input" value="Jl. Merdeka No. 45, Bandung" style="margin-top:6px">
+          <button class="btn-primary" style="margin-top:18px">Kirim Permintaan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDUKASI -->
+    <div class="screen" data-screen="edukasi">
+      <div class="statusbar"><span>9:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="row" style="height:56px;border-bottom:1px solid var(--hairline);padding:0 16px">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        <div style="font-size:18px;font-weight:800;color:var(--ink);margin-left:8px">Re Learning</div>
+        <div style="flex:1"></div>
+        <div class="row gap8">
+          <div style="width:32px;height:32px;border-radius:50%;background:white;border:1px solid var(--hairline);display:grid;place-items:center">🔍</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:white">↻</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:#F5F5FA;display:grid;place-items:center">•••</div>
+        </div>
+      </div>
+
+      <div class="list" style="margin-top:14px">
+        <div class="list-card" style="border-radius:14px;padding:0;overflow:hidden">
+          <div style="height:150px;background:#7F1D1D;display:grid;place-items:center;color:white">
+            <div style="width:48px;height:48px;border-radius:50%;background:var(--accent);display:grid;place-items:center">🔒</div>
+            <div style="font-size:10px;font-weight:800;margin-top:6px">KHUSUS PELANGGAN</div>
+          </div>
+          <div style="padding:14px">
+            <div style="font-weight:800;font-size:14px">TEKNIK PENGELOLAAN SAMPAH DARI SUMBERNYA</div>
+            <div class="row" style="margin-top:8px"><span style="font-size:12px;color:var(--muted);flex:1">DLH – PURWOKO, S.ST, M. Ling.</span><span class="pill pill-green">PELANGGAN</span></div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">1678 x dilihat · 1 hari yang lalu</div>
+            <div class="row gap8" style="margin-top:10px">
+              <span class="pill" style="background:#FEE2E2;color:#DC2626">PDF 26</span>
+              <span class="pill" style="background:#EDF4FE;color:#2563EB">ZIP 4</span>
+              <span class="pill pill-green">video 5</span>
+              <span class="pill" style="background:#FEF9C3;color:#B45309">doc 10</span>
+              <span class="pill" style="background:#CCFBF1;color:#0D9488">img 17</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="list-card" style="border-radius:14px;padding:0;overflow:hidden">
+          <div style="height:150px;background:#1E293B;display:grid;place-items:center;color:white;font-size:12px">ARDUINO CODE</div>
+          <div style="padding:14px">
+            <div style="font-weight:800;font-size:14px">CARA MEMBUAT TEMPAT SAMPAH OTOMATIS DENGAN ARDUINO UNO</div>
+            <div class="row" style="margin-top:8px"><span style="font-size:12px;color:var(--muted);flex:1">RESKI – Beyond The Limit</span><span class="pill pill-green">UMUM</span></div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">2812 x dilihat · 1 hari yang lalu</div>
+            <div class="row gap8" style="margin-top:10px">
+              <span class="pill" style="background:#FEE2E2;color:#DC2626">PDF 28</span>
+              <span class="pill" style="background:#EDF4FE;color:#2563EB">ZIP 18</span>
+              <span class="pill pill-green">video 5</span>
+              <span class="pill" style="background:#FEF9C3;color:#B45309">doc 8</span>
+              <span class="pill" style="background:#CCFBF1;color:#0D9488">img 40</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="list-card" style="border-radius:14px;padding:0;overflow:hidden">
+          <div style="height:150px;background:#14532D;display:grid;place-items:center;color:white;font-size:12px">DLH KUNJUNGAN</div>
+          <div style="padding:14px">
+            <div style="font-weight:800;font-size:14px">KUNJUNGAN TIM BEYOND THE LIMIT KE DINAS LINGKUNGAN HIDUP</div>
+            <div class="row" style="margin-top:8px"><span style="font-size:12px;color:var(--muted);flex:1">RESKI – Beyond The Limit</span><span class="pill pill-green">UMUM</span></div>
+            <div style="font-size:11px;color:var(--subtle);margin-top:6px">547 x dilihat · 1 hari yang lalu</div>
+            <div class="row gap8" style="margin-top:10px">
+              <span class="pill" style="background:#FEE2E2;color:#DC2626">PDF 2</span>
+              <span class="pill" style="background:#EDF4FE;color:#2563EB">ZIP 0</span>
+              <span class="pill pill-green">video 2</span>
+              <span class="pill" style="background:#FEF9C3;color:#B45309">doc 3</span>
+              <span class="pill" style="background:#CCFBF1;color:#0D9488">img 32</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:14px 0 22px">
+          <button class="btn-primary" style="width:auto;padding:12px 22px;border-radius:20px">NEXT PAGE →</button>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">Page: 1 of 100</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOMPET -->
+    <div class="screen" data-screen="dompet">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">R</div>
+          <div><div class="greet">Keuangan</div><div class="name">Dompet Digital</div></div>
+        </div>
+        <div class="glass-card" style="margin-top:16px">
+          <div class="caption"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>Total Saldo</div>
+          <div class="value">Rp 45.500</div>
+        </div>
+      </div>
+      <div class="section-title">Riwayat Transaksi</div>
+      <div class="list">
+        <div class="list-card"><div class="row"><span style="font-weight:700;flex:1">Setoran sampah</span><span style="color:var(--accent);font-weight:800">+Rp 15.500</span></div><div class="meta">20 Okt 2026 · 14:02</div></div>
+        <div class="list-card"><div class="row"><span style="font-weight:700;flex:1">Poin reward</span><span style="color:var(--accent);font-weight:800">+320 poin</span></div><div class="meta">20 Okt 2026 · 14:02</div></div>
+      </div>
+    </div>
+
+    <!-- RIWAYAT -->
+    <div class="screen" data-screen="riwayat">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">R</div>
+          <div><div class="greet">Keuangan</div><div class="name">Riwayat Setoran</div></div>
+        </div>
+      </div>
+      <div class="list" style="margin-top:16px">
+        <div class="list-card"><div class="row"><span style="font-weight:800;flex:1">#004 · Rina Marlina</span><span class="pill pill-green">SELESAI</span></div><div class="meta">Jl. Dipatiukur No. 7, Bandung</div><div class="meta">20 Okt 2026 · Rp 15.500</div></div>
+        <div class="list-card"><div class="row"><span style="font-weight:800;flex:1">#003 · Budi Santoso</span><span class="pill pill-green">SELESAI</span></div><div class="meta">Jl. Merdeka No. 45, Bandung</div><div class="meta">19 Okt 2026 · Rp 22.500</div></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="screen" data-screen="chat">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">A</div>
+          <div><div class="greet">Komunikasi</div><div class="name">Chat Admin</div></div>
+        </div>
+      </div>
+      <div class="list" style="margin-top:16px;padding-bottom:24px">
+        <div class="list-card"><div class="row"><div class="avatar" style="width:34px;height:34px;font-size:13px">A</div><div style="flex:1;margin-left:10px"><div style="font-weight:800;font-size:13px">Admin Resik</div><div style="font-size:12px;color:var(--muted)">Halo, ada yang bisa dibantu?</div></div><span style="font-size:10px;color:var(--subtle)">09:12</span></div></div>
+        <div class="list-card"><div class="row"><div class="avatar" style="width:34px;height:34px;font-size:13px">A</div><div style="flex:1;margin-left:10px"><div style="font-weight:800;font-size:13px">Admin Resik</div><div style="font-size:12px;color:var(--muted)">Penjemputanmu dijadwalkan besok pagi.</div></div><span style="font-size:10px;color:var(--subtle)">08:47</span></div></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="screen" data-screen="leaderboard">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">R</div>
+          <div><div class="greet">Keuangan</div><div class="name">Leaderboard</div></div>
+        </div>
+      </div>
+      <div class="list" style="margin-top:16px">
+        <div class="list-card"><div class="row"><span style="font-weight:800;color:var(--amber);width:24px">1</span><span style="flex:1;font-weight:700">Syukron Maulana</span><span style="font-weight:800;color:var(--accent)">320</span></div><div class="meta"><div style="height:6px;border-radius:4px;background:var(--accent);width:100%"></div></div></div>
+        <div class="list-card"><div class="row"><span style="font-weight:800;color:var(--subtle);width:24px">2</span><span style="flex:1;font-weight:700">Zain Ghathfaan</span><span style="font-weight:800;color:var(--accent)">280</span></div><div class="meta"><div style="height:6px;border-radius:4px;background:var(--accent);width:87%"></div></div></div>
+        <div class="list-card"><div class="row"><span style="font-weight:800;color:#B45309;width:24px">3</span><span style="flex:1;font-weight:700">Riri Syafala</span><span style="font-weight:800;color:var(--accent)">250</span></div><div class="meta"><div style="height:6px;border-radius:4px;background:var(--accent);width:78%"></div></div></div>
+      </div>
+    </div>
+
+    <!-- LOKASI -->
+    <div class="screen" data-screen="lokasi">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">R</div>
+          <div><div class="greet">Data</div><div class="name">Lokasi Bank Sampah</div></div>
+        </div>
+      </div>
+      <div class="list" style="margin-top:16px">
+        <div class="list-card">
+          <div class="row"><span style="font-size:15px;font-weight:800;flex:1">Resik Pusat</span><span class="pill pill-green">AKTIF</span></div>
+          <div class="meta"><svg class="ico ico-sm" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Jl. Merdeka No. 45, Jakarta Pusat</div>
+          <button class="btn-primary" style="margin-top:12px">Buka Google Maps</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCAN QR -->
+    <div class="screen" data-screen="scan">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">R</div>
+          <div><div class="greet">Verifikasi</div><div class="name">Scan QR Code</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;padding:24px">
+        <div style="width:220px;height:220px;border-radius:24px;background:var(--glass-strong);border:1px solid var(--hairline);display:grid;place-items:center;box-shadow:var(--shadow)">
+          <svg class="ico" style="width:120px;height:120px;color:var(--accent)" viewBox="0 0 24 24"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h4v4M21 17h-4v4"/></svg>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-top:14px">Arahkan kamera ke QR verifikasi bank sampah</div>
+        <button class="btn-secondary" style="margin-top:14px">Aktifkan Kamera</button>
+      </div>
+    </div>
+
+    <!-- PROFIL -->
+    <div class="screen" data-screen="profil">
+      <div class="statusbar"><span>09:41</span><span>▲ ▮ 🔋</span></div>
+      <div class="glass-header">
+        <div class="row gap10">
+          <div class="avatar">B</div>
+          <div><div class="greet">Sistem</div><div class="name">Profil</div></div>
+        </div>
+      </div>
+      <div class="list" style="margin-top:16px">
+        <div class="list-card">
+          <div class="label" style="margin-top:0">Nama Lengkap</div>
+          <input class="input" value="Budi Santoso" style="margin-top:6px">
+          <div class="label">Email</div>
+          <input class="input" value="budi@gmail.com" style="margin-top:6px">
+          <div class="label">No. Telepon</div>
+          <input class="input" value="0812-0000-0000" style="margin-top:6px">
+          <div class="label">Alamat</div>
+          <input class="input" value="Jl. Merdeka No. 45, Bandung" style="margin-top:6px">
+          <button class="btn-primary" style="margin-top:18px">Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const screens = [
+    ['login', 'Login'],
+    ['home-masyarakat', 'Home Masyarakat'],
+    ['home-bank', 'Home Bank Sampah'],
+    ['penjemputan', 'Penjemputan'],
+    ['edukasi', 'Edukasi'],
+    ['dompet', 'Dompet'],
+    ['riwayat', 'Riwayat'],
+    ['chat', 'Chat'],
+    ['leaderboard', 'Leaderboard'],
+    ['lokasi', 'Lokasi'],
+    ['scan', 'Scan QR'],
+    ['profil', 'Profil'],
+  ];
+  const tabs = document.getElementById('tabs');
+  screens.forEach(([id, label], i) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.className = i === 0 ? 'active' : '';
+    b.onclick = () => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelector(`[data-screen="${id}"]`).classList.add('active');
+      document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    };
+    tabs.appendChild(b);
+  });
+</script>
+</body>
+</html>
