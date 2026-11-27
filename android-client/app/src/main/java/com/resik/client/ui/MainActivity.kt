@@ -6,9 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.resik.client.api.ApiClient
+import com.resik.client.api.RealtimeEventHub
+import com.resik.client.api.RealtimeEventType
 import com.resik.client.ui.screens.*
 import com.resik.client.ui.theme.ResikTheme
 import retrofit2.Call
@@ -16,6 +17,9 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class MainActivity : ComponentActivity() {
+
+    private var ownUserId: Long = -1L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -24,21 +28,41 @@ class MainActivity : ComponentActivity() {
         var poin by mutableStateOf("0")
         var role by mutableStateOf("")
 
-        ApiClient.getApi().getMe(ApiClient.getAuthHeader())
-            .enqueue(object : Callback<Map<String, Any>> {
-                override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
-                    if (r.isSuccessful && r.body() != null) {
-                        val user = r.body()!!
-                        userName = user["nama"]?.toString() ?: "User"
-                        saldo = "Rp ${user["saldoDompet"] ?: 0}"
-                        poin = (user["poinReward"] ?: 0).toString()
-                        role = user["role"]?.toString() ?: "MASYARAKAT"
+        fun loadMe() {
+            ApiClient.getApi().getMe(ApiClient.getAuthHeader())
+                .enqueue(object : Callback<Map<String, Any>> {
+                    override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
+                        if (r.isSuccessful && r.body() != null) {
+                            val user = r.body()!!
+                            userName = user["nama"]?.toString() ?: "User"
+                            saldo = "Rp ${user["saldoDompet"] ?: 0}"
+                            poin = (user["poinReward"] ?: 0).toString()
+                            role = user["role"]?.toString() ?: "MASYARAKAT"
+                            ownUserId = (user["id"] as? Number)?.toLong()
+                                ?: ApiClient.getUserId()
+                            // Realtime: one shared /ws/events connection for the
+                            // whole app. Saldo/poin below update live when the
+                            // backend broadcasts WALLET_UPDATED for this user.
+                            RealtimeEventHub.connect(ownUserId, role)
+                        }
                     }
-                }
-                override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
-                    userName = "Error loading"
-                }
-            })
+                    override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
+                        userName = "Error loading"
+                    }
+                })
+        }
+
+        loadMe()
+
+        // Live wallet: a timbang / topup / tarik anywhere (desktop, another
+        // device) updates this screen's saldo and poin without reopening it.
+        RealtimeEventHub.addListener("main") { event ->
+            if (event.type == RealtimeEventType.WALLET_UPDATED &&
+                event.payloadLong("userId") == ownUserId
+            ) {
+                loadMe()
+            }
+        }
 
         setContent {
             ResikTheme {
@@ -77,5 +101,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        RealtimeEventHub.removeListener("main")
+        RealtimeEventHub.disconnect()
+        super.onDestroy()
     }
 }

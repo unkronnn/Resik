@@ -3,6 +3,7 @@ package com.resik.api.controller;
 import com.resik.api.entity.User;
 import com.resik.api.repository.UserRepository;
 import com.resik.api.repository.TransaksiRepository;
+import com.resik.api.websocket.RealtimeEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,13 @@ public class DompetController {
 
     private final UserRepository userRepo;
     private final TransaksiRepository transaksiRepo;
+    private final RealtimeEventPublisher eventPublisher;
 
-    public DompetController(UserRepository userRepo, TransaksiRepository transaksiRepo) {
+    public DompetController(UserRepository userRepo, TransaksiRepository transaksiRepo,
+                            RealtimeEventPublisher eventPublisher) {
         this.userRepo = userRepo;
         this.transaksiRepo = transaksiRepo;
+        this.eventPublisher = eventPublisher;
     }
 
     @GetMapping("/saldo")
@@ -60,6 +64,9 @@ public class DompetController {
         user.setSaldoDompet(user.getSaldoDompet().add(jumlah));
         userRepo.save(user);
 
+        // Realtime: the owner (and admins) see the new balance immediately.
+        eventPublisher.walletUpdated(user, "TOPUP", jumlah);
+
         Map<String, Object> res = new HashMap<>();
         res.put("status", "BERHASIL");
         res.put("saldoBaru", user.getSaldoDompet());
@@ -81,6 +88,9 @@ public class DompetController {
 
         user.setSaldoDompet(user.getSaldoDompet().subtract(jumlah));
         userRepo.save(user);
+
+        // Realtime: the owner (and admins) see the new balance immediately.
+        eventPublisher.walletUpdated(user, "TARIK", jumlah.negate());
 
         Map<String, Object> res = new HashMap<>();
         res.put("status", "BERHASIL");

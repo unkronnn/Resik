@@ -41,6 +41,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
 import com.resik.client.api.ApiClient
 import com.resik.client.api.ChatWebSocketClient
+import com.resik.client.api.RealtimeEventHub
+import com.resik.client.api.RealtimeEventType
+import com.resik.client.model.Penjemputan
 import com.resik.client.ui.theme.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -289,7 +292,48 @@ private fun ChatBubble(msg: ChatMsg) {
 fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
     val context = LocalContext.current
     var showForm by rememberSaveable { mutableStateOf(false) }
-    val penjemputanList = remember { LocalData.loadPenjemputan(context) }
+    var items by remember { mutableStateOf(LocalData.loadPenjemputan(context).toList()) }
+    var refreshTick by remember { mutableStateOf(0) }
+
+    // Realtime: re-fetch from the server whenever a pickup changes anywhere
+    // (admin assigns a petugas, bank sampah weighs it). Falls back to the
+    // locally saved list when offline or when the server has no data yet.
+    fun loadFromServer() {
+        ApiClient.getApi().getMyPenjemputan(ApiClient.getAuthHeader())
+            .enqueue(object : Callback<List<Penjemputan>> {
+                override fun onResponse(c: Call<List<Penjemputan>>, r: Response<List<Penjemputan>>) {
+                    if (r.isSuccessful && r.body() != null && r.body()!!.isNotEmpty()) {
+                        items = r.body()!!.map { p ->
+                            val jenisCount = p.detailList?.size ?: 0
+                            PenjemputanItem(
+                                id = (p.id ?: 0L).toInt(),
+                                alamat = p.alamat ?: "-",
+                                tanggal = p.tanggalJemput ?: "-",
+                                waktu = p.waktuJemput ?: "-",
+                                status = p.status ?: "MENUNGGU",
+                                catatan = if (jenisCount > 0) "$jenisCount jenis sampah" else ""
+                            )
+                        }
+                    }
+                }
+                override fun onFailure(c: Call<List<Penjemputan>>, t: Throwable) {
+                    // Offline: keep the locally saved list.
+                }
+            })
+    }
+
+    DisposableEffect(Unit) {
+        RealtimeEventHub.addListener("penjemputan") { event ->
+            if (event.type == RealtimeEventType.PENJEMPUTAN_CREATED ||
+                event.type == RealtimeEventType.PENJEMPUTAN_STATUS
+            ) {
+                refreshTick++
+            }
+        }
+        onDispose { RealtimeEventHub.removeListener("penjemputan") }
+    }
+
+    LaunchedEffect(refreshTick) { loadFromServer() }
 
     if (!showForm) {
         Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
@@ -298,7 +342,7 @@ fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
                 Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Jemput Sampah Sekarang", color = BgWhite, fontWeight = FontWeight.Bold)
             }
             LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(penjemputanList) { item ->
+                items(items) { item ->
                     Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite)) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) { Text("#${String.format("%03d", item.id)}", fontSize = 12.sp, color = TextHint, fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); StatusBadge(item.status) }
@@ -315,8 +359,9 @@ fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
         PenjemputanForm(
             onBack = { showForm = false },
             onSubmit = { alamat, tanggal, waktu, catatan ->
-                penjemputanList.add(PenjemputanItem(penjemputanList.size + 1, alamat, tanggal, waktu, "MENUNGGU", catatan))
-                LocalData.savePenjemputan(context, penjemputanList)
+                val updated = items + PenjemputanItem(items.size + 1, alamat, tanggal, waktu, "MENUNGGU", catatan)
+                LocalData.savePenjemputan(context, updated)
+                items = updated
                 showForm = false
                 onCreate()
             }
@@ -536,13 +581,64 @@ private fun StatusBadge(status: String) {
     Box(modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(bg).padding(horizontal = 10.dp, vertical = 4.dp)) { Text(status, fontSize = 10.sp, color = fg, fontWeight = FontWeight.Bold) }
 }
 
+// Maps one /api/dompet/riwayat row to a TransaksiItem. The nested
+// penjemputan/detailList/sampah objects may be absent (lazy loading), so
+// every level is defensive and falls back to "Setor Sampah".
+@Suppress("UNCHECKED_CAST")
+private fun mapTransaksi(m: Map<String, Any>): TransaksiItem? {
+    val id = (m["id"] as? Number)?.toInt() ?: return null
+    val tanggal = (m["tanggal"] as? String)?.take(10)
+        ?: (m["createdAt"] as? String)?.take(10) ?: "-"
+    val total = (m["totalHarga"] as? Number)?.toLong() ?: 0L
+    val status = m["status"]?.toString() ?: "BERHASIL"
+    var jenis = "Setor Sampah"
+    val penjemputan = m["penjemputan"] as? Map<String, Any>
+    val details = penjemputan?.get("detailList") as? List<Map<String, Any>>
+    val sampah = details?.firstOrNull()?.get("sampah") as? Map<String, Any>
+    sampah?.get("nama")?.toString()?.let { jenis = it }
+    val jumlah = "Rp " + "%,d".format(total).replace(",", ".")
+    return TransaksiItem(id, tanggal, jumlah, status, jenis)
+}
+
 // ===== RIWAYAT SCREEN — with filter & detail dialog =====
 @Composable
 fun RiwayatScreen(onBack: () -> Unit) {
     var filter by rememberSaveable { mutableStateOf("Semua") }
+    var transaksi by remember { mutableStateOf(dummyTransaksi) }
+    var refreshTick by remember { mutableStateOf(0) }
     val filters = listOf("Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU")
-    val filtered = if (filter == "Semua") dummyTransaksi else dummyTransaksi.filter { it.jenis.contains(filter, ignoreCase = true) }
+    val filtered = if (filter == "Semua") transaksi else transaksi.filter { it.jenis.contains(filter, ignoreCase = true) }
     var selectedItem by remember { mutableStateOf<TransaksiItem?>(null) }
+
+    // Realtime: re-fetch when the wallet changes or one of my pickups
+    // finishes (timbang). Falls back to the dummy list when offline.
+    fun loadFromServer() {
+        ApiClient.getApi().getRiwayatDompet(ApiClient.getAuthHeader())
+            .enqueue(object : Callback<List<Map<String, Any>>> {
+                override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
+                    if (r.isSuccessful && r.body() != null) {
+                        val mapped = r.body()!!.mapNotNull { mapTransaksi(it) }
+                        if (mapped.isNotEmpty()) transaksi = mapped
+                    }
+                }
+                override fun onFailure(c: Call<List<Map<String, Any>>>, t: Throwable) {
+                    // Offline: keep the current list.
+                }
+            })
+    }
+
+    DisposableEffect(Unit) {
+        RealtimeEventHub.addListener("riwayat") { event ->
+            val own = event.payloadLong("userId") == ApiClient.getUserId()
+            if (own && event.type == RealtimeEventType.WALLET_UPDATED) refreshTick++
+            if (own && event.type == RealtimeEventType.PENJEMPUTAN_STATUS &&
+                event.payloadString("status") == "SELESAI"
+            ) refreshTick++
+        }
+        onDispose { RealtimeEventHub.removeListener("riwayat") }
+    }
+
+    LaunchedEffect(refreshTick) { loadFromServer() }
 
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
         GradientHeader("Riwayat Transaksi", onBack)
@@ -627,10 +723,44 @@ fun DompetScreen(saldo: String, poin: String, onBack: () -> Unit) {
 // ===== LEADERBOARD SCREEN =====
 @Composable
 fun LeaderboardScreen(onBack: () -> Unit) {
+    var board by remember { mutableStateOf(leaderboardData) }
+    var refreshTick by remember { mutableStateOf(0) }
+
+    // Realtime: re-fetch when any user's points change (a timbang anywhere
+    // can reorder the board). Falls back to the dummy board when offline.
+    fun loadFromServer() {
+        ApiClient.getApi().getLeaderboard()
+            .enqueue(object : Callback<List<Map<String, Any>>> {
+                override fun onResponse(c: Call<List<Map<String, Any>>>, r: Response<List<Map<String, Any>>>) {
+                    if (r.isSuccessful && r.body() != null && r.body()!!.isNotEmpty()) {
+                        board = r.body()!!.map { m ->
+                            Triple(
+                                m["nama"]?.toString() ?: "?",
+                                "${(m["poin"] as? Number)?.toInt() ?: 0} poin",
+                                (m["rank"] as? Number)?.toInt() ?: 0
+                            )
+                        }
+                    }
+                }
+                override fun onFailure(c: Call<List<Map<String, Any>>>, t: Throwable) {
+                    // Offline: keep the current board.
+                }
+            })
+    }
+
+    DisposableEffect(Unit) {
+        RealtimeEventHub.addListener("leaderboard") { event ->
+            if (event.type == RealtimeEventType.LEADERBOARD_UPDATED) refreshTick++
+        }
+        onDispose { RealtimeEventHub.removeListener("leaderboard") }
+    }
+
+    LaunchedEffect(refreshTick) { loadFromServer() }
+
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
         GradientHeader("Leaderboard", onBack)
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            leaderboardData.forEachIndexed { i, (nama, pts, rank) ->
+            board.forEachIndexed { i, (nama, pts, rank) ->
                 Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = if (i == 0) GreenMint else BgWhite)) {
                     Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.EmojiEvents, contentDescription = null, tint = when(rank) { 1 -> Color(0xFFF39C12); 2 -> Color(0xFF94A3B8); 3 -> Color(0xFFCD7F32); else -> TextHint }, modifier = Modifier.size(28.dp))

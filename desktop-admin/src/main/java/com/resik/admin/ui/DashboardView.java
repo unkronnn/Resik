@@ -124,6 +124,7 @@ public class DashboardView {
 
         loadPenjemputanFromVPS();
         showDashboard();
+        connectEventWebSocket();
     }
 
     private void loadPenjemputanFromVPS() {
@@ -132,6 +133,80 @@ public class DashboardView {
             penjemputanData.setAll(list);
         } catch (Exception e) {
             penjemputanData.setAll(DummyData.getPenjemputanList());
+        }
+    }
+
+    /* ---------------- realtime events (/ws/events) ---------------- */
+
+    /**
+     * Opens the shared realtime event channel. Unlike the chat channel, this
+     * one is connected once for the whole desktop session (not per popup) and
+     * drives live updates: a pickup created on Android appears in the
+     * penjemputan table, a price edited here reaches Android instantly, and
+     * a timbang refreshes wallet, stock and leaderboard views.
+     */
+    private void connectEventWebSocket() {
+        if (eventWsClient != null) {
+            eventWsClient.disconnect();
+            eventWsClient = null;
+        }
+        String role = AppConfig.userRole == null ? "ADMIN" : AppConfig.userRole;
+        eventWsClient = new com.resik.admin.service.RealtimeEventClient(
+                AppConfig.API_BASE_URL,
+                role,
+                msg -> javafx.application.Platform.runLater(() -> onRealtimeEvent(msg)),
+                () -> System.out.println("[realtime] connected to /ws/events"),
+                () -> System.out.println("[realtime] disconnected, retrying...")
+        );
+        Thread wsThread = new Thread(() -> eventWsClient.connect());
+        wsThread.setDaemon(true);
+        wsThread.setName("ws-events");
+        wsThread.start();
+    }
+
+    /**
+     * Handles one realtime event. The rule is: update the shared data first,
+     * then re-render only the view that is currently open. Views that are not
+     * open re-fetch from the server when navigated to, so they are fresh too.
+     * Unknown event types are ignored so the server can add types later.
+     */
+    @SuppressWarnings("unchecked")
+    private void onRealtimeEvent(Map<String, Object> msg) {
+        String type = String.valueOf(msg.getOrDefault("type", ""));
+        switch (type) {
+            case "PENJEMPUTAN_CREATED":
+            case "PENJEMPUTAN_STATUS":
+                // The penjemputan table is bound to penjemputanData, so
+                // reloading the list updates the visible rows live. The
+                // status-count chips refresh on next navigation.
+                new Thread(() -> loadPenjemputanFromVPS()).start();
+                if ("dashboard".equals(currentView)) {
+                    new Thread(() -> {
+                        try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+                        javafx.application.Platform.runLater(this::showDashboard);
+                    }).start();
+                }
+                break;
+            case "SAMPAH_CREATED":
+            case "HARGA_SAMPAH_UPDATED":
+            case "SAMPAH_DELETED":
+                if ("sampah".equals(currentView)) showSampah();
+                break;
+            case "WALLET_UPDATED":
+                if ("dompet".equals(currentView)) showDompet();
+                break;
+            case "LEADERBOARD_UPDATED":
+                if ("leaderboard".equals(currentView)) showLeaderboard();
+                break;
+            case "STOK_UPDATED":
+                if ("stok".equals(currentView)) showStokSampah();
+                break;
+            case "ACCOUNT_VERIFICATION":
+                if ("verifikasi".equals(currentView)) showVerifikasi();
+                break;
+            default:
+                // Ignore unknown types (forward compatibility).
+                break;
         }
     }
 
@@ -296,6 +371,7 @@ public class DashboardView {
     /* ---------------- DASHBOARD ---------------- */
 
     private void showDashboard() {
+        currentView = "dashboard";
         contentArea.getChildren().clear();
 
         PageHeader header = new PageHeader("Dashboard", "Ringkasan operasional bank sampah", todayLabel());
@@ -372,6 +448,7 @@ public class DashboardView {
     /* ---------------- PENJEMPUTAN ---------------- */
 
     private void showPenjemputan() {
+        currentView = "penjemputan";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Manajemen Penjemputan", "Pilih penjemputan, tugaskan petugas, dan perbarui status."));
 
@@ -689,6 +766,7 @@ public class DashboardView {
     /* ---------------- DATA SAMPAH ---------------- */
 
     private void showSampah() {
+        currentView = "sampah";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Data Sampah", "Kelola jenis sampah dan harga per kilogram (VPS)."));
 
@@ -748,7 +826,10 @@ public class DashboardView {
                 CrudDialog.showInfo("Error", "Gagal hapus: " + ex.getMessage());
             }
         }));
-        bar.getChildren().add(Ui.button("Refresh", "btn-secondary", e -> showSampah()));
+        // No manual Refresh button: this table now updates itself whenever
+        // the server broadcasts SAMPAH_CREATED / HARGA_SAMPAH_UPDATED /
+        // SAMPAH_DELETED over /ws/events (see onRealtimeEvent).
+        bar.getChildren().add(Ui.muted("Live: harga berubah otomatis saat ada update."));
         contentArea.getChildren().add(bar);
 
         HBox filterBar = new HBox(8);
@@ -937,6 +1018,7 @@ public class DashboardView {
     /* ---------------- DOMPET DIGITAL ---------------- */
 
     private void showDompet() {
+        currentView = "dompet";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Dompet Digital", "Saldo, poin, dan transaksi per tipe akun."));
 
@@ -1031,6 +1113,7 @@ public class DashboardView {
     /* ---------------- LEADERBOARD ---------------- */
 
     private void showLeaderboard() {
+        currentView = "leaderboard";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Leaderboard", "Ranking kontribusi masyarakat (VPS)."));
 
@@ -1615,6 +1698,11 @@ public class DashboardView {
 
     private javafx.animation.Timeline chatTimeline = null;
     private com.resik.admin.service.ChatWebSocketClient chatWsClient = null;
+    private com.resik.admin.service.RealtimeEventClient eventWsClient = null;
+    /** Id of the view currently shown (dashboard, penjemputan, sampah, dompet,
+     *  leaderboard, verifikasi, stok, ...). Event-driven refreshes only
+     *  re-render the view that is actually open. */
+    private String currentView = "dashboard";
     private String currentChatUserId = null;
     private ListView<String> popupClientList;
     private ListView<HBox> popupChatList;
@@ -2339,6 +2427,7 @@ public class DashboardView {
     }
 
     private void showVerifikasi() {
+        currentView = "verifikasi";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Verifikasi & Approval", "Approve akun Bank Sampah dan masyarakat sebelum aktif."));
 
@@ -2496,6 +2585,7 @@ public class DashboardView {
     }
 
     private void showStokSampah() {
+        currentView = "stok";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Stok Sampah", "Akumulasi kg per kategori, siap jual ke pengepul."));
         TableView<String[]> table = quickTable(

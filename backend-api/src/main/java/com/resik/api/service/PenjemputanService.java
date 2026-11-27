@@ -13,11 +13,14 @@ import com.resik.api.repository.SampahRepository;
 import com.resik.api.repository.UserRepository;
 import com.resik.api.repository.TransaksiRepository;
 import com.resik.api.repository.NotifikasiRepository;
+import com.resik.api.websocket.RealtimeEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -29,19 +32,22 @@ public class PenjemputanService {
     private final UserRepository userRepo;
     private final TransaksiRepository transaksiRepo;
     private final NotifikasiRepository notifRepo;
+    private final RealtimeEventPublisher eventPublisher;
 
     public PenjemputanService(PenjemputanRepository penjemputanRepo,
                               DetailPenjemputanRepository detailRepo,
                               SampahRepository sampahRepo,
                               UserRepository userRepo,
                               TransaksiRepository transaksiRepo,
-                              NotifikasiRepository notifRepo) {
+                              NotifikasiRepository notifRepo,
+                              RealtimeEventPublisher eventPublisher) {
         this.penjemputanRepo = penjemputanRepo;
         this.detailRepo = detailRepo;
         this.sampahRepo = sampahRepo;
         this.userRepo = userRepo;
         this.transaksiRepo = transaksiRepo;
         this.notifRepo = notifRepo;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -79,6 +85,9 @@ public class PenjemputanService {
         n.setPesan("Penjemputan sampah Anda telah dijadwalkan pada " + req.tanggalJemput());
         notifRepo.save(n);
 
+        // Realtime: admins and bank sampah see the new request immediately.
+        eventPublisher.penjemputanCreated(p);
+
         return p;
     }
 
@@ -101,6 +110,7 @@ public class PenjemputanService {
         User petugas = userRepo.findById(petugasId)
                 .orElseThrow(() -> new RuntimeException("Petugas tidak ditemukan"));
 
+        String statusLama = p.getStatus() != null ? p.getStatus().name() : null;
         p.setPetugas(petugas);
         p.setStatus(Penjemputan.PenjemputanStatus.DIJADWALKAN);
         p = penjemputanRepo.save(p);
@@ -111,6 +121,9 @@ public class PenjemputanService {
         n.setPesan("Petugas akan datang menjemput sampah Anda pada " + p.getTanggalJemput());
         notifRepo.save(n);
 
+        // Realtime: masyarakat, admin, and bank sampah see DIJADWALKAN immediately.
+        eventPublisher.penjemputanStatusChanged(p, statusLama);
+
         return p;
     }
 
@@ -119,9 +132,11 @@ public class PenjemputanService {
         Penjemputan p = penjemputanRepo.findById(req.penjemputanId())
                 .orElseThrow(() -> new RuntimeException("Penjemputan tidak ditemukan"));
 
+        String statusLama = p.getStatus() != null ? p.getStatus().name() : null;
         p.setStatus(Penjemputan.PenjemputanStatus.DIPROSES);
 
         BigDecimal total = BigDecimal.ZERO;
+        Map<String, BigDecimal> beratPerKategori = new HashMap<>();
 
         for (PenjemputanDtos.TimbangDetail td : req.details()) {
             DetailPenjemputan dp = detailRepo.findById(td.detailId())
@@ -131,6 +146,7 @@ public class PenjemputanService {
             dp.setSubtotal(subtotal);
             detailRepo.save(dp);
             total = total.add(subtotal);
+            beratPerKategori.merge(dp.getSampah().getKategori(), td.beratAktual(), BigDecimal::add);
         }
 
         p = penjemputanRepo.save(p);
@@ -155,6 +171,13 @@ public class PenjemputanService {
         n.setJudul("Setoran Selesai");
         n.setPesan("Setoran sampah Anda selesai. Total: Rp" + total + " telah masuk ke dompet digital.");
         notifRepo.save(n);
+
+        // Realtime: pickup is SELESAI, wallet + points grew, stock grew,
+        // and the leaderboard order may have changed. One timbang, four events.
+        eventPublisher.penjemputanStatusChanged(p, statusLama);
+        eventPublisher.walletUpdated(masyarakat, "TIMBANG", total);
+        eventPublisher.stokUpdated(p.getId(), RealtimeEventPublisher.stokLines(beratPerKategori));
+        eventPublisher.leaderboardUpdated(masyarakat);
 
         return t;
     }

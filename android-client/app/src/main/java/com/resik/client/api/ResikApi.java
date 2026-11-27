@@ -37,6 +37,17 @@ public interface ResikApi {
     @GET("user/me")
     Call<Map<String, Object>> getMe(@Header("Authorization") String token);
 
+    // Realtime support: re-fetch endpoints hit when a /ws/events message
+    // arrives, so screens update live without a full reload.
+    @GET("dompet/saldo")
+    Call<Map<String, Object>> getSaldo(@Header("Authorization") String token);
+
+    @GET("dompet/riwayat")
+    Call<List<Map<String, Object>>> getRiwayatDompet(@Header("Authorization") String token);
+
+    @GET("leaderboard")
+    Call<List<Map<String, Object>>> getLeaderboard();
+
     @GET("notifikasi")
     Call<List<Map<String, Object>>> getNotifikasi(@Header("Authorization") String token);
 
