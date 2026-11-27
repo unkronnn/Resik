@@ -13,6 +13,9 @@ public class User {
     private String noTelp;
     private BigDecimal saldoDompet;
     private Integer poinReward;
+    /** Status verifikasi akun (MENUNGGU / AKTIF / DITOLAK) — diisi backend
+     * via GET /admin/verifikasi atau GET /user/all. */
+    private String statusVerifikasi;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -30,4 +33,6 @@ public class User {
     public void setSaldoDompet(BigDecimal saldoDompet) { this.saldoDompet = saldoDompet; }
     public Integer getPoinReward() { return poinReward; }
     public void setPoinReward(Integer poinReward) { this.poinReward = poinReward; }
+    public String getStatusVerifikasi() { return statusVerifikasi; }
+    public void setStatusVerifikasi(String statusVerifikasi) { this.statusVerifikasi = statusVerifikasi; }
 }

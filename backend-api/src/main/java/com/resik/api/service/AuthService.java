@@ -45,17 +45,17 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.password()));
         user.setAlamat(req.alamat());
         user.setNoTelp(req.noTelp());
+        // New accounts wait for admin approval (status MENUNGGU).
+        user.setStatusVerifikasi(User.StatusVerifikasi.MENUNGGU);
 
         user = userRepository.save(user);
 
         // Realtime: admins see the new account in Verifikasi & Approval immediately.
-        // Note: the backend has no approve endpoint yet; the desktop Approve
-        // button currently only updates its local table, so no
-        // "account approved" event is emitted anywhere until that endpoint exists.
         eventPublisher.accountVerification(user);
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
-        return new AuthResponse(token, user.getId(), user.getNama(), user.getEmail(), user.getRole());
+        return new AuthResponse(token, user.getId(), user.getNama(), user.getEmail(),
+                user.getRole(), user.getStatusVerifikasi().name());
     }
 
     public AuthResponse login(LoginRequest req) {
@@ -66,7 +66,19 @@ public class AuthService {
             throw new RuntimeException("Password salah");
         }
 
+        // A rejected account may not log in. A MENUNGGU account may log in:
+        // verification gates the admin's approval list, not the login itself,
+        // so register-then-login flows and existing clients keep working.
+        // Clients should read statusVerifikasi from the response and show a
+        // "menunggu verifikasi" state when it is MENUNGGU.
+        if (user.getStatusVerifikasi() == User.StatusVerifikasi.DITOLAK) {
+            throw new RuntimeException("Akun ditolak oleh admin"
+                    + (user.getAlasanPenolakan() != null ? ": " + user.getAlasanPenolakan() : ""));
+        }
+
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
-        return new AuthResponse(token, user.getId(), user.getNama(), user.getEmail(), user.getRole());
+        return new AuthResponse(token, user.getId(), user.getNama(), user.getEmail(),
+                user.getRole(),
+                user.getStatusVerifikasi() != null ? user.getStatusVerifikasi().name() : null);
     }
 }

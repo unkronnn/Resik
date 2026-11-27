@@ -1,5 +1,7 @@
 package com.resik.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,10 +16,12 @@ public class DetailPenjemputan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "penjemputan_id", nullable = false)
+    @JsonIgnore
     private Penjemputan penjemputan;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sampah_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Sampah sampah;
 
     @Column(name = "estimasi_berat", precision = 10, scale = 2)

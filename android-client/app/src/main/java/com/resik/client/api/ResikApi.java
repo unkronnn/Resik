@@ -34,6 +34,51 @@ public interface ResikApi {
     @GET("penjemputan/my")
     Call<List<Penjemputan>> getMyPenjemputan(@Header("Authorization") String token);
 
+    @GET("penjemputan")
+    Call<List<Penjemputan>> getAllPenjemputan(@Header("Authorization") String token);
+
+    @GET("penjemputan/{id}")
+    Call<Map<String, Object>> getPenjemputanDetail(@Header("Authorization") String token, @Path("id") Long id);
+
+    // --- Fitur baru (kontrak backend feat/all-features, Nov 2026).
+    // Endpoint-endpoint di bawah ini dibuat mengikuti kontrak yang diberikan
+    // agen backend; saat penulisan kode ini sebagian belum ada di
+    // backend-api (agen backend mengerjakannya paralel). Bila server
+    // menjawab 404 untuk salah satunya, layar menanganinya sebagai
+    // "fitur belum tersedia di server" dan tetap berjalan.
+
+    /** PUT penjemputan/{id}/batal — body kosong, status menjadi DIBATALKAN. */
+    @PUT("penjemputan/{id}/batal")
+    Call<Map<String, Object>> batalkanPenjemputan(@Header("Authorization") String token, @Path("id") Long id);
+
+    /** PUT penjemputan/{id}/jadwal — body {"tanggalJemput","waktuJemput"}. */
+    @PUT("penjemputan/{id}/jadwal")
+    Call<Map<String, Object>> jadwalkanUlangPenjemputan(@Header("Authorization") String token, @Path("id") Long id, @Body Map<String, Object> body);
+
+    /** POST penjemputan/timbang — body {"penjemputanId","details":[{"detailId","beratAktual"}]}. */
+    @POST("penjemputan/timbang")
+    Call<Map<String, Object>> timbangSampah(@Header("Authorization") String token, @Body Map<String, Object> body);
+
+    /** PUT penjemputan/{id}/foto-bukti — body {"fotoBase64","contentType"}. */
+    @PUT("penjemputan/{id}/foto-bukti")
+    Call<Map<String, Object>> uploadFotoBukti(@Header("Authorization") String token, @Path("id") Long id, @Body Map<String, Object> body);
+
+    /** POST rating — body {"penjemputanId","nilai","komentar"}. */
+    @POST("rating")
+    Call<Map<String, Object>> kirimRating(@Header("Authorization") String token, @Body Map<String, Object> body);
+
+    /** GET rating/petugas/{id} — {"petugasId","rataRata","jumlah"}. */
+    @GET("rating/petugas/{id}")
+    Call<Map<String, Object>> getRatingPetugas(@Header("Authorization") String token, @Path("id") Long id);
+
+    /** GET rating/penjemputan/{id} — rating, atau 404 bila belum dinilai. */
+    @GET("rating/penjemputan/{id}")
+    Call<Map<String, Object>> getRatingPenjemputan(@Header("Authorization") String token, @Path("id") Long id);
+
+    /** POST notifikasi/token — body {"token","platform":"android"} (upsert token FCM). */
+    @POST("notifikasi/token")
+    Call<Map<String, Object>> kirimFcmToken(@Header("Authorization") String token, @Body Map<String, Object> body);
+
     @GET("user/me")
     Call<Map<String, Object>> getMe(@Header("Authorization") String token);
 

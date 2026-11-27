@@ -8,6 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.resik.client.api.ApiClient
+import com.resik.client.api.FcmTokenSync
+import com.resik.client.api.OfflineQueue
 import com.resik.client.api.RealtimeEventHub
 import com.resik.client.api.RealtimeEventType
 import com.resik.client.ui.screens.*
@@ -44,6 +46,13 @@ class MainActivity : ComponentActivity() {
                             // whole app. Saldo/poin below update live when the
                             // backend broadcasts WALLET_UPDATED for this user.
                             RealtimeEventHub.connect(ownUserId, role)
+                            // FCM (persiapan, butir 4): kirim token ke server
+                            // bila Firebase terinisialisasi; bila belum ada
+                            // google-services.json, gagal diam-diam.
+                            FcmTokenSync.sync(this@MainActivity)
+                            // Antrean offline petugas (butir 7): kirim ulang
+                            // saat aplikasi dibuka.
+                            OfflineQueue.syncAll(this@MainActivity)
                         }
                     }
                     override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
@@ -62,6 +71,12 @@ class MainActivity : ComponentActivity() {
             ) {
                 loadMe()
             }
+        }
+
+        // Antrean offline (butir 7): kirim ulang saat /ws/events
+        // tersambung kembali (koneksi pulih).
+        RealtimeEventHub.addConnectListener("main") {
+            OfflineQueue.syncAll(this@MainActivity)
         }
 
         setContent {
@@ -97,6 +112,7 @@ class MainActivity : ComponentActivity() {
                         onNavDompet = { startActivity(Intent(this, DompetActivity::class.java)) },
                         onNavLeaderboard = { startActivity(Intent(this, LeaderboardActivity::class.java)) },
                         onNavProfil = { startActivity(Intent(this, ProfilActivity::class.java)) },
+                        onNavMisi = { startActivity(Intent(this, MisiActivity::class.java)) },
                     )
                 }
             }
@@ -105,6 +121,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         RealtimeEventHub.removeListener("main")
+        RealtimeEventHub.removeConnectListener("main")
         RealtimeEventHub.disconnect()
         super.onDestroy()
     }

@@ -41,6 +41,7 @@
         <activity android:name=".ui.DompetActivity" android:exported="false" />
         <activity android:name=".ui.LeaderboardActivity" android:exported="false" />
         <activity android:name=".ui.ProfilActivity" android:exported="false" />
+        <activity android:name=".ui.MisiActivity" android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

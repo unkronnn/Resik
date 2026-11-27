@@ -44,6 +44,7 @@ class ProfilActivity : ComponentActivity() {
                 ProfilScreen(
                     nama = nama, email = email, alamat = alamat, telp = telp, role = role,
                     onBack = { finish() },
+                    onNavMisi = { startActivity(Intent(this, MisiActivity::class.java)) },
                     onLogout = {
                         ApiClient.logout()
                         startActivity(Intent(this, WelcomeActivity::class.java))

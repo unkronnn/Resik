@@ -43,6 +43,7 @@ fun HomeScreen(
     onNavDompet: () -> Unit,
     onNavLeaderboard: () -> Unit,
     onNavProfil: () -> Unit,
+    onNavMisi: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
         // ===== Header dengan gradient hijau =====
@@ -137,15 +138,21 @@ fun HomeScreen(
                 QuickMenuItem("Lokasi", Icons.Filled.LocationOn, Color(0xFFFCE7F3), onNavMap),
                 QuickMenuItem("Leaderboard", Icons.Filled.EmojiEvents, Color(0xFFFEF3C7), onNavLeaderboard),
                 QuickMenuItem("Chat Admin", Icons.Filled.Chat, GreenMint, onNavChat),
+                QuickMenuItem("Misi", Icons.Filled.TaskAlt, Color(0xFFE0F2FE), onNavMisi),
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                extraMenus.take(4).forEach { item ->
-                    ExtraMenuCard(item, modifier = Modifier.weight(1f))
+            extraMenus.chunked(4).forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    row.forEach { item ->
+                        ExtraMenuCard(item, modifier = Modifier.weight(1f))
+                    }
+                    // Ratakan baris terakhir bila isinya kurang dari 4.
+                    repeat(4 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
+                Spacer(Modifier.height(8.dp))
             }
         }
 

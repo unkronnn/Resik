@@ -72,6 +72,15 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'com.google.android.gms:play-services-location:21.2.0'
 
+    // Firebase Cloud Messaging — persiapan push notification (lihat
+    // FcmTokenSync.kt dan android-client/docs/FITUR_BARU.md).
+    // Hanya dependency, TANPA plugin google-services: plugin itu gagal
+    // build bila google-services.json belum ada. FCM belum aktif sampai
+    // user menyediakan google-services.json (lihat docs/FCM_SETUP.md
+    // dari agen backend); tanpa file itu pengambilan token gagal
+    // diam-diam dan aplikasi tetap berjalan normal.
+    implementation 'com.google.firebase:firebase-messaging:23.4.0'
+
     // Image loading (for profile photo)
     implementation 'io.coil-kt:coil-compose:2.5.0'
 

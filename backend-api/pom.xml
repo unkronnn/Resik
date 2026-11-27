@@ -74,6 +74,14 @@
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- Firebase Admin SDK for FCM push notifications. Preparation only:
+             the service is a no-op until a service-account file is provided
+             (see docs/FCM_SETUP.md); no credential file is bundled. -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.4.0</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

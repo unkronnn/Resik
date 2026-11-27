@@ -1,6 +1,7 @@
 package com.resik.admin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.resik.admin.config.AppConfig;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -31,8 +32,12 @@ public class ChatWebSocketClient {
 
     public ChatWebSocketClient(String apiUrl, Consumer<Map<String, Object>> messageHandler,
                                Runnable onConnect, Runnable onDisconnect) {
-        this.wsUrl = apiUrl.replace("http://", "ws://").replace("https://", "wss://")
+        String url = apiUrl.replace("http://", "ws://").replace("https://", "wss://")
                 + "/ws/chat?role=admin";
+        if (AppConfig.authToken != null && !AppConfig.authToken.isBlank()) {
+            url += "&token=" + java.net.URLEncoder.encode(AppConfig.authToken, java.nio.charset.StandardCharsets.UTF_8);
+        }
+        this.wsUrl = url;
         this.messageHandler = messageHandler;
         this.onConnect = onConnect;
         this.onDisconnect = onDisconnect;

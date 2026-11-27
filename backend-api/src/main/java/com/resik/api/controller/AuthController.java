@@ -31,7 +31,7 @@ public class AuthController {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         String msg = ex.getMessage();
-        if (msg != null && (msg.contains("Email") || msg.contains("Password"))) {
+        if (msg != null && (msg.contains("Email") || msg.contains("Password") || msg.contains("Akun ditolak"))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", msg));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", msg != null ? msg : "Terjadi kesalahan"));

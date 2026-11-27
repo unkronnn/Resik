@@ -124,6 +124,7 @@ object RealtimeEventHub {
 
     private var client: EventWebSocketClient? = null
     private val listeners = ConcurrentHashMap<String, (RealtimeEvent) -> Unit>()
+    private val connectListeners = ConcurrentHashMap<String, () -> Unit>()
     private var connectedUserId: Long? = null
 
     @Volatile
@@ -135,13 +136,24 @@ object RealtimeEventHub {
         disconnect()
         connectedUserId = userId
         val baseUrl = ApiClient.getBaseUrl()
+        val jwt = ApiClient.getToken()
         val wsUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://")
             .replace("/api/", "/ws/") +
-            "events?userId=$userId&role=${role.lowercase()}"
+            "events?userId=$userId&role=${role.lowercase()}" +
+            (if (!jwt.isNullOrBlank()) "&token=$jwt" else "")
         val ws = EventWebSocketClient(wsUrl)
         client = ws
         ws.connect(
-            onConnect = { isConnected = true },
+            onConnect = {
+                isConnected = true
+                // Beri tahu pemicu sync offline (butir 7): koneksi pulih.
+                connectListeners.values.forEach { listener ->
+                    try {
+                        listener()
+                    } catch (e: Exception) {
+                    }
+                }
+            },
             onDisconnect = { isConnected = false },
             onEvent = { event ->
                 listeners.values.forEach { listener ->
@@ -162,6 +174,19 @@ object RealtimeEventHub {
 
     fun removeListener(key: String) {
         listeners.remove(key)
+    }
+
+    /**
+     * Listener yang dipanggil setiap kali kanal /ws/events (kembali)
+     * tersambung — dipakai OfflineQueue untuk mengirim ulang antrean
+     * saat koneksi pulih, bukan hanya saat aplikasi dibuka.
+     */
+    fun addConnectListener(key: String, listener: () -> Unit) {
+        connectListeners[key] = listener
+    }
+
+    fun removeConnectListener(key: String) {
+        connectListeners.remove(key)
     }
 
     fun disconnect() {

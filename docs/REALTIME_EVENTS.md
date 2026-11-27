@@ -5,24 +5,31 @@ menyediakan kanal event umum **`/ws/events`** supaya semua perubahan data
 penting tersiar ke semua peran yang sedang online, tanpa refresh manual.
 
 Kanal ini memakai pola yang sama persis seperti chat: plain
-`TextWebSocketHandler` Spring (bukan STOMP), tanpa autentikasi JWT di
-query string (`/ws/**` sudah `permitAll` di `SecurityConfig`).
+`TextWebSocketHandler` Spring (bukan STOMP). Sejak batch all-features,
+**kedua kanal wajib JWT saat handshake** (lihat `docs/SECURITY.md`):
+token login dari `POST /api/auth/login` dikirim sebagai
+`?token=<jwt>` (atau header `Authorization: Bearer <jwt>`).
+`userId` dan `role` diambil dari klaim token — query param `?role=` /
+`?userId=` yang lama diabaikan.
 
 ## Cara berlangganan
 
 ```
-ws://<host>:8081/ws/events?role=admin
-ws://<host>:8081/ws/events?role=bank_sampah
-ws://<host>:8081/ws/events?role=masyarakat&userId=123
+ws://<host>:8081/ws/events?token=<jwt dari login>
+ws://<host>:8081/ws/chat?token=<jwt dari login>
 ```
 
-Peran menentukan apa yang diterima:
+Peran (dari token) menentukan apa yang diterima:
 
-| Peran | Menerima |
+| Peran (dari token) | Menerima |
 |---|---|
-| `admin` | Semua event |
-| `bank_sampah` (atau `petugas`) | Penjemputan, stok, harga sampah, leaderboard |
-| `masyarakat` + `userId` | Event broadcast + event yang ditujukan ke `userId` itu (mis. saldo sendiri) |
+| `ADMIN` | Semua event |
+| `PETUGAS` | Penjemputan, stok, harga sampah, leaderboard |
+| `MASYARAKAT` | Event broadcast + event yang ditujukan ke `userId` sendiri (mis. saldo sendiri) |
+
+Client yang tidak mengirim token valid akan ditolak saat handshake.
+Karena token berlaku 24 jam, client harus reconnect dengan token baru
+setelah login ulang.
 
 Client boleh mengirim `{"type":"ping"}` sebagai keepalive; server menjawab
 `{"type":"pong"}`. Semua client yang sudah ada melakukan reconnect otomatis
@@ -68,11 +75,11 @@ Penerima: admin, bank sampah. Dipicu di
 
 `status` salah satu dari `MENUNGGU`, `DIJADWALKAN`, `DIPROSES`, `SELESAI`,
 `DIBATALKAN`. Penerima: admin, bank sampah, dan masyarakat pemilik.
-Dipicu di `PenjemputanService.assignPetugas` (menjadi `DIJADWALKAN`) dan
-`PenjemputanService.timbangSampah` (menjadi `SELESAI`).
-
-Catatan: backend belum punya endpoint untuk membatalkan penjemputan, jadi
-`DIBATALKAN` didukung kontraknya tapi belum ada yang memicunya.
+Dipicu di `PenjemputanService.assignPetugas` (menjadi `DIJADWALKAN`),
+`PenjemputanService.timbangSampah` (menjadi `SELESAI`),
+`PenjemputanService.batalkanPenjemputan` (menjadi `DIBATALKAN`),
+`PenjemputanService.jadwalUlang` (tanggal/waktu baru, status tetap), dan
+`PenjemputanService.ubahStatus` (endpoint desktop `PUT /{id}/status`).
 
 ### `WALLET_UPDATED` — saldo / poin dompet berubah
 
@@ -99,7 +106,7 @@ untuk `TARIK`). Penerima: pemilik dompet dan admin. Dipicu di
 punya bentuk payload yang sama minus harga. Penerima: semua peran.
 Dipicu di `SampahController.create` / `update` / `delete`.
 
-### `ACCOUNT_VERIFICATION` — akun baru menunggu verifikasi
+### `ACCOUNT_VERIFICATION` — akun baru menunggu verifikasi / keputusan admin
 
 ```json
 {"type": "ACCOUNT_VERIFICATION", "timestamp": "...",
@@ -107,10 +114,12 @@ Dipicu di `SampahController.create` / `update` / `delete`.
              "role": "MASYARAKAT", "status": "MENUNGGU"}}
 ```
 
-Penerima: admin. Dipicu di `AuthService.register`, untuk mengisi halaman
-desktop Verifikasi & Approval. Catatan: backend belum punya endpoint
-approve, jadi belum ada event "akun disetujui"; tombol Approve di desktop
-saat ini hanya mengubah tabel lokal.
+Penerima: admin (dan user yang bersangkutan saat ada keputusan).
+Dipicu di `AuthService.register` (status `MENUNGGU`, untuk mengisi
+halaman desktop Verifikasi & Approval) dan di
+`AdminVerificationService.approve` / `.reject` (status `DISETUJUI` /
+`DITOLAK`, payload `alasan` ikut bila ada) — tipe event yang sama, jadi
+tabel desktop bisa memperbarui barisnya di tempat tanpa re-fetch.
 
 ### `STOK_UPDATED` — stok hasil timbang berubah
 
@@ -166,9 +175,13 @@ Dipicu di `PenjemputanService.timbangSampah`.
 
 ## Yang belum realtime (batas yang diketahui)
 
-- Tidak ada push notification saat aplikasi tertutup (butuh FCM).
+- Tidak ada push notification saat aplikasi tertutup (butuh FCM — kode
+  server-side sudah disiapkan, lihat `docs/FCM_SETUP.md`, tetapi belum
+  aktif sampai Syukron menyediakan proyek Firebase + service-account).
 - Aksi desktop "Tugaskan Petugas" dan "Proses Penjemputan" masih mengubah
   status lokal saja (tidak memanggil API), jadi tidak memicu event ke
-  client lain. Eventnya sudah siap; yang kurang adalah pemanggilan API-nya.
-- Layar verifikasi desktop masih memakai data dummy, jadi event
-  `ACCOUNT_VERIFICATION` diterimanya tapi belum menampilkan baris baru.
+  client lain. Endpointnya sudah siap (`PUT /api/penjemputan/{id}/assign/{petugasId}`
+  dan `PUT /api/penjemputan/{id}/status`); yang kurang adalah pemanggilan
+  API-nya dari desktop.
+- Layar verifikasi desktop masih memakai data dummy; endpoint
+  `GET /api/admin/verifikasi` sudah tersedia untuk menggantikannya.

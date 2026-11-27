@@ -1,5 +1,6 @@
 package com.resik.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public class Transaksi {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "penjemputan_id", nullable = false)
+    @JsonIgnore
     private Penjemputan penjemputan;
 
     @Column(name = "total_harga", nullable = false, precision = 15, scale = 2)

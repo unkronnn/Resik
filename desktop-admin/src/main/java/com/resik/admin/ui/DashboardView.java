@@ -3,6 +3,7 @@ package com.resik.admin.ui;
 import com.resik.admin.config.AppConfig;
 import com.resik.admin.model.Penjemputan;
 import com.resik.admin.model.Sampah;
+import com.resik.admin.model.User;
 import com.resik.admin.service.ApiClient;
 import com.resik.admin.service.ApiService;
 import com.resik.admin.service.DummyData;
@@ -26,6 +27,7 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -44,6 +46,9 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.util.StringConverter;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -180,10 +185,15 @@ public class DashboardView {
                 // reloading the list updates the visible rows live. The
                 // status-count chips refresh on next navigation.
                 new Thread(() -> loadPenjemputanFromVPS()).start();
-                if ("dashboard".equals(currentView)) {
+                if ("dashboard".equals(currentView) || "penjemputan".equals(currentView)
+                        || "riwayat".equals(currentView)) {
                     new Thread(() -> {
                         try { Thread.sleep(300); } catch (InterruptedException ignored) {}
-                        javafx.application.Platform.runLater(this::showDashboard);
+                        javafx.application.Platform.runLater(() -> {
+                            if ("dashboard".equals(currentView)) showDashboard();
+                            else if ("penjemputan".equals(currentView)) showPenjemputan();
+                            else if ("riwayat".equals(currentView)) showRiwayatSetoran();
+                        });
                     }).start();
                 }
                 break;
@@ -483,23 +493,85 @@ public class DashboardView {
         }));
         actionBar.getChildren().add(Ui.button("Tugaskan Petugas", "btn-secondary", e -> {
             Penjemputan sel = table.getSelectionModel().getSelectedItem();
-            if (sel != null && ("MENUNGGU".equals(sel.getStatus()) || "DIJADWALKAN".equals(sel.getStatus()))) {
-                sel.setStatus("DIJADWALKAN");
-                table.refresh();
-                CrudDialog.showInfo("Berhasil", "Petugas ditugaskan untuk #" + sel.getId());
-            } else {
-                CrudDialog.showInfo("Info", "Pilih penjemputan berstatus MENUNGGU/DIJADWALKAN");
+            if (sel == null) {
+                CrudDialog.showInfo("Info", "Pilih salah satu penjemputan terlebih dahulu");
+                return;
             }
+            if (!("MENUNGGU".equals(sel.getStatus()) || "DIJADWALKAN".equals(sel.getStatus()))) {
+                CrudDialog.showInfo("Info", "Hanya penjemputan berstatus MENUNGGU/DIJADWALKAN yang bisa ditugaskan petugas");
+                return;
+            }
+            showPilihPetugasDialog(sel);
         }));
         actionBar.getChildren().add(Ui.button("Proses Penjemputan", "btn-secondary", e -> {
             Penjemputan sel = table.getSelectionModel().getSelectedItem();
-            if (sel != null && "DIJADWALKAN".equals(sel.getStatus())) {
-                sel.setStatus("DIPROSES");
-                table.refresh();
-                CrudDialog.showInfo("Berhasil", "Penjemputan #" + sel.getId() + " sekarang DIPROSES");
-            } else {
-                CrudDialog.showInfo("Info", "Pilih penjemputan berstatus DIJADWALKAN untuk diproses");
+            if (sel == null) {
+                CrudDialog.showInfo("Info", "Pilih salah satu penjemputan terlebih dahulu");
+                return;
             }
+            if (!"DIJADWALKAN".equals(sel.getStatus())) {
+                CrudDialog.showInfo("Info", "Pilih penjemputan berstatus DIJADWALKAN untuk diproses");
+                return;
+            }
+            runPenjemputanApi(
+                    () -> ApiService.updatePenjemputanStatus(sel.getId(), "DIPROSES"),
+                    "Penjemputan #" + sel.getId() + " sekarang DIPROSES",
+                    "Gagal memproses penjemputan");
+        }));
+        actionBar.getChildren().add(Ui.button("Jadwalkan Ulang", "btn-secondary", e -> {
+            Penjemputan sel = table.getSelectionModel().getSelectedItem();
+            if (sel == null) {
+                CrudDialog.showInfo("Info", "Pilih salah satu penjemputan terlebih dahulu");
+                return;
+            }
+            if (!("MENUNGGU".equals(sel.getStatus()) || "DIJADWALKAN".equals(sel.getStatus()))) {
+                CrudDialog.showInfo("Info", "Hanya penjemputan berstatus MENUNGGU/DIJADWALKAN yang bisa dijadwalkan ulang");
+                return;
+            }
+            Map<String, String> initial = new HashMap<>();
+            initial.put("tanggal", sel.getTanggalJemput() != null ? sel.getTanggalJemput().toString() : LocalDate.now().toString());
+            initial.put("waktu", sel.getWaktuJemput() != null ? sel.getWaktuJemput() : "09:00");
+            CrudDialog.showForm("Jadwalkan Ulang — #" + sel.getId(), "Simpan",
+                    List.of(
+                            new CrudDialog.FormField("tanggal", "Tanggal Jemput (YYYY-MM-DD)", "2026-11-28"),
+                            new CrudDialog.FormField("waktu", "Waktu Jemput (HH:mm)", "09:00")
+                    ), initial
+            ).ifPresent(vals -> {
+                String tanggal = vals.get("tanggal") != null ? vals.get("tanggal").trim() : "";
+                String waktu = vals.get("waktu") != null ? vals.get("waktu").trim() : "";
+                try {
+                    LocalDate.parse(tanggal);
+                } catch (Exception ex) {
+                    CrudDialog.showInfo("Error", "Format tanggal tidak valid. Gunakan YYYY-MM-DD, contoh 2026-11-28.");
+                    return;
+                }
+                if (waktu.isEmpty()) {
+                    CrudDialog.showInfo("Error", "Waktu jemput wajib diisi, contoh 09:00.");
+                    return;
+                }
+                runPenjemputanApi(
+                        () -> ApiService.jadwalkanUlangPenjemputan(sel.getId(), tanggal, waktu),
+                        "Penjemputan #" + sel.getId() + " dijadwalkan ulang ke " + tanggal + " " + waktu,
+                        "Gagal menjadwalkan ulang penjemputan");
+            });
+        }));
+        actionBar.getChildren().add(Ui.button("Batalkan", "btn-danger-ghost", e -> {
+            Penjemputan sel = table.getSelectionModel().getSelectedItem();
+            if (sel == null) {
+                CrudDialog.showInfo("Info", "Pilih salah satu penjemputan terlebih dahulu");
+                return;
+            }
+            if ("SELESAI".equals(sel.getStatus()) || "DIBATALKAN".equals(sel.getStatus())) {
+                CrudDialog.showInfo("Info", "Penjemputan berstatus " + sel.getStatus() + " tidak bisa dibatalkan");
+                return;
+            }
+            boolean ok = CrudDialog.showConfirm("Batalkan Penjemputan",
+                    "Yakin ingin membatalkan penjemputan #" + sel.getId() + "?\nTindakan ini tidak dapat dibatalkan.");
+            if (!ok) return;
+            runPenjemputanApi(
+                    () -> ApiService.batalkanPenjemputan(sel.getId()),
+                    "Penjemputan #" + sel.getId() + " dibatalkan",
+                    "Gagal membatalkan penjemputan");
         }));
         actionBar.getChildren().add(Ui.button("Detail", "btn-secondary", e -> {
             Penjemputan sel = table.getSelectionModel().getSelectedItem();
@@ -530,12 +602,13 @@ public class DashboardView {
         });
         contentArea.getChildren().add(searchField);
 
-        int menunggu = 0, dijadwalkan = 0, diproses = 0, selesai = 0;
+        int menunggu = 0, dijadwalkan = 0, diproses = 0, selesai = 0, dibatalkan = 0;
         for (Penjemputan p : penjemputanData) {
             if ("MENUNGGU".equals(p.getStatus())) menunggu++;
             else if ("DIJADWALKAN".equals(p.getStatus())) dijadwalkan++;
             else if ("DIPROSES".equals(p.getStatus())) diproses++;
             else if ("SELESAI".equals(p.getStatus())) selesai++;
+            else if ("DIBATALKAN".equals(p.getStatus())) dibatalkan++;
         }
         HBox counts = new HBox(14);
         counts.setAlignment(Pos.CENTER_LEFT);
@@ -543,6 +616,7 @@ public class DashboardView {
         counts.getChildren().add(countChip("#2563EB", dijadwalkan + " Dijadwalkan"));
         counts.getChildren().add(countChip("#7C3AED", diproses + " Diproses"));
         counts.getChildren().add(countChip("#059669", selesai + " Selesai"));
+        counts.getChildren().add(countChip("#DC2626", dibatalkan + " Dibatalkan"));
         contentArea.getChildren().add(counts);
 
         TableColumn<Penjemputan, String> c1 = new TableColumn<>("ID");
@@ -555,11 +629,132 @@ public class DashboardView {
         c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getWaktuJemput()));
         TableColumn<Penjemputan, String> c5 = new TableColumn<>("Status");
         c5.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus()));
+        TableColumn<Penjemputan, String> cPetugas = new TableColumn<>("Petugas");
+        cPetugas.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getPetugas() != null && d.getValue().getPetugas().getNama() != null
+                        ? d.getValue().getPetugas().getNama() : "-"));
         TableColumn<Penjemputan, String> c6 = new TableColumn<>("Catatan");
         c6.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCatatan()));
-        table.getColumns().addAll(c1, c2, c3, c4, c5, c6);
+        table.getColumns().addAll(c1, c2, c3, c4, c5, cPetugas, c6);
 
         contentArea.getChildren().add(table);
+    }
+
+    /**
+     * Menjalankan satu aksi penjemputan ke API di thread latar. Bila API gagal,
+     * tampilkan pesan error dan JANGAN mengubah status lokal; bila berhasil,
+     * muat ulang daftar dari server (bukan dari state lokal).
+     */
+    private void runPenjemputanApi(Runnable apiCall, String successMessage, String errorTitle) {
+        new Thread(() -> {
+            try {
+                apiCall.run();
+                javafx.application.Platform.runLater(() -> {
+                    refreshPenjemputanFromServer();
+                    CrudDialog.showInfo("Berhasil", successMessage);
+                });
+            } catch (Exception ex) {
+                javafx.application.Platform.runLater(() ->
+                        CrudDialog.showInfo("Error", errorTitle + ": " + ex.getMessage()
+                                + "\nStatus penjemputan tidak diubah."));
+            }
+        }).start();
+    }
+
+    /** Muat ulang daftar penjemputan dari server, lalu gambar ulang tampilan
+     * yang sedang dibuka (penjemputan / dashboard / riwayat). */
+    private void refreshPenjemputanFromServer() {
+        new Thread(() -> {
+            List<Penjemputan> fresh = ApiService.getPenjemputan();
+            javafx.application.Platform.runLater(() -> {
+                penjemputanData.setAll(fresh);
+                if ("penjemputan".equals(currentView)) showPenjemputan();
+                else if ("dashboard".equals(currentView)) showDashboard();
+                else if ("riwayat".equals(currentView)) showRiwayatSetoran();
+            });
+        }).start();
+    }
+
+    /**
+     * Pemilih petugas untuk "Tugaskan Petugas": daftar diambil dari
+     * GET /user/all (ApiService.getUsers) dan disaring di client ke role
+     * PETUGAS / BANK_SAMPAH. Nama petugas tidak pernah dikarang — bila API
+     * tidak mengembalikan petugas, tampilkan error. Memanggil
+     * ApiService.assignPetugas lalu refresh dari server.
+     */
+    private void showPilihPetugasDialog(Penjemputan sel) {
+        new Thread(() -> {
+            List<User> petugasList;
+            String loadError = null;
+            try {
+                List<User> all = ApiService.getUsers();
+                petugasList = new ArrayList<>();
+                for (User u : all) {
+                    String role = u.getRole() != null ? u.getRole().toUpperCase() : "";
+                    if ("PETUGAS".equals(role) || "BANK_SAMPAH".equals(role)) petugasList.add(u);
+                }
+            } catch (Exception ex) {
+                petugasList = List.of();
+                loadError = ex.getMessage();
+            }
+            final List<User> petugas = petugasList;
+            final String err = loadError;
+            javafx.application.Platform.runLater(() -> {
+                if (err != null) {
+                    CrudDialog.showInfo("Error", "Gagal memuat daftar petugas dari server: " + err);
+                    return;
+                }
+                if (petugas.isEmpty()) {
+                    CrudDialog.showInfo("Info", "Tidak ada petugas dari server (GET /user/all tidak mengembalikan user berrole PETUGAS/BANK_SAMPAH).");
+                    return;
+                }
+                Dialog<User> dialog = new Dialog<>();
+                dialog.setTitle("Tugaskan Petugas");
+                dialog.setHeaderText(null);
+                dialog.getDialogPane().getStyleClass().add("glass-dialog");
+
+                VBox root = new VBox(12);
+                root.setPadding(new Insets(20));
+                Label hint = new Label("Pilih petugas untuk penjemputan #" + sel.getId());
+                hint.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Theme.TEXT_MUTED + ";");
+                ComboBox<User> combo = Ui.comboBox();
+                combo.setItems(FXCollections.observableArrayList(petugas));
+                combo.setPrefWidth(360);
+                combo.setConverter(new StringConverter<>() {
+                    @Override
+                    public String toString(User u) {
+                        return u == null ? "" : u.getNama() + " (" + u.getRole() + ")"
+                                + (u.getNoTelp() != null ? " · " + u.getNoTelp() : "");
+                    }
+
+                    @Override
+                    public User fromString(String s) { return null; }
+                });
+                combo.setCellFactory(lv -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(User u, boolean empty) {
+                        super.updateItem(u, empty);
+                        setText(empty || u == null ? null
+                                : u.getNama() + " (" + u.getRole() + ")"
+                                + (u.getNoTelp() != null ? " · " + u.getNoTelp() : ""));
+                    }
+                });
+                combo.getSelectionModel().selectFirst();
+                root.getChildren().addAll(hint, combo);
+                dialog.getDialogPane().setContent(root);
+
+                ButtonType okBtn = new ButtonType("Tugaskan", ButtonBar.ButtonData.OK_DONE);
+                ButtonType cancelBtn = new ButtonType("Batal", ButtonBar.ButtonData.CANCEL_CLOSE);
+                dialog.getDialogPane().getButtonTypes().addAll(okBtn, cancelBtn);
+                Button ok = (Button) dialog.getDialogPane().lookupButton(okBtn);
+                if (ok != null) ok.getStyleClass().addAll("btn", "btn-primary");
+                dialog.setResultConverter(b -> b == okBtn ? combo.getSelectionModel().getSelectedItem() : null);
+                dialog.showAndWait().ifPresent(petugasDipilih -> runPenjemputanApi(
+                        () -> ApiService.assignPetugas(sel.getId(), petugasDipilih.getId()),
+                        "Petugas " + petugasDipilih.getNama() + " ditugaskan untuk #" + sel.getId(),
+                        "Gagal menugaskan petugas"));
+            });
+        }).start();
     }
 
     /** Opens a glass dialog with the full pickup detail, order list and a Google Maps action. */
@@ -1312,6 +1507,7 @@ public class DashboardView {
     }
 
     private String namaMasyarakat(Penjemputan p) {
+        if (p.getUser() != null && p.getUser().getNama() != null) return p.getUser().getNama();
         Map<Long, String> names = Map.of(
                 1L, "Budi Santoso",
                 2L, "Siti Nurhaliza",
@@ -1405,6 +1601,7 @@ public class DashboardView {
     /* ---------------- RIWAYAT SETORAN ---------------- */
 
     private void showRiwayatSetoran() {
+        currentView = "riwayat";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Riwayat Setoran & Pembayaran", "Semua transaksi yang telah selesai."));
 
@@ -1434,7 +1631,176 @@ public class DashboardView {
         summary.setStyle("-fx-font-size: 15px; -fx-font-weight: 800; -fx-text-fill: " + Theme.ACCENT + ";");
         summary.setPadding(new Insets(12, 0, 0, 0));
 
-        contentArea.getChildren().addAll(table, summary);
+        HBox bar = new HBox(10);
+        bar.getChildren().add(Ui.button("Lihat Struk", "btn-primary", e -> {
+            Penjemputan sel = table.getSelectionModel().getSelectedItem();
+            if (sel == null) {
+                CrudDialog.showInfo("Info", "Pilih salah satu setoran terlebih dahulu");
+                return;
+            }
+            showStrukDialog(sel);
+        }));
+        bar.getChildren().add(Ui.button("Refresh", "btn-secondary", e -> refreshPenjemputanFromServer()));
+        contentArea.getChildren().addAll(table, summary, bar);
+    }
+
+    /**
+     * Struk digital per setoran: nama nasabah, tanggal, petugas, tiap jenis
+     * sampah (nama, kg, harga/kg, total), total bayar, status, dan foto bukti
+     * bila ada. Data dicoba dimuat ulang lewat GET /penjemputan/{id}; bila
+     * endpoint itu belum tersedia, dipakai data baris yang sudah dimuat dan
+     * kekurangannya dicatat di dialog.
+     */
+    private void showStrukDialog(Penjemputan row) {
+        Penjemputan p = row;
+        boolean detailFromServer = true;
+        try {
+            Penjemputan fresh = ApiService.getPenjemputanById(row.getId());
+            if (fresh != null) p = fresh;
+        } catch (Exception e) {
+            // GET /penjemputan/{id} belum tersedia / gagal — pakai data baris.
+            detailFromServer = false;
+        }
+        final Penjemputan detail = p;
+        final boolean fromServer = detailFromServer;
+
+        String strukText = buildStrukText(detail);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Struk Setoran #" + detail.getId());
+        dialog.setHeaderText(null);
+        dialog.getDialogPane().getStyleClass().add("glass-dialog");
+
+        VBox root = new VBox(12);
+        root.setPadding(new Insets(20));
+
+        Label title = new Label("Struk Setoran  #" + String.format("%03d", detail.getId()));
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: 800; -fx-text-fill: " + Theme.TEXT + ";");
+        root.getChildren().add(title);
+
+        if (!fromServer) {
+            Label note = new Label("Detail lengkap tidak dapat dimuat dari server (GET /penjemputan/{id} belum tersedia) — struk memakai data baris yang sudah dimuat.");
+            note.setWrapText(true);
+            note.setStyle("-fx-font-size: 11px; -fx-text-fill: #B45309;");
+            root.getChildren().add(note);
+        }
+
+        TextArea strukArea = new TextArea(strukText);
+        strukArea.setEditable(false);
+        strukArea.setWrapText(true);
+        strukArea.setPrefSize(460, 340);
+        strukArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
+        root.getChildren().add(strukArea);
+
+        String fotoUrl = detail.getFotoBuktiUrl();
+        if (fotoUrl != null && !fotoUrl.isBlank()) {
+            HBox fotoRow = new HBox(10);
+            fotoRow.setAlignment(Pos.CENTER_LEFT);
+            Label fotoLbl = new Label("Foto bukti: " + resolveFotoUrl(fotoUrl));
+            fotoLbl.setWrapText(true);
+            fotoLbl.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Theme.TEXT_MUTED + ";");
+            Button bukaFoto = Ui.button("Buka Foto", "btn-secondary", e -> {
+                try {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(resolveFotoUrl(fotoUrl)));
+                } catch (Exception ex) {
+                    CrudDialog.showInfo("Info", "Tidak dapat membuka foto: " + ex.getMessage());
+                }
+            });
+            fotoRow.getChildren().addAll(fotoLbl, bukaFoto);
+            root.getChildren().add(fotoRow);
+        } else {
+            Label noFoto = new Label("Foto bukti: tidak ada");
+            noFoto.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Theme.TEXT_SUBTLE + ";");
+            root.getChildren().add(noFoto);
+        }
+
+        Button salinBtn = Ui.button("Salin Struk", "btn-primary", e -> {
+            ClipboardContent content = new ClipboardContent();
+            content.putString(strukText);
+            Clipboard.getSystemClipboard().setContent(content);
+            CrudDialog.showInfo("Berhasil", "Teks struk disalin ke clipboard.");
+        });
+        root.getChildren().add(salinBtn);
+
+        dialog.getDialogPane().setContent(root);
+        ButtonType closeBtn = new ButtonType("Tutup", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(closeBtn);
+        Button close = (Button) dialog.getDialogPane().lookupButton(closeBtn);
+        if (close != null) close.getStyleClass().addAll("btn", "btn-secondary");
+        dialog.showAndWait();
+    }
+
+    /** Menyusun teks struk dari data penjemputan. Harga/kg diambil dari objek
+     * sampah backend bila ada, lalu dari daftar harga sampah API, lalu dari
+     * DummyData (harga kanonis DESIGN.md); bila tidak ditemukan, harga
+     * ditulis "-" — tidak ada harga yang dikarang. */
+    private String buildStrukText(Penjemputan p) {
+        Map<String, BigDecimal> hargaMap = new HashMap<>();
+        List<Sampah> refs = ApiService.getSampah();
+        if (refs.isEmpty()) refs = DummyData.getSampahList();
+        for (Sampah s : refs) {
+            if (s.getNama() != null && s.getHargaPerKg() != null) hargaMap.put(s.getNama().toLowerCase(), s.getHargaPerKg());
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("RESIK — BANK SAMPAH DIGITAL\n");
+        sb.append("Struk Setoran #").append(String.format("%03d", p.getId())).append("\n");
+        sb.append("--------------------------------\n");
+        sb.append("Nasabah  : ").append(namaMasyarakat(p)).append("\n");
+        sb.append("Tanggal  : ").append(p.getTanggalJemput() != null ? p.getTanggalJemput().toString() : "-");
+        if (p.getWaktuJemput() != null) sb.append(" ").append(p.getWaktuJemput());
+        sb.append("\n");
+        sb.append("Petugas  : ").append(p.getPetugas() != null && p.getPetugas().getNama() != null
+                ? p.getPetugas().getNama() : "-").append("\n");
+        sb.append("Alamat   : ").append(p.getAlamat() != null ? p.getAlamat() : "-").append("\n");
+        sb.append("--------------------------------\n");
+        BigDecimal total = BigDecimal.ZERO;
+        if (p.getDetailList() == null || p.getDetailList().isEmpty()) {
+            sb.append("Belum ada rincian sampah.\n");
+        } else {
+            for (Penjemputan.DetailPenjemputan d : p.getDetailList()) {
+                String nama = d.getSampahNama();
+                if (nama == null || nama.isBlank()) nama = "Sampah #" + d.getId();
+                BigDecimal kg = d.getBeratAktual() != null ? d.getBeratAktual() : d.getEstimasiBerat();
+                if (kg == null) kg = BigDecimal.ZERO;
+                BigDecimal harga = d.getSampahHargaPerKg();
+                if (harga == null) harga = hargaMap.get(nama.toLowerCase());
+                BigDecimal subtotal = d.getSubtotal();
+                if (subtotal == null && harga != null) subtotal = kg.multiply(harga);
+                if (subtotal != null) total = total.add(subtotal);
+                sb.append(nama).append("\n");
+                sb.append("  ").append(kg.stripTrailingZeros().toPlainString()).append(" kg x Rp ")
+                        .append(harga != null ? harga.stripTrailingZeros().toPlainString() : "-")
+                        .append(" = Rp ")
+                        .append(subtotal != null ? subtotal.stripTrailingZeros().toPlainString() : "-")
+                        .append("\n");
+            }
+        }
+        sb.append("--------------------------------\n");
+        BigDecimal totalBayar = p.getTransaksi() != null && p.getTransaksi().getTotalHarga() != null
+                ? p.getTransaksi().getTotalHarga() : total;
+        sb.append("TOTAL BAYAR : Rp ").append(totalBayar.stripTrailingZeros().toPlainString()).append("\n");
+        sb.append("Status      : ").append(p.getStatus() != null ? p.getStatus() : "-");
+        if (p.getTransaksi() != null && p.getTransaksi().getStatus() != null) {
+            sb.append(" (pembayaran: ").append(p.getTransaksi().getStatus()).append(")");
+        }
+        sb.append("\n");
+        if (p.getFotoBuktiUrl() != null && !p.getFotoBuktiUrl().isBlank()) {
+            sb.append("Foto bukti : ").append(resolveFotoUrl(p.getFotoBuktiUrl())).append("\n");
+        }
+        sb.append("--------------------------------\n");
+        sb.append("Terima kasih sudah memilah sampah.");
+        return sb.toString();
+    }
+
+    /** Mengubah fotoBuktiUrl relatif ("/api/penjemputan/{id}/foto") menjadi URL
+     * absolut berdasarkan host API; URL absolut dibiarkan apa adanya. */
+    private String resolveFotoUrl(String url) {
+        if (url == null) return "";
+        if (url.startsWith("http://") || url.startsWith("https://")) return url;
+        String base = AppConfig.API_BASE_URL;
+        if (base.endsWith("/api")) base = base.substring(0, base.length() - 4);
+        return base + (url.startsWith("/") ? url : "/" + url);
     }
 
     /* ---------------- MANAJEMEN USER ---------------- */
@@ -2426,114 +2792,217 @@ public class DashboardView {
         return table;
     }
 
+    /**
+     * Verifikasi akun dengan data asli: GET /admin/verifikasi, atau bila
+     * endpoint itu belum ada, GET /user/all disaring statusVerifikasi ==
+     * MENUNGGU (ApiService.getPendingVerifikasi). Bila API gagal, tampilkan
+     * data contoh dengan label jelas "data contoh — API tidak terjangkau"
+     * dan JANGAN diam-diam memakai dummy. Setujui/Tolak memanggil
+     * POST /admin/users/{id}/approve|reject lalu muat ulang dari server;
+     * bila API gagal, tampilkan error dan pertahankan data terakhir.
+     */
     private void showVerifikasi() {
         currentView = "verifikasi";
         contentArea.getChildren().clear();
         contentArea.getChildren().add(pageHeader("Verifikasi & Approval", "Approve akun Bank Sampah dan masyarakat sebelum aktif."));
 
-        contentArea.getChildren().add(Ui.heading("Bank Sampah"));
-        TableView<String[]> bank = quickTable(
-                new String[]{"ID", "Nama Bank Sampah", "KTP", "Foto Bank", "Rekening", "Status"},
-                new String[][]{
-                        {"1", "Bank Sampah Resik Pusat", "3201234567890001", "Ada", "BCA 8820 1234 5678", "MENUNGGU"},
-                        {"2", "Bank Sampah Resik Selatan", "3201234567890002", "Ada", "Mandiri 1300 9876 5432", "MENUNGGU"},
-                        {"3", "Bank Sampah Resik Timur", "3201234567890003", "Belum", "BRI 0021 4567 8901", "DITOLAK"}
-                });
-        contentArea.getChildren().add(bank);
+        List<User> pending;
+        boolean usingDummy = false;
+        String loadError = null;
+        try {
+            pending = ApiService.getPendingVerifikasi();
+        } catch (Exception e) {
+            usingDummy = true;
+            loadError = e.getMessage();
+            pending = dummyPendingUsers();
+        }
+        final boolean dummyMode = usingDummy;
+
+        if (usingDummy) {
+            Label banner = new Label("data contoh — API tidak terjangkau"
+                    + (loadError != null ? " (" + loadError + ")" : "")
+                    + ". Approval di mode ini tidak tersimpan ke server.");
+            banner.setWrapText(true);
+            banner.setStyle("-fx-font-size: 12px; -fx-font-weight: 700; -fx-text-fill: #B45309;"
+                    + " -fx-background-color: #FEF3C7; -fx-background-radius: 8; -fx-padding: 8 12;");
+            contentArea.getChildren().add(banner);
+        } else if (pending.isEmpty()) {
+            contentArea.getChildren().add(new EmptyState("Tidak ada akun menunggu verifikasi",
+                    "Semua akun sudah diverifikasi."));
+            contentArea.getChildren().add(Ui.button("Refresh", "btn-secondary", e -> showVerifikasi()));
+            return;
+        }
+
+        TableView<User> table = styledTable();
+        table.setItems(FXCollections.observableArrayList(pending));
+        TableColumn<User, String> c1 = new TableColumn<>("ID");
+        c1.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getId())));
+        TableColumn<User, String> c2 = new TableColumn<>("Nama");
+        c2.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNama()));
+        TableColumn<User, String> c3 = new TableColumn<>("Email");
+        c3.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEmail()));
+        TableColumn<User, String> c4 = new TableColumn<>("Role");
+        c4.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getRole()));
+        TableColumn<User, String> c5 = new TableColumn<>("No. Telepon");
+        c5.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getNoTelp() != null ? d.getValue().getNoTelp() : "-"));
+        TableColumn<User, String> c6 = new TableColumn<>("Status Verifikasi");
+        c6.setCellValueFactory(d -> new SimpleStringProperty(
+                d.getValue().getStatusVerifikasi() != null ? d.getValue().getStatusVerifikasi() : "MENUNGGU"));
+        table.getColumns().addAll(c1, c2, c3, c4, c5, c6);
+        contentArea.getChildren().add(table);
 
         HBox bar = new HBox(10);
-        bar.getChildren().add(Ui.button("Preview", "btn-secondary", e -> {
-            String[] sel = bank.getSelectionModel().getSelectedItem();
+        bar.getChildren().add(Ui.button("Refresh", "btn-secondary", e -> showVerifikasi()));
+        bar.getChildren().add(Ui.button("Setujui", "btn-primary", e -> {
+            User sel = table.getSelectionModel().getSelectedItem();
             if (sel == null) {
-                CrudDialog.showInfo("Info", "Pilih akun bank sampah terlebih dahulu.");
+                CrudDialog.showInfo("Info", "Pilih akun terlebih dahulu.");
                 return;
             }
-            CrudDialog.showInfo("Detail " + sel[1],
-                    "KTP: " + sel[2] + "\nFoto Bank: " + sel[3] + "\nRekening Pencairan: " + sel[4] + "\nStatus: " + sel[5]);
-        }));
-        bar.getChildren().add(Ui.button("Upload KTP/Foto", "btn-secondary", e -> pilihFileGambar("Upload KTP atau Foto Bank Sampah")));
-        bar.getChildren().add(Ui.button("Approve", "btn-primary", e -> {
-            String[] sel = bank.getSelectionModel().getSelectedItem();
-            if (sel == null) {
-                CrudDialog.showInfo("Info", "Pilih akun bank sampah terlebih dahulu.");
+            if (dummyMode) {
+                CrudDialog.showInfo("Info", "Mode data contoh: approval tidak dikirim ke server karena API tidak terjangkau.");
                 return;
             }
-            try {
-                ApiService.post("/admin/verifikasi/bank/" + sel[0] + "/approve", Map.of("status", "AKTIF"));
-            } catch (Exception ignored) {
-                // offline demo — tetap update lokal
-            }
-            sel[5] = "AKTIF";
-            bank.refresh();
-            CrudDialog.showInfo("Approval", "Akun " + sel[1] + " disetujui dan sekarang aktif.");
+            new Thread(() -> {
+                try {
+                    ApiService.approveUser(sel.getId());
+                    javafx.application.Platform.runLater(() -> {
+                        showVerifikasi();
+                        CrudDialog.showInfo("Approval", "Akun " + sel.getNama() + " disetujui dan sekarang aktif.");
+                    });
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() ->
+                            CrudDialog.showInfo("Error", "Gagal menyetujui akun: " + ex.getMessage()
+                                    + "\nDaftar tetap menampilkan data terakhir."));
+                }
+            }).start();
         }));
         bar.getChildren().add(Ui.button("Tolak", "btn-danger-ghost", e -> {
-            String[] sel = bank.getSelectionModel().getSelectedItem();
+            User sel = table.getSelectionModel().getSelectedItem();
             if (sel == null) {
-                CrudDialog.showInfo("Info", "Pilih akun bank sampah terlebih dahulu.");
+                CrudDialog.showInfo("Info", "Pilih akun terlebih dahulu.");
                 return;
             }
-            try {
-                ApiService.post("/admin/verifikasi/bank/" + sel[0] + "/reject", Map.of("status", "DITOLAK"));
-            } catch (Exception ignored) {
-                // offline demo — tetap update lokal
-            }
-            sel[5] = "DITOLAK";
-            bank.refresh();
-            CrudDialog.showInfo("Approval", "Akun " + sel[1] + " ditolak.");
-        }));
-        contentArea.getChildren().add(bar);
-
-        contentArea.getChildren().add(Ui.heading("Masyarakat"));
-        TableView<String[]> users = quickTable(
-                new String[]{"ID", "Nama", "KTP", "Email", "Status"},
-                new String[][]{
-                        {"1", "Budi Santoso", "3201234567890004", "budi@gmail.com", "AKTIF"},
-                        {"2", "Siti Nurhaliza", "3201234567890005", "siti@gmail.com", "MENUNGGU"}
-                });
-        contentArea.getChildren().add(users);
-    }
-
-    private void showManajemenBank() {
-        contentArea.getChildren().clear();
-        contentArea.getChildren().add(pageHeader("Manajemen Bank Sampah", "Status aktif, rating, batas layanan, dan komisi platform."));
-        TableView<String[]> table = quickTable(
-                new String[]{"Nama", "Rating", "Batas Layanan/hari", "Komisi", "Status"},
-                new String[][]{
-                        {"Bank Sampah Resik Pusat", "4.8", "20", "5%", "AKTIF"},
-                        {"Bank Sampah Resik Selatan", "4.5", "15", "5%", "AKTIF"},
-                        {"Bank Sampah Resik Timur", "3.9", "10", "7%", "NONAKTIF"}
-                });
-        contentArea.getChildren().add(table);
-        HBox bar = new HBox(10);
-        bar.getChildren().add(Ui.button("Edit Komisi", "btn-secondary", e -> {
-            String[] sel = table.getSelectionModel().getSelectedItem();
-            if (sel == null) {
-                CrudDialog.showInfo("Info", "Pilih bank sampah terlebih dahulu.");
+            if (dummyMode) {
+                CrudDialog.showInfo("Info", "Mode data contoh: penolakan tidak dikirim ke server karena API tidak terjangkau.");
                 return;
             }
-            CrudDialog.showForm("Edit Komisi — " + sel[0], "Simpan",
-                    List.of(
-                            new CrudDialog.FormField("komisi", "Komisi (%)", sel[3]),
-                            new CrudDialog.FormField("batas", "Batas Layanan/hari", sel[2])
-                    ), null
+            CrudDialog.showForm("Tolak Akun — " + sel.getNama(), "Tolak",
+                    List.of(new CrudDialog.FormField("alasan", "Alasan penolakan (opsional)", "Contoh: dokumen tidak lengkap")),
+                    null
             ).ifPresent(vals -> {
-                sel[3] = vals.get("komisi");
-                sel[2] = vals.get("batas");
-                table.refresh();
-                CrudDialog.showInfo("Berhasil", "Komisi dan batas layanan diperbarui.");
+                String alasan = vals.get("alasan");
+                new Thread(() -> {
+                    try {
+                        ApiService.rejectUser(sel.getId(), alasan);
+                        javafx.application.Platform.runLater(() -> {
+                            showVerifikasi();
+                            CrudDialog.showInfo("Approval", "Akun " + sel.getNama() + " ditolak.");
+                        });
+                    } catch (Exception ex) {
+                        javafx.application.Platform.runLater(() ->
+                                CrudDialog.showInfo("Error", "Gagal menolak akun: " + ex.getMessage()
+                                        + "\nDaftar tetap menampilkan data terakhir."));
+                    }
+                }).start();
             });
         }));
-        bar.getChildren().add(Ui.button("Nonaktifkan", "btn-danger-ghost", e -> {
-            String[] sel = table.getSelectionModel().getSelectedItem();
-            if (sel == null) {
-                CrudDialog.showInfo("Info", "Pilih bank sampah terlebih dahulu.");
-                return;
-            }
-            sel[4] = "AKTIF".equals(sel[4]) ? "NONAKTIF" : "AKTIF";
-            table.refresh();
-        }));
         contentArea.getChildren().add(bar);
+    }
+
+    /** Data contoh untuk halaman verifikasi — dipakai HANYA bila API tidak
+     * terjangkau, dan selalu ditandai dengan banner "data contoh" oleh
+     * pemanggil. Diambil dari DummyData (bukan nama yang dikarang di sini). */
+    private List<User> dummyPendingUsers() {
+        List<User> list = new ArrayList<>();
+        for (Map<String, Object> m : DummyData.getUserList()) {
+            User u = new User();
+            Object id = m.get("id");
+            u.setId(id instanceof Number n ? n.longValue() : null);
+            u.setNama(String.valueOf(m.getOrDefault("nama", "?")));
+            u.setEmail(String.valueOf(m.getOrDefault("email", "-")));
+            u.setRole(String.valueOf(m.getOrDefault("role", "MASYARAKAT")));
+            Object telp = m.get("telp");
+            u.setNoTelp(telp != null ? String.valueOf(telp) : null);
+            u.setStatusVerifikasi("MENUNGGU");
+            list.add(u);
+        }
+        return list;
+    }
+
+    /**
+     * Manajemen Bank Sampah dengan rating asli: daftar petugas/bank sampah
+     * dari GET /user/all (role PETUGAS/BANK_SAMPAH), rating per orang dari
+     * GET /rating/petugas/{id} (ApiService.getRatingPetugas). Bila rating
+     * belum tersedia, tampilkan "Belum ada rating" — angka tidak dikarang.
+     * Tombol Edit Komisi / Nonaktifkan lama dihapus karena hanya mengubah
+     * data dummy lokal tanpa endpoint backend.
+     */
+    private void showManajemenBank() {
+        currentView = "bankmanage";
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(pageHeader("Manajemen Bank Sampah", "Petugas & bank sampah beserta rating dari server."));
+
+        List<User> banks;
+        String loadError = null;
+        try {
+            List<User> all = ApiService.getUsers();
+            banks = new ArrayList<>();
+            for (User u : all) {
+                String role = u.getRole() != null ? u.getRole().toUpperCase() : "";
+                if ("PETUGAS".equals(role) || "BANK_SAMPAH".equals(role)) banks.add(u);
+            }
+        } catch (Exception e) {
+            banks = List.of();
+            loadError = e.getMessage();
+        }
+
+        if (loadError != null) {
+            Label err = new Label("Data petugas/bank sampah tidak dapat dimuat — API tidak terjangkau (" + loadError + ").");
+            err.setWrapText(true);
+            err.setStyle("-fx-font-size: 12px; -fx-font-weight: 700; -fx-text-fill: #B45309;");
+            contentArea.getChildren().add(err);
+        } else if (banks.isEmpty()) {
+            contentArea.getChildren().add(new EmptyState("Belum ada data petugas/bank sampah",
+                    "GET /user/all tidak mengembalikan user berrole PETUGAS/BANK_SAMPAH."));
+        } else {
+            TableView<Map<String, Object>> table = styledTable();
+            List<Map<String, Object>> rows = new ArrayList<>();
+            for (User u : banks) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("nama", u.getNama());
+                row.put("role", u.getRole());
+                row.put("telepon", u.getNoTelp() != null ? u.getNoTelp() : "-");
+                row.put("alamat", u.getAlamat() != null ? u.getAlamat() : "-");
+                Map<String, Object> rating = u.getId() != null ? ApiService.getRatingPetugas(u.getId()) : null;
+                if (rating != null) {
+                    Object rata = rating.get("rataRata");
+                    Object jumlah = rating.get("jumlah");
+                    row.put("rating", rata instanceof Number n ? String.format("%.1f", n.doubleValue()) : "Belum ada rating");
+                    row.put("jumlah", jumlah != null ? String.valueOf(jumlah) : "-");
+                } else {
+                    row.put("rating", "Belum ada rating");
+                    row.put("jumlah", "-");
+                }
+                rows.add(row);
+            }
+            table.setItems(FXCollections.observableArrayList(rows));
+            TableColumn<Map<String, Object>, String> c1 = new TableColumn<>("Nama");
+            c1.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("nama"))));
+            TableColumn<Map<String, Object>, String> c2 = new TableColumn<>("Role");
+            c2.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("role"))));
+            TableColumn<Map<String, Object>, String> c3 = new TableColumn<>("Rating");
+            c3.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("rating"))));
+            TableColumn<Map<String, Object>, String> c4 = new TableColumn<>("Jumlah Ulasan");
+            c4.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("jumlah"))));
+            TableColumn<Map<String, Object>, String> c5 = new TableColumn<>("Telepon");
+            c5.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("telepon"))));
+            TableColumn<Map<String, Object>, String> c6 = new TableColumn<>("Alamat");
+            c6.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().get("alamat"))));
+            table.getColumns().addAll(c1, c2, c3, c4, c5, c6);
+            contentArea.getChildren().add(table);
+        }
+        contentArea.getChildren().add(Ui.button("Refresh", "btn-secondary", e -> showManajemenBank()));
     }
 
     private void showAuditLog() {

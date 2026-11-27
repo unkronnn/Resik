@@ -36,7 +36,7 @@ import com.resik.client.ui.theme.*
 @Composable
 fun ProfilScreen(
     nama: String, email: String, alamat: String, telp: String, role: String,
-    onBack: () -> Unit, onLogout: () -> Unit,
+    onBack: () -> Unit, onLogout: () -> Unit, onNavMisi: () -> Unit,
 ) {
     var photoUri by remember { mutableStateOf<Uri?>(null) }
     var editMode by remember { mutableStateOf(false) }
@@ -159,6 +159,18 @@ fun ProfilScreen(
             }
 
             Spacer(Modifier.height(8.dp))
+            // Misi & Badge (butir 10) — juga terjangkau dari Beranda.
+            Button(
+                onClick = onNavMisi,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenMint, contentColor = GreenPrimary)
+            ) {
+                Icon(Icons.Filled.EmojiEvents, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Misi & Badge", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(12.dp))
             Button(
                 onClick = onLogout,
                 modifier = Modifier.fillMaxWidth().height(52.dp),

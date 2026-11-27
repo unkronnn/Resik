@@ -23,3 +23,13 @@ jwt:
 
 cors:
   allowed-origins: "*"
+
+# Firebase Cloud Messaging (persiapan saja, belum aktif — lihat docs/FCM_SETUP.md).
+# Setel ke path file service-account JSON dari proyek Firebase, atau lewat
+# env FCM_SERVICE_ACCOUNT_PATH. Kosong = FCM no-op, aplikasi tetap jalan.
+fcm:
+  service-account-path: ${FCM_SERVICE_ACCOUNT_PATH:}
+
+# Penyimpanan file upload backend (foto bukti timbangan di uploads/bukti/).
+resik:
+  uploads-dir: ${RESIK_UPLOADS_DIR:uploads}

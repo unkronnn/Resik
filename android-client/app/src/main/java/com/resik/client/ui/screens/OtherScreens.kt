@@ -54,7 +54,7 @@ import java.util.*
 // Data models
 data class ChatMsg(val text: String, val fromMe: Boolean, val time: String)
 data class PenjemputanItem(val id: Int, val alamat: String, val tanggal: String, val waktu: String, val status: String, val catatan: String)
-data class TransaksiItem(val id: Int, val tanggal: String, val jumlah: String, val status: String, val jenis: String)
+data class TransaksiItem(val id: Int, val tanggal: String, val jumlah: String, val status: String, val jenis: String, val penjemputanId: Long? = null)
 data class EdukasiItem(val judul: String, val kategori: String, val deskripsi: String, val harga: String, val icon: ImageVector)
 
 // Persistent storage using SharedPreferences
@@ -143,8 +143,10 @@ fun ChatScreen(onBack: () -> Unit) {
     // WebSocket client for real-time push notifications
     val wsClient = remember {
         val baseUrl = ApiClient.getBaseUrl()
+        val jwt = ApiClient.getToken()
         val wsUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://")
-            .replace("/api/", "/ws/") + "chat?userId=$userId"
+            .replace("/api/", "/ws/") + "chat?userId=$userId" +
+            (if (!jwt.isNullOrBlank()) "&token=$jwt" else "")
         ChatWebSocketClient(wsUrl)
     }
 
@@ -294,6 +296,14 @@ fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
     var showForm by rememberSaveable { mutableStateOf(false) }
     var items by remember { mutableStateOf(LocalData.loadPenjemputan(context).toList()) }
     var refreshTick by remember { mutableStateOf(0) }
+    // Batalkan / jadwalkan ulang (butir 1) + struk detail (butir 5).
+    var cancelTarget by remember { mutableStateOf<PenjemputanItem?>(null) }
+    var rescheduleTarget by remember { mutableStateOf<PenjemputanItem?>(null) }
+    var detailId by remember { mutableStateOf<Long?>(null) }
+    var detailData by remember { mutableStateOf<PenjemputanDetailData?>(null) }
+    var detailLoading by remember { mutableStateOf(false) }
+    var actionError by remember { mutableStateOf<String?>(null) }
+    var actionBusy by remember { mutableStateOf(false) }
 
     // Realtime: re-fetch from the server whenever a pickup changes anywhere
     // (admin assigns a petugas, bank sampah weighs it). Falls back to the
@@ -335,6 +345,80 @@ fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
 
     LaunchedEffect(refreshTick) { loadFromServer() }
 
+    // PUT penjemputan/{id}/batal (body kosong) -> status DIBATALKAN.
+    // Setelah berhasil, refresh dari server; event PENJEMPUTAN_STATUS
+    // dari hub juga memicu refresh otomatis (listener di atas).
+    fun batalkan(item: PenjemputanItem) {
+        actionBusy = true
+        actionError = null
+        ApiClient.getApi().batalkanPenjemputan(ApiClient.getAuthHeader(), item.id.toLong())
+            .enqueue(object : Callback<Map<String, Any>> {
+                override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
+                    actionBusy = false
+                    if (r.isSuccessful) {
+                        cancelTarget = null
+                        loadFromServer()
+                    } else if (r.code() == 404) {
+                        actionError = "Penjemputan tidak ditemukan di server (mungkin hanya tersimpan lokal)."
+                    } else {
+                        actionError = "Gagal membatalkan (${r.code()})."
+                    }
+                }
+                override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
+                    actionBusy = false
+                    actionError = "Tidak terhubung ke server — pembatalan tidak terkirim."
+                }
+            })
+    }
+
+    // PUT penjemputan/{id}/jadwal {"tanggalJemput","waktuJemput"}.
+    fun jadwalkanUlang(item: PenjemputanItem, tanggal: String, waktu: String) {
+        actionBusy = true
+        actionError = null
+        val body = mapOf<String, Any>("tanggalJemput" to tanggal, "waktuJemput" to waktu)
+        ApiClient.getApi().jadwalkanUlangPenjemputan(ApiClient.getAuthHeader(), item.id.toLong(), body)
+            .enqueue(object : Callback<Map<String, Any>> {
+                override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
+                    actionBusy = false
+                    if (r.isSuccessful) {
+                        rescheduleTarget = null
+                        loadFromServer()
+                    } else if (r.code() == 404) {
+                        actionError = "Penjemputan tidak ditemukan di server (mungkin hanya tersimpan lokal)."
+                    } else {
+                        actionError = "Gagal menjadwalkan ulang (${r.code()})."
+                    }
+                }
+                override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
+                    actionBusy = false
+                    actionError = "Tidak terhubung ke server — jadwal baru tidak terkirim."
+                }
+            })
+    }
+
+    // GET penjemputan/{id} untuk struk digital (butir 5).
+    fun loadDetail(id: Long) {
+        detailLoading = true
+        detailData = null
+        ApiClient.getApi().getPenjemputanDetail(ApiClient.getAuthHeader(), id)
+            .enqueue(object : Callback<Map<String, Any>> {
+                override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
+                    detailLoading = false
+                    if (r.isSuccessful && r.body() != null) {
+                        detailData = parsePenjemputanDetail(r.body()!!)
+                    } else {
+                        actionError = "Detail penjemputan tidak dapat dimuat (${r.code()})."
+                        detailId = null
+                    }
+                }
+                override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
+                    detailLoading = false
+                    actionError = "Tidak terhubung ke server — detail tidak dapat dimuat."
+                    detailId = null
+                }
+            })
+    }
+
     if (!showForm) {
         Column(modifier = Modifier.fillMaxSize().background(BgLight)) {
             GradientHeader("Penjemputan Sampah", onBack)
@@ -343,13 +427,33 @@ fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
             }
             LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(items) { item ->
-                    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite)) {
+                    val bisaDiubah = item.status == "MENUNGGU" || item.status == "DIJADWALKAN"
+                    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite), modifier = Modifier.clickable { detailId = item.id.toLong(); loadDetail(item.id.toLong()) }) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) { Text("#${String.format("%03d", item.id)}", fontSize = 12.sp, color = TextHint, fontWeight = FontWeight.Bold); Spacer(Modifier.weight(1f)); StatusBadge(item.status) }
                             Spacer(Modifier.height(8.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Filled.LocationOn, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(4.dp)); Text(item.alamat, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium) }
                             Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = TextHint, modifier = Modifier.size(14.dp)); Spacer(Modifier.width(4.dp)); Text("${item.tanggal} • ${item.waktu}", fontSize = 12.sp, color = TextSecondary) }
                             Spacer(Modifier.height(4.dp)); Text(item.catatan, fontSize = 12.sp, color = TextHint)
+                            // Butir 1: hanya bila status MENUNGGU / DIJADWALKAN.
+                            if (bisaDiubah) {
+                                Spacer(Modifier.height(12.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(
+                                        onClick = { cancelTarget = item },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = RedLogout),
+                                    ) { Icon(Icons.Filled.Cancel, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(4.dp)); Text("Batalkan", fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                                    Button(
+                                        onClick = { rescheduleTarget = item },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                                    ) { Icon(Icons.Filled.Event, contentDescription = null, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(4.dp)); Text("Jadwalkan Ulang", fontSize = 13.sp, fontWeight = FontWeight.Bold) }
+                                }
+                            }
+                            Text("Ketuk kartu untuk melihat struk digital.", fontSize = 11.sp, color = TextHint)
                         }
                     }
                 }
@@ -367,6 +471,155 @@ fun PenjemputanScreen(onBack: () -> Unit, onCreate: () -> Unit) {
             }
         )
     }
+
+    // Dialog konfirmasi pembatalan (butir 1).
+    cancelTarget?.let { item ->
+        AlertDialog(
+            onDismissRequest = { if (!actionBusy) cancelTarget = null },
+            confirmButton = {
+                Button(
+                    onClick = { batalkan(item) },
+                    enabled = !actionBusy,
+                    colors = ButtonDefaults.buttonColors(containerColor = RedLogout),
+                    shape = RoundedCornerShape(12.dp),
+                ) { Text(if (actionBusy) "Membatalkan..." else "Ya, Batalkan", color = BgWhite) }
+            },
+            dismissButton = {
+                TextButton(onClick = { cancelTarget = null }, enabled = !actionBusy) { Text("Kembali", color = GreenPrimary) }
+            },
+            title = { Text("Batalkan Penjemputan?", fontWeight = FontWeight.Bold) },
+            text = { Text("Penjemputan #${item.id} (${item.tanggal} • ${item.waktu}) akan dibatalkan. Tindakan ini tidak dapat dibatalkan.", fontSize = 13.sp) },
+            containerColor = BgWhite,
+        )
+    }
+
+    // Dialog jadwalkan ulang (butir 1): pemilih tanggal + waktu sederhana.
+    rescheduleTarget?.let { item ->
+        RescheduleDialog(
+            item = item,
+            busy = actionBusy,
+            onDismiss = { if (!actionBusy) rescheduleTarget = null },
+            onConfirm = { tanggal, waktu -> jadwalkanUlang(item, tanggal, waktu) },
+        )
+    }
+
+    // Struk digital (butir 5): ketuk kartu penjemputan.
+    if (detailId != null && detailLoading) {
+        AlertDialog(
+            onDismissRequest = { },
+            confirmButton = {},
+            title = { Text("Memuat Struk...", fontWeight = FontWeight.Bold) },
+            text = { Row(verticalAlignment = Alignment.CenterVertically) { CircularProgressIndicator(modifier = Modifier.size(20.dp), color = GreenPrimary); Spacer(Modifier.width(12.dp)); Text("Mengambil detail penjemputan dari server.", fontSize = 13.sp) } },
+            containerColor = BgWhite,
+        )
+    }
+    detailData?.let { detail ->
+        StrukDialog(detail = detail, onDismiss = { detailId = null; detailData = null })
+    }
+
+    // Error aksi (batal / jadwal ulang / detail) — informatif, tidak crash.
+    actionError?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { actionError = null },
+            confirmButton = { TextButton(onClick = { actionError = null }) { Text("OK", color = GreenPrimary) } },
+            title = { Text("Terjadi Kendala", fontWeight = FontWeight.Bold) },
+            text = { Text(msg, fontSize = 13.sp) },
+            containerColor = BgWhite,
+        )
+    }
+}
+
+/** Pemilih tanggal + waktu sederhana untuk dialog jadwalkan ulang. */
+@Composable
+private fun DatePickerField(value: String, onValue: (String) -> Unit) {
+    val context = LocalContext.current
+    val interaction = remember { MutableInteractionSource() }
+    LaunchedEffect(interaction) {
+        interaction.interactions.collect { inter ->
+            if (inter is PressInteraction.Release) {
+                val cal = Calendar.getInstance()
+                DatePickerDialog(
+                    context,
+                    { _, y, m, d -> onValue(String.format("%04d-%02d-%02d", y, m + 1, d)) },
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH),
+                ).show()
+            }
+        }
+    }
+    OutlinedTextField(
+        value = value, onValueChange = {}, readOnly = true,
+        placeholder = { Text("Pilih tanggal", fontSize = 13.sp) },
+        modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp),
+        leadingIcon = { Icon(Icons.Filled.CalendarToday, contentDescription = null, tint = GreenPrimary) },
+        interactionSource = interaction,
+        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight),
+    )
+}
+
+@Composable
+private fun TimePickerField(value: String, onValue: (String) -> Unit) {
+    val context = LocalContext.current
+    val interaction = remember { MutableInteractionSource() }
+    LaunchedEffect(interaction) {
+        interaction.interactions.collect { inter ->
+            if (inter is PressInteraction.Release) {
+                val cal = Calendar.getInstance()
+                TimePickerDialog(
+                    context,
+                    { _, h, min -> onValue(String.format("%02d:%02d", h, min)) },
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE),
+                    true,
+                ).show()
+            }
+        }
+    }
+    OutlinedTextField(
+        value = value, onValueChange = {}, readOnly = true,
+        placeholder = { Text("Pilih waktu", fontSize = 13.sp) },
+        modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp),
+        leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null, tint = GreenPrimary) },
+        interactionSource = interaction,
+        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = GreenPrimary, unfocusedBorderColor = BorderLight),
+    )
+}
+
+@Composable
+private fun RescheduleDialog(
+    item: PenjemputanItem,
+    busy: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (tanggal: String, waktu: String) -> Unit,
+) {
+    var tanggal by rememberSaveable { mutableStateOf(item.tanggal) }
+    var waktu by rememberSaveable { mutableStateOf(item.waktu) }
+    AlertDialog(
+        onDismissRequest = { if (!busy) onDismiss() },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(tanggal, waktu) },
+                enabled = !busy && tanggal.isNotBlank() && waktu.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                shape = RoundedCornerShape(12.dp),
+            ) { Text(if (busy) "Menyimpan..." else "Simpan Jadwal", color = BgWhite) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !busy) { Text("Batal", color = GreenPrimary) }
+        },
+        title = { Text("Jadwalkan Ulang", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Penjemputan #${item.id} — ${item.alamat}", fontSize = 13.sp, color = TextSecondary)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DatePickerField(value = tanggal, onValue = { tanggal = it })
+                    TimePickerField(value = waktu, onValue = { waktu = it })
+                }
+            }
+        },
+        containerColor = BgWhite,
+    )
 }
 
 @Composable
@@ -597,7 +850,8 @@ private fun mapTransaksi(m: Map<String, Any>): TransaksiItem? {
     val sampah = details?.firstOrNull()?.get("sampah") as? Map<String, Any>
     sampah?.get("nama")?.toString()?.let { jenis = it }
     val jumlah = "Rp " + "%,d".format(total).replace(",", ".")
-    return TransaksiItem(id, tanggal, jumlah, status, jenis)
+    val penjemputanId = (penjemputan?.get("id") as? Number)?.toLong()
+    return TransaksiItem(id, tanggal, jumlah, status, jenis, penjemputanId)
 }
 
 // ===== RIWAYAT SCREEN — with filter & detail dialog =====
@@ -609,6 +863,39 @@ fun RiwayatScreen(onBack: () -> Unit) {
     val filters = listOf("Semua", "ORGANIK", "ANORGANIK", "B3", "RESIDU")
     val filtered = if (filter == "Semua") transaksi else transaksi.filter { it.jenis.contains(filter, ignoreCase = true) }
     var selectedItem by remember { mutableStateOf<TransaksiItem?>(null) }
+    // Struk digital (butir 5 + 6 + 9): dimuat dari GET penjemputan/{id}.
+    var riwayatDetail by remember { mutableStateOf<PenjemputanDetailData?>(null) }
+    var riwayatDetailLoading by remember { mutableStateOf(false) }
+
+    fun openRiwayatDetail(item: TransaksiItem) {
+        val penjemputanId = item.penjemputanId
+        if (penjemputanId == null) {
+            // Transaksi lama tanpa tautan penjemputan: tampilkan detail
+            // sederhana seperti sebelumnya (bukan struk lengkap).
+            selectedItem = item
+            return
+        }
+        riwayatDetailLoading = true
+        riwayatDetail = null
+        ApiClient.getApi().getPenjemputanDetail(ApiClient.getAuthHeader(), penjemputanId)
+            .enqueue(object : Callback<Map<String, Any>> {
+                override fun onResponse(c: Call<Map<String, Any>>, r: Response<Map<String, Any>>) {
+                    riwayatDetailLoading = false
+                    if (r.isSuccessful && r.body() != null) {
+                        riwayatDetail = parsePenjemputanDetail(r.body()!!)
+                    } else {
+                        // Endpoint detail belum tersedia di server (atau
+                        // penjemputan tidak ditemukan): fallback ke detail
+                        // transaksi sederhana.
+                        selectedItem = item
+                    }
+                }
+                override fun onFailure(c: Call<Map<String, Any>>, t: Throwable) {
+                    riwayatDetailLoading = false
+                    selectedItem = item
+                }
+            })
+    }
 
     // Realtime: re-fetch when the wallet changes or one of my pickups
     // finishes (timbang). Falls back to the dummy list when offline.
@@ -654,7 +941,7 @@ fun RiwayatScreen(onBack: () -> Unit) {
 
         LazyColumn(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(filtered) { item ->
-                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite), modifier = Modifier.clickable { selectedItem = item }) {
+                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BgWhite), modifier = Modifier.clickable { openRiwayatDetail(item) }) {
                     Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(44.dp).clip(CircleShape).background(GreenMint), contentAlignment = Alignment.Center) { Icon(Icons.Filled.Paid, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp)) }
                         Spacer(Modifier.width(12.dp))
@@ -667,8 +954,25 @@ fun RiwayatScreen(onBack: () -> Unit) {
             }
         }
 
+        // Struk digital (butir 5): rincian sampah, foto bukti (butir 6),
+        // rating (butir 9), dan bagikan via WhatsApp.
+        if (riwayatDetailLoading) {
+            AlertDialog(
+                onDismissRequest = { },
+                confirmButton = {},
+                title = { Text("Memuat Struk...", fontWeight = FontWeight.Bold) },
+                text = { Row(verticalAlignment = Alignment.CenterVertically) { CircularProgressIndicator(modifier = Modifier.size(20.dp), color = GreenPrimary); Spacer(Modifier.width(12.dp)); Text("Mengambil detail penjemputan dari server.", fontSize = 13.sp) } },
+                containerColor = BgWhite,
+            )
+        }
+        riwayatDetail?.let { detail ->
+            StrukDialog(detail = detail, onDismiss = { riwayatDetail = null })
+        }
+
+        // Detail transaksi sederhana (fallback bila tidak ada penjemputanId
+        // atau endpoint detail belum tersedia di server).
         // Detail dialog
-        selectedItem?.let { item ->
+        selectedItem?.let { item -> 
             AlertDialog(
                 onDismissRequest = { selectedItem = null },
                 confirmButton = { TextButton(onClick = { selectedItem = null }) { Text("Tutup", color = GreenPrimary) } },

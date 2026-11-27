@@ -1,5 +1,6 @@
 package com.resik.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public abstract class User {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private String alamat;
@@ -38,6 +40,25 @@ public abstract class User {
 
     @Column(name = "poin_reward")
     private Integer poinReward = 0;
+
+    /**
+     * Account-approval state (admin Verifikasi &amp; Approval flow).
+     * New registrations start as {@code MENUNGGU}; an admin moves them to
+     * {@code DISETUJUI} or {@code DITOLAK} via {@code /api/admin/users}.
+     * Login rejects {@code DITOLAK} accounts; {@code MENUNGGU} accounts can
+     * still log in (see AuthService.login) so registration followed by an
+     * immediate login keeps working — the flag is visible to clients via
+     * {@code AuthResponse.statusVerifikasi} and {@code GET /api/user/me}.
+     * Accounts that existed before this field was introduced are
+     * grandfathered to {@code DISETUJUI} by migration V3.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_verifikasi", nullable = false)
+    private StatusVerifikasi statusVerifikasi = StatusVerifikasi.MENUNGGU;
+
+    /** Reason supplied by the admin when rejecting an account (nullable). */
+    @Column(name = "alasan_penolakan", columnDefinition = "TEXT")
+    private String alasanPenolakan;
 
     private BigDecimal latitude;
     private BigDecimal longitude;
@@ -59,6 +80,10 @@ public abstract class User {
     }
 
     public abstract String getRole();
+
+    public enum StatusVerifikasi {
+        MENUNGGU, DISETUJUI, DITOLAK
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -82,6 +107,10 @@ public abstract class User {
     public void setSaldoDompet(BigDecimal saldoDompet) { this.saldoDompet = saldoDompet; }
     public Integer getPoinReward() { return poinReward; }
     public void setPoinReward(Integer poinReward) { this.poinReward = poinReward; }
+    public StatusVerifikasi getStatusVerifikasi() { return statusVerifikasi; }
+    public void setStatusVerifikasi(StatusVerifikasi statusVerifikasi) { this.statusVerifikasi = statusVerifikasi; }
+    public String getAlasanPenolakan() { return alasanPenolakan; }
+    public void setAlasanPenolakan(String alasanPenolakan) { this.alasanPenolakan = alasanPenolakan; }
     public BigDecimal getLatitude() { return latitude; }
     public void setLatitude(BigDecimal latitude) { this.latitude = latitude; }
     public BigDecimal getLongitude() { return longitude; }

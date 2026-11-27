@@ -1,6 +1,7 @@
 package com.resik.admin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.resik.admin.config.AppConfig;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -44,8 +45,12 @@ public class RealtimeEventClient {
                                Consumer<Map<String, Object>> messageHandler,
                                Runnable onConnect, Runnable onDisconnect) {
         String normalizedRole = role == null ? "admin" : role.toLowerCase();
-        this.wsUrl = apiUrl.replace("http://", "ws://").replace("https://", "wss://")
+        String url = apiUrl.replace("http://", "ws://").replace("https://", "wss://")
                 + "/ws/events?role=" + normalizedRole;
+        if (AppConfig.authToken != null && !AppConfig.authToken.isBlank()) {
+            url += "&token=" + java.net.URLEncoder.encode(AppConfig.authToken, java.nio.charset.StandardCharsets.UTF_8);
+        }
+        this.wsUrl = url;
         this.messageHandler = messageHandler;
         this.onConnect = onConnect;
         this.onDisconnect = onDisconnect;

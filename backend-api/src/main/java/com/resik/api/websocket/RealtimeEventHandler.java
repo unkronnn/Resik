@@ -18,16 +18,17 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * WebSocket handler for the general realtime event channel ({@code /ws/events}).
  *
- * <p>Follows the same pattern as {@link ChatWebSocketHandler}: plain
- * {@link TextWebSocketHandler} (no STOMP), sessions grouped by role from the
- * connection query string:
+ * <p>Identity comes from the login JWT validated by
+ * {@link JwtHandshakeInterceptor} at handshake time and stored in the
+ * session attributes ({@code userId}, {@code role}). The old
+ * {@code ?role=} / {@code ?userId=} query parameters are ignored:
  *
  * <ul>
- *   <li>{@code ?role=admin} — admin desktop clients, receive every event.</li>
- *   <li>{@code ?role=bank_sampah} — bank sampah / petugas clients, receive
+ *   <li>role {@code ADMIN} — admin desktop clients, receive every event.</li>
+ *   <li>role {@code PETUGAS} — bank sampah / petugas clients, receive
  *       pickup, stock and price events (but no per-user wallet events).</li>
- *   <li>{@code ?role=masyarakat&userId=123} — masyarakat (Android) clients,
- *       receive broadcast events plus events addressed to their own user id.</li>
+ *   <li>any other role — masyarakat (Android) clients, receive broadcast
+ *       events plus events addressed to their own user id (from the token).</li>
  * </ul>
  *
  * <p>Clients answer with a {@code ping} keepalive; the handler replies
@@ -46,25 +47,27 @@ public class RealtimeEventHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        String role = extractParam(session, "role");
-        if ("admin".equalsIgnoreCase(role)) {
+        // Identity is taken from the JWT (see JwtHandshakeInterceptor);
+        // query parameters are never trusted for role or user id.
+        Long userId = (Long) session.getAttributes().get(JwtHandshakeInterceptor.ATTR_USER_ID);
+        String role = (String) session.getAttributes().get(JwtHandshakeInterceptor.ATTR_ROLE);
+        if (userId == null) {
+            log.warn("Realtime-events connection without authenticated identity, closing: {}", session.getId());
+            try {
+                session.close(CloseStatus.POLICY_VIOLATION);
+            } catch (IOException ignored) {
+            }
+            return;
+        }
+        if ("ADMIN".equalsIgnoreCase(role)) {
             adminSessions.add(session);
             log.info("Admin realtime-events connected: {}", session.getId());
-        } else if ("bank_sampah".equalsIgnoreCase(role) || "petugas".equalsIgnoreCase(role)) {
+        } else if ("PETUGAS".equalsIgnoreCase(role) || "BANK_SAMPAH".equalsIgnoreCase(role)) {
             bankSampahSessions.add(session);
             log.info("Bank Sampah realtime-events connected: {}", session.getId());
         } else {
-            Long userId = extractUserId(session);
-            if (userId != null) {
-                userSessions.computeIfAbsent(userId, k -> new CopyOnWriteArraySet<>()).add(session);
-                log.info("User {} realtime-events connected: {}", userId, session.getId());
-            } else {
-                log.warn("Realtime-events connection without role/userId, closing: {}", session.getId());
-                try {
-                    session.close(CloseStatus.POLICY_VIOLATION);
-                } catch (IOException ignored) {
-                }
-            }
+            userSessions.computeIfAbsent(userId, k -> new CopyOnWriteArraySet<>()).add(session);
+            log.info("User {} realtime-events connected: {}", userId, session.getId());
         }
     }
 
@@ -140,27 +143,6 @@ public class RealtimeEventHandler extends TextWebSocketHandler {
             }
         } catch (IOException e) {
             log.warn("Failed to send realtime event to {}: {}", session.getId(), e.getMessage());
-        }
-    }
-
-    private String extractParam(WebSocketSession session, String name) {
-        String query = session.getUri() != null ? session.getUri().getQuery() : "";
-        if (query == null) return null;
-        for (String param : query.split("&")) {
-            if (param.startsWith(name + "=")) {
-                return param.substring(name.length() + 1);
-            }
-        }
-        return null;
-    }
-
-    private Long extractUserId(WebSocketSession session) {
-        String raw = extractParam(session, "userId");
-        if (raw == null) return null;
-        try {
-            return Long.parseLong(raw);
-        } catch (NumberFormatException e) {
-            return null;
         }
     }
 

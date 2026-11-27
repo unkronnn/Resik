@@ -81,6 +81,22 @@ public class CrudDialog {
         return dialog.showAndWait();
     }
 
+    /** Konfirmasi umum (mis. batalkan penjemputan) — YA/Tidak. */
+    public static boolean showConfirm(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.getDialogPane().getStyleClass().add("glass-dialog");
+
+        Button ok = (Button) alert.getDialogPane().lookupButton(ButtonType.OK);
+        Button cancel = (Button) alert.getDialogPane().lookupButton(ButtonType.CANCEL);
+        if (ok != null) ok.getStyleClass().addAll("btn", "btn-danger");
+        if (cancel != null) cancel.getStyleClass().addAll("btn", "btn-ghost");
+
+        return alert.showAndWait().filter(r -> r == ButtonType.OK).isPresent();
+    }
+
     public static boolean showDeleteConfirm(String itemName) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Konfirmasi Hapus");

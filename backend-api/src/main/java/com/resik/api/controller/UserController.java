@@ -31,6 +31,7 @@ public class UserController {
         response.put("nama", user.getNama());
         response.put("email", user.getEmail());
         response.put("role", user.getRole());
+        response.put("statusVerifikasi", user.getStatusVerifikasi() != null ? user.getStatusVerifikasi().name() : null);
         response.put("saldoDompet", user.getSaldoDompet());
         response.put("poinReward", user.getPoinReward());
         response.put("alamat", user.getAlamat());

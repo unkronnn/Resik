@@ -28,16 +28,25 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        String role = extractRole(session);
-        if ("admin".equals(role)) {
+        // Identity comes from the login JWT validated by
+        // JwtHandshakeInterceptor; ?role= / ?userId= query parameters are
+        // ignored so a client cannot impersonate another user or an admin.
+        Long userId = (Long) session.getAttributes().get(JwtHandshakeInterceptor.ATTR_USER_ID);
+        String role = (String) session.getAttributes().get(JwtHandshakeInterceptor.ATTR_ROLE);
+        if (userId == null) {
+            log.warn("Chat WebSocket connection without authenticated identity, closing: {}", session.getId());
+            try {
+                session.close(CloseStatus.POLICY_VIOLATION);
+            } catch (IOException ignored) {
+            }
+            return;
+        }
+        if ("ADMIN".equalsIgnoreCase(role)) {
             adminSessions.add(session);
             log.info("Admin WebSocket connected: {}", session.getId());
         } else {
-            Long userId = extractUserId(session);
-            if (userId != null) {
-                userSessions.computeIfAbsent(userId, k -> new CopyOnWriteArraySet<>()).add(session);
-                log.info("User {} WebSocket connected: {}", userId, session.getId());
-            }
+            userSessions.computeIfAbsent(userId, k -> new CopyOnWriteArraySet<>()).add(session);
+            log.info("User {} WebSocket connected: {}", userId, session.getId());
         }
     }
 
@@ -110,32 +119,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         } catch (IOException e) {
             log.warn("Failed to send WebSocket message to {}: {}", session.getId(), e.getMessage());
         }
-    }
-
-    private String extractRole(WebSocketSession session) {
-        String query = session.getUri() != null ? session.getUri().getQuery() : "";
-        if (query == null) return null;
-        for (String param : query.split("&")) {
-            if (param.startsWith("role=")) {
-                return param.substring(5);
-            }
-        }
-        return null;
-    }
-
-    private Long extractUserId(WebSocketSession session) {
-        String query = session.getUri() != null ? session.getUri().getQuery() : "";
-        if (query == null) return null;
-        for (String param : query.split("&")) {
-            if (param.startsWith("userId=")) {
-                try {
-                    return Long.parseLong(param.substring(8));
-                } catch (NumberFormatException e) {
-                    return null;
-                }
-            }
-        }
-        return null;
     }
 
     @Override

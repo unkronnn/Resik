@@ -29,4 +29,18 @@ public class PenjemputanDtos {
         Long detailId,
         BigDecimal beratAktual
     ) {}
+
+    public record JadwalRequest(
+        LocalDate tanggalJemput,
+        String waktuJemput
+    ) {}
+
+    public record StatusRequest(
+        String status
+    ) {}
+
+    public record FotoBuktiRequest(
+        String fotoBase64,
+        String contentType
+    ) {}
 }

@@ -111,14 +111,35 @@ public class RealtimeEventPublisher {
      * desktop Verifikasi &amp; Approval flow). Admins only.
      */
     public void accountVerification(User user) {
+        accountVerification(user, "MENUNGGU", null);
+    }
+
+    /**
+     * An admin decided on an account (approve / reject). Same event type as
+     * registration, with the new status in the payload so the desktop
+     * verification table can update the row in place instead of re-fetching.
+     * Admins only, plus the affected user.
+     */
+    public void accountVerificationDecided(User user, String alasan) {
+        accountVerification(user, user.getStatusVerifikasi() != null
+                ? user.getStatusVerifikasi().name() : null, alasan);
+    }
+
+    private void accountVerification(User user, String status, String alasan) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("userId", user.getId());
         payload.put("nama", user.getNama());
         payload.put("email", user.getEmail());
         payload.put("role", user.getRole());
-        payload.put("status", "MENUNGGU");
-        handler.broadcastToAdmins(
-                RealtimeEvent.of(RealtimeEvent.Types.ACCOUNT_VERIFICATION, payload));
+        payload.put("status", status);
+        if (alasan != null) {
+            payload.put("alasan", alasan);
+        }
+        RealtimeEvent event = RealtimeEvent.of(RealtimeEvent.Types.ACCOUNT_VERIFICATION, payload);
+        handler.broadcastToAdmins(event);
+        if (user.getId() != null) {
+            handler.broadcastToUser(user.getId(), event);
+        }
     }
 
     /**

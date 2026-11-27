@@ -20,6 +20,7 @@ public class AuthDtos {
         Long userId,
         String nama,
         String email,
-        String role
+        String role,
+        String statusVerifikasi
     ) {}
 }

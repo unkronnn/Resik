@@ -1,5 +1,6 @@
 package com.resik.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,10 +18,12 @@ public class Penjemputan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "petugas_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User petugas;
 
     @Column(name = "tanggal_jemput", nullable = false)
@@ -44,10 +47,24 @@ public class Penjemputan {
     @Column(name = "qr_code", unique = true)
     private String qrCode;
 
+    /**
+     * URL penyajian foto bukti timbangan, mis.
+     * {@code /api/penjemputan/12/foto}. Diset oleh
+     * {@code PUT /api/penjemputan/{id}/foto-bukti}; file-nya disimpan di
+     * {@code uploads/bukti/{id}.{jpg|png|webp}} di bawah direktori kerja
+     * backend. Dipilih di Penjemputan (bukan Transaksi) karena foto adalah
+     * bukti atas satu penjemputan — struk/resit dibangun dari penjemputan
+     * dan foto bisa diunggah setelah timbang selesai — dan satu
+     * penjemputan punya tepat satu transaksi, jadi tidak ada ambiguitas.
+     */
+    @Column(name = "foto_bukti_url", length = 500)
+    private String fotoBuktiUrl;
+
     @OneToMany(mappedBy = "penjemputan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetailPenjemputan> detailList = new ArrayList<>();
 
     @OneToOne(mappedBy = "penjemputan", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Transaksi transaksi;
 
     @Column(name = "created_at")
@@ -89,6 +106,8 @@ public class Penjemputan {
     public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
     public String getQrCode() { return qrCode; }
     public void setQrCode(String qrCode) { this.qrCode = qrCode; }
+    public String getFotoBuktiUrl() { return fotoBuktiUrl; }
+    public void setFotoBuktiUrl(String fotoBuktiUrl) { this.fotoBuktiUrl = fotoBuktiUrl; }
     public List<DetailPenjemputan> getDetailList() { return detailList; }
     public void setDetailList(List<DetailPenjemputan> detailList) { this.detailList = detailList; }
     public Transaksi getTransaksi() { return transaksi; }
